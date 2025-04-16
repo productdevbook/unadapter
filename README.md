@@ -30,6 +30,7 @@ This project is based on the adapter architecture from [better-auth](https://git
 - [ ] Performance optimizations
 - [ ] Additional adapter types
 - [ ] Integration examples
+- [ ] Complete abstraction from better-auth and compatibility with all software systems
 
 </details>
 
@@ -91,6 +92,12 @@ See the [LICENSE](LICENSE) file for details.
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests to help improve unadapter.
+
+## 🙏 Credits
+
+This project draws inspiration and core concepts from:
+
+- [better-auth](https://github.com/better-auth) - The original adapter architecture that inspired this project
 
 <hr />
 
