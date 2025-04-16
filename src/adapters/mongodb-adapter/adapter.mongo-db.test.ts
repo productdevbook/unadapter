@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb'
 
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, describe } from 'vitest'
 import { runAdapterTest } from '../test.ts'
 import { mongodbAdapter } from './index.ts'
 
@@ -37,9 +37,6 @@ describe('adapter test', async () => {
               defaultValue: 'test',
             },
           },
-        },
-        session: {
-          modelName: 'sessions',
         },
         ...customOptions,
       })

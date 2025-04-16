@@ -51,8 +51,13 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage.enabled true",
     "prisma:normal:push": "prisma db push --schema src/adapters/prisma-adapter/test/normal-tests/schema.prisma --accept-data-loss",
-    "prisma:number-id:push": "prisma db push --schema src/adapters/prisma-adapter/test/number-id-tests/schema.prisma --accept-data-loss"
+    "prisma:number-id:push": "prisma db push --schema src/adapters/prisma-adapter/test/number-id-tests/schema.prisma --accept-data-loss",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test",
+    "bumpp": "bumpp package.json",
+    "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public"
   },
   "dependencies": {
     "defu": "^6.1.4",
@@ -64,7 +69,9 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.14.1",
     "@types/pg": "^8.11.13",
+    "@vitest/coverage-v8": "^3.1.1",
     "better-sqlite3": "^11.9.1",
+    "bumpp": "^10.1.0",
     "deepmerge": "^4.3.1",
     "drizzle-orm": "^0.42.0",
     "eslint": "^9.24.0",
