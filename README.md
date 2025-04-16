@@ -106,6 +106,7 @@ You'll also need to install the specific database driver or ORM you plan to use.
 - 🔄 Easy switching between different database providers
 - 🗺️ Custom field mapping
 - 📊 Support for various data types across different database systems
+- 🏗️ Fully customizable schema definition
 
 
 ## 🚀 Getting Started
@@ -114,6 +115,39 @@ You'll also need to install the specific database driver or ORM you plan to use.
 
 ```typescript
 import { memoryAdapter } from 'unadapter/memory'
+import { UnDbSchema } from 'unadapter'
+
+// Define a basic schema
+const schema: UnDbSchema = {
+  user: {
+    modelName: 'user',
+    fields: {
+      name: { type: 'string', required: true },
+      email: { type: 'string', required: true, unique: true },
+      emailVerified: { type: 'boolean', defaultValue: () => false },
+      createdAt: { type: 'date', defaultValue: () => new Date() },
+      updatedAt: { type: 'date', defaultValue: () => new Date() }
+    },
+    order: 1
+  },
+  session: {
+    modelName: 'session',
+    fields: {
+      userId: { 
+        type: 'string', 
+        required: true,
+        references: {
+          model: 'user',
+          field: 'id'
+        }
+      },
+      expires: { type: 'date', required: true },
+      createdAt: { type: 'date', defaultValue: () => new Date() },
+      updatedAt: { type: 'date', defaultValue: () => new Date() }
+    },
+    order: 2
+  }
+}
 
 // Create an in-memory database for testing
 const db = {
@@ -121,11 +155,24 @@ const db = {
   session: []
 }
 
+// Define the options
+const options = {
+  user: {
+    fields: {},
+    additionalFields: {}
+  },
+  advanced: {
+    database: {
+      useNumberId: false
+    }
+  }
+}
+
 // Initialize the adapter
-const adapter = memoryAdapter(db)
+const adapter = memoryAdapter(db)(options, schema)
 
 // Now you can use the adapter to perform database operations
-const user = await adapter({}).create({
+const user = await adapter.create({
   model: 'user',
   data: {
     name: 'John Doe',
@@ -173,99 +220,293 @@ await adapter.delete({
 })
 ```
 
-### Using Prisma Adapter
+### Using Custom Schema
+
+unadapter allows you to define your own database schema. This gives you full control over your data models and their relationships.
 
 ```typescript
-import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from 'unadapter/prisma'
+import { UnDbSchema } from 'unadapter'
+import { memoryAdapter } from 'unadapter/memory'
 
-const prisma = new PrismaClient()
-const adapter = prismaAdapter(prisma)
+// Define your custom schema
+const mySchema: UnDbSchema = {
+  user: {
+    modelName: 'users', // The actual table/collection name in your database
+    fields: {
+      name: {
+        type: 'string',
+        required: true,
+        fieldName: 'full_name', // The actual column name in your database
+        sortable: true
+      },
+      email: {
+        type: 'string',
+        unique: true,
+        required: true,
+        fieldName: 'email_address'
+      },
+      role: {
+        type: 'string',
+        required: true,
+        defaultValue: () => 'user'
+      },
+      isActive: {
+        type: 'boolean',
+        defaultValue: () => true
+      },
+      lastLogin: {
+        type: 'date',
+        required: false
+      },
+      createdAt: {
+        type: 'date',
+        defaultValue: () => new Date()
+      },
+      updatedAt: {
+        type: 'date',
+        defaultValue: () => new Date()
+      }
+    },
+    order: 1
+  },
+  product: {
+    modelName: 'products',
+    fields: {
+      name: {
+        type: 'string',
+        required: true
+      },
+      price: {
+        type: 'number',
+        required: true
+      },
+      description: {
+        type: 'string',
+        required: false
+      },
+      userId: {
+        type: 'string',
+        references: {
+          model: 'user',
+          field: 'id',
+          onDelete: 'cascade'
+        },
+        required: true
+      },
+      createdAt: {
+        type: 'date',
+        defaultValue: () => new Date()
+      },
+      updatedAt: {
+        type: 'date',
+        defaultValue: () => new Date()
+      }
+    },
+    order: 2
+  }
+}
 
-// Now you can use the same adapter interface with Prisma
-const user = await adapter({}).create({
+// Create in-memory database
+const db = {
+  users: [],
+  products: []
+}
+
+// Initialize adapter with your custom schema
+const adapter = memoryAdapter(db)(options, mySchema)
+
+// Now you can use the adapter with your custom schema
+const user = await adapter.create({
   model: 'user',
   data: {
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    emailVerified: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'admin'
+  }
+})
+
+// Create a product linked to the user
+const product = await adapter.create({
+  model: 'product',
+  data: {
+    name: 'Awesome Product',
+    price: 99.99,
+    description: 'This is an awesome product',
+    userId: user.id
   }
 })
 ```
 
-### Using MongoDB Adapter
+### Field Types and Attributes
+
+When defining your schema, you can use the following field types and attributes:
+
+```typescript
+interface FieldAttribute {
+  // The type of the field
+  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array';
+  
+  // Whether this field is required
+  required?: boolean;
+  
+  // Whether this field should be unique
+  unique?: boolean;
+  
+  // The actual column/field name in the database
+  fieldName?: string;
+  
+  // Whether this field can be sorted
+  sortable?: boolean;
+  
+  // Default value function
+  defaultValue?: () => any;
+  
+  // Reference to another model (for foreign keys)
+  references?: {
+    model: string;
+    field: string;
+    onDelete?: 'cascade' | 'set null' | 'restrict';
+  };
+  
+  // Custom transformations
+  transform?: {
+    input?: (value: any) => any;
+    output?: (value: any) => any;
+  };
+  
+  // Custom validators
+  validator?: {
+    input?: any;
+    output?: any;
+  };
+  
+  // Whether this field should be returned in queries
+  returned?: boolean;
+  
+  // Whether this field can be used in input operations
+  input?: boolean;
+}
+```
+
+### Using MongoDB Adapter with Custom Schema
 
 ```typescript
 import { MongoClient } from 'mongodb'
 import { mongodbAdapter } from 'unadapter/mongodb'
+import { UnDbSchema } from 'unadapter'
 
+// Define your schema
+const mySchema: UnDbSchema = {
+  user: {
+    modelName: 'users',
+    fields: {
+      name: { type: 'string', required: true },
+      email: { type: 'string', required: true, unique: true },
+      settings: { type: 'json', required: false },
+      createdAt: { type: 'date', defaultValue: () => new Date() }
+    },
+    order: 1
+  }
+}
+
+// Define options
+const options = {
+  user: {
+    fields: {},
+    additionalFields: {}
+  },
+  advanced: {
+    database: {
+      useNumberId: false
+    }
+  }
+}
+
+// Connect to MongoDB
 const client = new MongoClient('mongodb://localhost:27017')
 await client.connect()
 const db = client.db('myDatabase')
 
-const adapter = mongodbAdapter(db)
+// Initialize adapter with your custom schema
+const adapter = mongodbAdapter(db)(options, mySchema)
 
-// Now you can use the same adapter interface with MongoDB
-const user = await adapter({}).create({
+// Use the adapter with your custom schema
+const user = await adapter.create({
   model: 'user',
   data: {
-    name: 'Alex Smith',
-    email: 'alex@example.com',
-    emailVerified: false,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    settings: { theme: 'dark', notifications: true }
   }
 })
 ```
 
-### Using Drizzle Adapter
+### Using Prisma Adapter with Custom Schema
 
 ```typescript
-import { drizzle } from 'drizzle-orm/...' // Import appropriate driver
-import { drizzleAdapter } from 'unadapter/drizzle'
+import { PrismaClient } from '@prisma/client'
+import { prismaAdapter } from 'unadapter/prisma'
+import { UnDbSchema } from 'unadapter'
 
-const db = drizzle(/* your DB connection */)
-const adapter = drizzleAdapter(db, {
-  provider: 'postgresql', // or 'mysql', 'sqlite'
-  usePlural: false
-})
-
-// Now you can use the same adapter interface with Drizzle
-const user = await adapter({}).create({
-  model: 'user',
-  data: {
-    name: 'Taylor Swift',
-    email: 'taylor@example.com',
-    emailVerified: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+// Define your schema
+const mySchema: UnDbSchema = {
+  user: {
+    modelName: 'User', // Match your Prisma model name (case-sensitive)
+    fields: {
+      name: { type: 'string', required: true },
+      email: { type: 'string', required: true, unique: true },
+      posts: { type: 'array', required: false },
+      profile: { type: 'json', required: false },
+      createdAt: { type: 'date', defaultValue: () => new Date() }
+    },
+    order: 1
+  },
+  post: {
+    modelName: 'Post',
+    fields: {
+      title: { type: 'string', required: true },
+      content: { type: 'string', required: false },
+      published: { type: 'boolean', defaultValue: () => false },
+      authorId: {
+        type: 'string',
+        references: {
+          model: 'user',
+          field: 'id',
+          onDelete: 'cascade'
+        },
+        required: true
+      }
+    },
+    order: 2
   }
-})
-```
+}
 
-### Using Kysely Adapter
+// Initialize Prisma client
+const prisma = new PrismaClient()
 
-```typescript
-import { Kysely } from 'kysely'
-import { kyselyAdapter } from 'unadapter/kysely'
+// Define options
+const options = {
+  user: {
+    fields: {},
+    additionalFields: {}
+  },
+  advanced: {
+    database: {
+      useNumberId: false
+    }
+  }
+}
 
-const db = new Kysely(/* your DB connection */)
-const adapter = kyselyAdapter(db, {
-  type: 'postgresql', // or 'mysql', 'sqlite', 'mssql'
-  usePlural: false
-})
+// Initialize adapter with your custom schema
+const adapter = prismaAdapter(prisma)(options, mySchema)
 
-// Now you can use the same adapter interface with Kysely
-const user = await adapter({}).create({
+// Use the adapter with your custom schema
+const user = await adapter.create({
   model: 'user',
   data: {
-    name: 'Chris Evans',
-    email: 'chris@example.com',
-    emailVerified: true,
-    createdAt: new Date(),
-    updatedAt: new Date()
+    name: 'John Smith',
+    email: 'john.smith@example.com',
+    profile: { bio: 'Software developer', location: 'New York' }
   }
 })
 ```
@@ -363,8 +604,7 @@ You can create your own adapters using the `createAdapter` function:
 ```typescript
 import { createAdapter } from 'unadapter/create'
 
-const myCustomAdapter = createAdapter({
-  config: {
+const myCustomAdapter = createAdapter config: {
     adapterId: 'my-custom',
     adapterName: 'My Custom Adapter',
     usePlural: false,
