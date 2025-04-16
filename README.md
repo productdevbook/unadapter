@@ -12,10 +12,10 @@
 [![JSDocs][jsdocs-src]][jsdocs-href]
 
 ### Test Coverage
-![Lines](https://img.shields.io/badge/Lines-80.65%25-green)
-![Statements](https://img.shields.io/badge/Statements-80.65%25-green)
-![Functions](https://img.shields.io/badge/Functions-79.62%25-yellowgreen)
-![Branches](https://img.shields.io/badge/Branches-78.52%25-yellowgreen)
+![Lines](https://img.shields.io/badge/Lines-75.79%25-yellowgreen)
+![Statements](https://img.shields.io/badge/Statements-75.79%25-yellowgreen)
+![Functions](https://img.shields.io/badge/Functions-78.01%25-yellowgreen)
+![Branches](https://img.shields.io/badge/Branches-75.54%25-yellowgreen)
 
 **A universal adapter interface for connecting various databases and ORMs with a standardized API.**
 
