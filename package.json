@@ -1,0 +1,92 @@
+{
+  "name": "unadapter",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "A modular adapter layer for working with any database (Drizzle, Prisma, MongoDB, Kysely & more)",
+  "author": "productdevbook <hi@productdevbook.com>",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/productdevbook",
+  "homepage": "https://github.com/productdevbook/unadapter#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/productdevbook/unadapter.git"
+  },
+  "bugs": "https://github.com/productdevbook/unadapter/issues",
+  "keywords": [
+    "auth",
+    "authentication",
+    "database",
+    "adapters",
+    "drizzle",
+    "prisma",
+    "kysely",
+    "mongodb",
+    "unadapter"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./adapters/*": {
+      "types": "./dist/adapters/*.d.ts",
+      "import": "./dist/adapters/*.mjs"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.mjs"
+    }
+  },
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">=20.11.1"
+  },
+  "scripts": {
+    "build": "unbuild",
+    "dev": "unbuild --stub",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:normal:push": "prisma db push --schema src/adapters/prisma-adapter/test/normal-tests/schema.prisma --accept-data-loss",
+    "prisma:number-id:push": "prisma db push --schema src/adapters/prisma-adapter/test/number-id-tests/schema.prisma --accept-data-loss"
+  },
+  "dependencies": {
+    "defu": "^6.1.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^4.12.0",
+    "@prisma/client": "^6.6.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.14.1",
+    "@types/pg": "^8.11.13",
+    "better-sqlite3": "^11.9.1",
+    "deepmerge": "^4.3.1",
+    "drizzle-orm": "^0.42.0",
+    "eslint": "^9.24.0",
+    "kysely": "^0.28.0",
+    "mongodb": "^6.15.0",
+    "mysql2": "^3.14.0",
+    "pg": "^8.14.1",
+    "prisma": "^6.6.0",
+    "tarn": "^3.0.2",
+    "tedious": "^18.6.1",
+    "typescript": "^5.8.3",
+    "unbuild": "^3.5.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.1.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "better-sqlite3",
+      "esbuild",
+      "prisma"
+    ]
+  }
+}
