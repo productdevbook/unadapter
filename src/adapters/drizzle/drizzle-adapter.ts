@@ -2,7 +2,7 @@ import type {
   SQL,
 } from 'drizzle-orm'
 import type { Where } from '../../types/index.ts'
-import type { AdapterDebugLogs } from '../create-adapter/index.ts'
+import type { AdapterDebugLogs } from '../create/index.ts'
 import {
   and,
   asc,
@@ -17,7 +17,7 @@ import {
   sql,
 } from 'drizzle-orm'
 import { BetterAuthError } from '../../error/index.ts'
-import { createAdapter } from '../create-adapter/index.ts'
+import { createAdapter } from '../create/index.ts'
 
 export interface DB {
   [key: string]: any

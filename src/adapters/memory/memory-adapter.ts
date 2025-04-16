@@ -1,8 +1,8 @@
-import type { AdapterDebugLogs, CleanedWhere } from '../create-adapter/index.ts'
+import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
 import {
   createAdapter,
 
-} from '../create-adapter/index.ts'
+} from '../create/index.ts'
 
 export interface MemoryDB {
   [key: string]: any[]

@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3'
 import type { Dialect, Kysely, MysqlPool, PostgresPool } from 'kysely'
-import type { KyselyDatabaseType } from '../adapters/kysely-adapter/types.ts'
+import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type { FieldAttribute } from '../db/index.ts'
 import type {
   Account,

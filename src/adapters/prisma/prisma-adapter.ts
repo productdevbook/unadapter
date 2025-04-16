@@ -1,7 +1,7 @@
 import type { Where } from '../../types/index.ts'
-import type { AdapterDebugLogs } from '../create-adapter/index.ts'
+import type { AdapterDebugLogs } from '../create/index.ts'
 import { BetterAuthError } from '../../error/index.ts'
-import { createAdapter } from '../create-adapter/index.ts'
+import { createAdapter } from '../create/index.ts'
 
 export interface PrismaConfig {
   /**
