@@ -29,13 +29,45 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./adapters/*": {
-      "types": "./dist/adapters/*.d.ts",
-      "import": "./dist/adapters/*.mjs"
+    "./drizzle": {
+      "types": "./dist/adapters/drizzle/index.d.ts",
+      "import": "./dist/adapters/drizzle/index.mjs"
+    },
+    "./kysely": {
+      "types": "./dist/adapters/kysely/index.d.ts",
+      "import": "./dist/adapters/kysely/index.mjs"
+    },
+    "./memory": {
+      "types": "./dist/adapters/memory/index.d.ts",
+      "import": "./dist/adapters/memory/index.mjs"
+    },
+    "./mongodb": {
+      "types": "./dist/adapters/mongodb/index.d.ts",
+      "import": "./dist/adapters/mongodb/index.mjs"
+    },
+    "./prisma": {
+      "types": "./dist/adapters/prisma/index.d.ts",
+      "import": "./dist/adapters/prisma/index.mjs"
+    },
+    "./create": {
+      "types": "./dist/adapters/create/index.d.ts",
+      "import": "./dist/adapters/create/index.mjs"
     },
     "./types": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/types/index.mjs"
+    },
+    "./db": {
+      "types": "./dist/db/index.d.ts",
+      "import": "./dist/db/index.mjs"
+    },
+    "./error": {
+      "types": "./dist/error/index.d.ts",
+      "import": "./dist/error/index.mjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.mjs"
     }
   },
   "module": "dist/index.mjs",
@@ -66,6 +98,7 @@
   },
   "dependencies": {
     "defu": "^6.1.4",
+    "pathe": "^2.0.3",
     "zod": "^3.24.2"
   },
   "devDependencies": {

@@ -113,7 +113,7 @@ You'll also need to install the specific database driver or ORM you plan to use.
 ### Basic Usage
 
 ```typescript
-import { memoryAdapter } from 'unadapter/adapters/memory'
+import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
 const db = {
@@ -125,7 +125,7 @@ const db = {
 const adapter = memoryAdapter(db)
 
 // Now you can use the adapter to perform database operations
-const user = await adapter.create({
+const user = await adapter({}).create({
   model: 'user',
   data: {
     name: 'John Doe',
@@ -177,13 +177,13 @@ await adapter.delete({
 
 ```typescript
 import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from 'unadapter/adapters/prisma'
+import { prismaAdapter } from 'unadapter/prisma'
 
 const prisma = new PrismaClient()
 const adapter = prismaAdapter(prisma)
 
 // Now you can use the same adapter interface with Prisma
-const user = await adapter.create({
+const user = await adapter({}).create({
   model: 'user',
   data: {
     name: 'Jane Doe',
@@ -199,7 +199,7 @@ const user = await adapter.create({
 
 ```typescript
 import { MongoClient } from 'mongodb'
-import { mongodbAdapter } from 'unadapter/adapters/mongodb'
+import { mongodbAdapter } from 'unadapter/mongodb'
 
 const client = new MongoClient('mongodb://localhost:27017')
 await client.connect()
@@ -208,7 +208,7 @@ const db = client.db('myDatabase')
 const adapter = mongodbAdapter(db)
 
 // Now you can use the same adapter interface with MongoDB
-const user = await adapter.create({
+const user = await adapter({}).create({
   model: 'user',
   data: {
     name: 'Alex Smith',
@@ -224,7 +224,7 @@ const user = await adapter.create({
 
 ```typescript
 import { drizzle } from 'drizzle-orm/...' // Import appropriate driver
-import { drizzleAdapter } from 'unadapter/adapters/drizzle'
+import { drizzleAdapter } from 'unadapter/drizzle'
 
 const db = drizzle(/* your DB connection */)
 const adapter = drizzleAdapter(db, {
@@ -233,7 +233,7 @@ const adapter = drizzleAdapter(db, {
 })
 
 // Now you can use the same adapter interface with Drizzle
-const user = await adapter.create({
+const user = await adapter({}).create({
   model: 'user',
   data: {
     name: 'Taylor Swift',
@@ -249,7 +249,7 @@ const user = await adapter.create({
 
 ```typescript
 import { Kysely } from 'kysely'
-import { kyselyAdapter } from 'unadapter/adapters/kysely'
+import { kyselyAdapter } from 'unadapter/kysely'
 
 const db = new Kysely(/* your DB connection */)
 const adapter = kyselyAdapter(db, {
@@ -258,7 +258,7 @@ const adapter = kyselyAdapter(db, {
 })
 
 // Now you can use the same adapter interface with Kysely
-const user = await adapter.create({
+const user = await adapter({}).create({
   model: 'user',
   data: {
     name: 'Chris Evans',
@@ -361,7 +361,7 @@ interface Where {
 You can create your own adapters using the `createAdapter` function:
 
 ```typescript
-import { createAdapter } from 'unadapter/adapters/create'
+import { createAdapter } from 'unadapter/create'
 
 const myCustomAdapter = createAdapter({
   config: {
