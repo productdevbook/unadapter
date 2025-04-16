@@ -1,4 +1,4 @@
-import type { BetterAuthOptions } from '../../../../types/index.ts'
+import type { BetterAuthOptions } from '../../../src/types/index.ts'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 import Database from 'better-sqlite3'
@@ -9,9 +9,9 @@ import * as tarn from 'tarn'
 import * as tedious from 'tedious'
 import { afterAll, beforeAll, describe } from 'vitest'
 
-import { getMigrations } from '../../../../db/get-migration.ts'
-import { runAdapterTest } from '../../../test.ts'
-import { kyselyAdapter } from '../../index.ts'
+import { kyselyAdapter } from '../../../src/adapters/kysely/index.ts'
+import { getMigrations } from '../../../src/db/get-migration.ts'
+import { runAdapterTest } from '../../test.ts'
 import { setState } from '../state.ts'
 
 const sqlite = new Database(path.join(__dirname, 'test.db'))

@@ -33,6 +33,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "include": ["src", "test", "playground"],
+  "include": ["src", "tests", "playground"],
   "exclude": ["node_modules", "dist"]
 }

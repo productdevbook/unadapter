@@ -1,6 +1,6 @@
 import { describe } from 'vitest'
-import { runAdapterTest, runNumberIdAdapterTest } from '../test.ts'
-import { memoryAdapter } from './memory-adapter.ts'
+import { memoryAdapter } from '../src/adapters/memory/memory-adapter.ts'
+import { runAdapterTest, runNumberIdAdapterTest } from './test.ts'
 
 describe('adapter test', async () => {
   const db = {

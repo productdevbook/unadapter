@@ -26,52 +26,52 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
     "./drizzle": {
-      "types": "./dist/adapters/drizzle/index.d.ts",
+      "types": "./dist/adapters/drizzle/index.d.mts",
       "import": "./dist/adapters/drizzle/index.mjs"
     },
     "./kysely": {
-      "types": "./dist/adapters/kysely/index.d.ts",
+      "types": "./dist/adapters/kysely/index.d.mts",
       "import": "./dist/adapters/kysely/index.mjs"
     },
     "./memory": {
-      "types": "./dist/adapters/memory/index.d.ts",
+      "types": "./dist/adapters/memory/index.d.mts",
       "import": "./dist/adapters/memory/index.mjs"
     },
     "./mongodb": {
-      "types": "./dist/adapters/mongodb/index.d.ts",
+      "types": "./dist/adapters/mongodb/index.d.mts",
       "import": "./dist/adapters/mongodb/index.mjs"
     },
     "./prisma": {
-      "types": "./dist/adapters/prisma/index.d.ts",
+      "types": "./dist/adapters/prisma/index.d.mts",
       "import": "./dist/adapters/prisma/index.mjs"
     },
     "./create": {
-      "types": "./dist/adapters/create/index.d.ts",
+      "types": "./dist/adapters/create/index.d.mts",
       "import": "./dist/adapters/create/index.mjs"
     },
     "./types": {
-      "types": "./dist/types/index.d.ts",
+      "types": "./dist/types/index.d.mts",
       "import": "./dist/types/index.mjs"
     },
     "./db": {
-      "types": "./dist/db/index.d.ts",
+      "types": "./dist/db/index.d.mts",
       "import": "./dist/db/index.mjs"
     },
     "./error": {
-      "types": "./dist/error/index.d.ts",
+      "types": "./dist/error/index.d.mts",
       "import": "./dist/error/index.mjs"
     },
     "./utils": {
-      "types": "./dist/utils/index.d.ts",
+      "types": "./dist/utils/index.d.mts",
       "import": "./dist/utils/index.mjs"
     }
   },
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "types": "dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -89,8 +89,8 @@
     "test:coverage": "vitest run --coverage.enabled true",
     "test:coverage:badges": "vitest run --coverage.enabled true && node scripts/update-badges.mjs",
     "update:badges": "node scripts/update-badges.mjs",
-    "prisma:normal:push": "prisma db push --schema src/adapters/prisma/test/normal-tests/schema.prisma --accept-data-loss",
-    "prisma:number-id:push": "prisma db push --schema src/adapters/prisma/test/number-id-tests/schema.prisma --accept-data-loss",
+    "prisma:normal:push": "prisma db push --schema tests/prisma/normal-tests/schema.prisma --accept-data-loss",
+    "prisma:number-id:push": "prisma db push --schema tests/prisma/number-id-tests/schema.prisma --accept-data-loss",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test",
     "bumpp": "bumpp package.json",

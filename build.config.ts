@@ -1,4 +1,4 @@
-import { glob, readFile, writeFile } from 'node:fs/promises'
+import { glob, readFile, rm, writeFile } from 'node:fs/promises'
 import { resolve } from 'pathe'
 import { defineBuildConfig } from 'unbuild'
 import packagejson from './package.json'
@@ -39,9 +39,10 @@ export default defineBuildConfig({
           )
           .replaceAll(
             /\.ts(?!\.d\.ts)/g,
-            () => `.d.ts`,
+            () => `.mjs`,
           )
-        await writeFile(file, mjsContents)
+        await writeFile(file.replace(/\.d.ts$/, '.d.mts'), mjsContents)
+        await rm(file)
       }
 
       for await (const file of glob(resolve(ctx.options.outDir, '**/*.mjs'))) {

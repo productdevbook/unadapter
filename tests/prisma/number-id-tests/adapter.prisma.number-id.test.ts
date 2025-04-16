@@ -1,6 +1,6 @@
 import * as fs from 'node:fs'
 import { beforeAll, describe } from 'vitest'
-import { runNumberIdAdapterTest } from '../../../test.ts'
+import { runNumberIdAdapterTest } from '../../test.ts'
 import { pushPrismaSchema } from '../push-schema.ts'
 import { getState, stateFilePath } from '../state.ts'
 import { createTestOptions } from '../test-options.ts'

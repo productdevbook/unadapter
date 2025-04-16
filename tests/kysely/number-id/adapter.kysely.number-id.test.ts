@@ -1,4 +1,4 @@
-import type { BetterAuthOptions } from '../../../../types/index.ts'
+import type { BetterAuthOptions } from '../../../src/types/index.ts'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
@@ -7,9 +7,9 @@ import merge from 'deepmerge'
 import { Kysely, MysqlDialect, SqliteDialect } from 'kysely'
 import { createPool } from 'mysql2/promise'
 import { afterAll, beforeAll, describe } from 'vitest'
-import { getMigrations } from '../../../../db/get-migration.ts'
-import { runNumberIdAdapterTest } from '../../../test.ts'
-import { kyselyAdapter } from '../../index.ts'
+import { kyselyAdapter } from '../../../src/adapters/kysely/index.ts'
+import { getMigrations } from '../../../src/db/get-migration.ts'
+import { runNumberIdAdapterTest } from '../../test.ts'
 import { getState, stateFilePath } from '../state.ts'
 
 export function opts({

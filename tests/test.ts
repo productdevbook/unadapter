@@ -1,4 +1,4 @@
-import type { Adapter, BetterAuthOptions, User } from '../types/index.ts'
+import type { Adapter, BetterAuthOptions, User } from '../src/types/index.ts'
 import { beforeAll, describe, expect, test } from 'vitest'
 
 interface AdapterTestOptions {

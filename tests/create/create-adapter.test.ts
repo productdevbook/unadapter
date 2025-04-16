@@ -1,9 +1,9 @@
 /* eslint-disable style/no-mixed-spaces-and-tabs */
 /* eslint-disable style/no-tabs */
-import type { BetterAuthOptions, User, Where } from '../../../types/index.ts'
-import type { AdapterConfig, CreateCustomAdapter } from '../types.ts'
+import type { AdapterConfig, CreateCustomAdapter } from '../../src/adapters/create/types.ts'
+import type { BetterAuthOptions, User, Where } from '../../src/types/index.ts'
 import { describe, expect, it } from 'vitest'
-import { createAdapter } from '../index.ts'
+import { createAdapter } from '../../src/adapters/create/index.ts'
 
 /*
 

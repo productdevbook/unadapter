@@ -1,8 +1,8 @@
 import { MongoClient } from 'mongodb'
 
 import { beforeAll, describe } from 'vitest'
-import { runAdapterTest } from '../test.ts'
-import { mongodbAdapter } from './index.ts'
+import { mongodbAdapter } from '../src/adapters/mongodb/index.ts'
+import { runAdapterTest } from './test.ts'
 
 describe('adapter test', async () => {
   const dbClient = async (connectionString: string, dbName: string) => {

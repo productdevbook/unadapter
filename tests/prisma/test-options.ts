@@ -1,4 +1,4 @@
-import type { Adapter, BetterAuthOptions } from '../../../types/index.ts'
+import type { Adapter, BetterAuthOptions } from '../../src/types/index.ts'
 
 export function createTestOptions(adapter: (options: BetterAuthOptions) => Adapter, useNumberId = false) {
   return ({

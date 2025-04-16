@@ -1,5 +1,5 @@
 import { beforeAll, describe } from 'vitest'
-import { runAdapterTest } from '../../../test.ts'
+import { runAdapterTest } from '../../test.ts'
 import { pushPrismaSchema } from '../push-schema.ts'
 import { setState } from '../state.ts'
 import { createTestOptions } from '../test-options.ts'
