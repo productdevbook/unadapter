@@ -34,17 +34,20 @@ export default defineBuildConfig({
   hooks: {
     'build:done': async function (ctx) {
       for await (const file of glob(resolve(ctx.options.outDir, '**/*.d.ts'))) {
-        const dtsContents = (await readFile(file, 'utf8')).replaceAll(
-          /from ['"]\.\/([^'"]+?)(?:\.ts)?['"];?\s*$/gm,
-          (_, relativePath) => ` from "./${relativePath}.mjs";`,
+        const mjsContents = (await readFile(file, 'utf8')).replaceAll(
+          /from\s+['"](\.\.?\/[^'"]+?)\.ts['"]/g,
+          (_, relativePath) => `from "${relativePath}.d.ts"`,
+        ).replaceAll(
+          /^(\s*)export\s+\*\s+from\s+['"](\.\.?\/[^'"]+?)\.d\.ts['"]/gm,
+          (_, type, relativePath) => `export type * from "${relativePath}.d.ts"`,
         )
-        await writeFile(file.replace(/\.d.ts$/, '.d.mts'), dtsContents)
+        await writeFile(file, mjsContents)
       }
 
       for await (const file of glob(resolve(ctx.options.outDir, '**/*.mjs'))) {
         const mjsContents = (await readFile(file, 'utf8')).replaceAll(
-          /from ['"]\.\/([^'"]+?)(?:\.ts)?['"];?\s*$/gm,
-          (_, relativePath) => ` from "./${relativePath}.mjs";`,
+          /from\s+['"](\.\.?\/[^'"]+?)\.ts['"]/g,
+          (_, relativePath) => `from "${relativePath}.mjs"`,
         )
         await writeFile(file, mjsContents)
       }
