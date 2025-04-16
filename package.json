@@ -1,7 +1,7 @@
 {
   "name": "unadapter",
   "type": "module",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "private": false,
   "packageManager": "pnpm@10.8.1",
   "description": "A modular adapter layer for working with any database (Drizzle, Prisma, MongoDB, Kysely & more)",
