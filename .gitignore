@@ -209,3 +209,4 @@ android/
 .vinxi
 # Turborepo
 .turbo
+!__snapshots__
