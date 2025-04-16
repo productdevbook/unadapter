@@ -177,7 +177,7 @@ await adapter.delete({
 
 ```typescript
 import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from 'unadapter/adapters/prisma-adapter'
+import { prismaAdapter } from 'unadapter/adapters/prisma'
 
 const prisma = new PrismaClient()
 const adapter = prismaAdapter(prisma)
@@ -361,11 +361,11 @@ interface Where {
 You can create your own adapters using the `createAdapter` function:
 
 ```typescript
-import { createAdapter } from 'unadapter/adapters/create-adapter'
+import { createAdapter } from 'unadapter/adapters/create'
 
 const myCustomAdapter = createAdapter({
   config: {
-    adapterId: 'my-custom-adapter',
+    adapterId: 'my-custom',
     adapterName: 'My Custom Adapter',
     usePlural: false,
     supportsJSON: true,
