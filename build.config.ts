@@ -34,10 +34,6 @@ export default defineBuildConfig({
       for await (const file of glob(resolve(ctx.options.outDir, '**/*.d.ts'))) {
         const mjsContents = (await readFile(file, 'utf8'))
           .replaceAll(
-            /^\s*export\s+\*\s+from\s+['"]([^'"]+)['"]/gm,
-            (_, relativePath) => `export type * from "${relativePath}"`,
-          )
-          .replaceAll(
             /\.ts(?!\.d\.ts)/g,
             () => `.mjs`,
           )
