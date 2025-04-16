@@ -1,9 +1,8 @@
-import type { BetterAuthOptions } from '../types/index.ts'
+import type { AnyOptions } from '../types/index.ts'
 import type { FieldAttribute } from './index.ts'
-import { getAuthTables } from './index.ts'
+import type { UnDbSchema } from './get-tables.ts'
 
-export function getSchema(config: BetterAuthOptions) {
-  const tables = getAuthTables(config)
+export function getSchema(config: AnyOptions, tables: UnDbSchema) {
   const schema: Record<
     string,
     {

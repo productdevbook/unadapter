@@ -1,31 +1,23 @@
 import type { Dialect } from 'kysely'
-import type { BetterAuthOptions } from '../../types/index.ts'
+import type { AnyOptions } from '../../types/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
 import { Kysely, MssqlDialect, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
 
 function getDatabaseType(
-  db: BetterAuthOptions['database'],
+  db: AnyOptions['database'],
 ): KyselyDatabaseType | null {
   if (!db) {
     return null
   }
-  if ('dialect' in db) {
-    return getDatabaseType(db.dialect as Dialect)
+
+  if ('type' in db) {
+    return db.type
   }
+
   if ('createDriver' in db) {
-    if (db instanceof SqliteDialect) {
-      return 'sqlite'
-    }
-    if (db instanceof MysqlDialect) {
-      return 'mysql'
-    }
-    if (db instanceof PostgresDialect) {
-      return 'postgres'
-    }
-    if (db instanceof MssqlDialect) {
-      return 'mssql'
-    }
+    return 'pg'
   }
+
   if ('aggregate' in db) {
     return 'sqlite'
   }
@@ -33,14 +25,15 @@ function getDatabaseType(
   if ('getConnection' in db) {
     return 'mysql'
   }
+
   if ('connect' in db) {
-    return 'postgres'
+    return 'pg'
   }
 
   return null
 }
 
-export async function createKyselyAdapter(config: BetterAuthOptions) {
+export async function createKyselyAdapter(config: AnyOptions) {
   const db = config.database
 
   if (!db) {

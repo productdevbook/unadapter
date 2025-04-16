@@ -1,5 +1,5 @@
 import type { Account, User } from '../types/index.ts'
-import type { BetterAuthOptions } from '../types/options.ts'
+import type { AnyOptions } from '../types/options.ts'
 import type { AuthPluginSchema } from '../types/plugins.ts'
 import type { FieldAttribute } from './index.ts'
 import { z } from 'zod'
@@ -73,7 +73,7 @@ export function parseOutputData<T extends Record<string, any>>(
   return parsedData as T
 }
 
-export function getAllFields(options: BetterAuthOptions, table: string) {
+export function getAllFields(options: AnyOptions, table: string) {
   let schema: Record<string, FieldAttribute> = {
     ...(table === 'user' ? options.user?.additionalFields : {}),
   }
@@ -88,13 +88,13 @@ export function getAllFields(options: BetterAuthOptions, table: string) {
   return schema
 }
 
-export function parseUserOutput(options: BetterAuthOptions, user: User) {
+export function parseUserOutput(options: AnyOptions, user: User) {
   const schema = getAllFields(options, 'user')
   return parseOutputData(user, { fields: schema })
 }
 
 export function parseAccountOutput(
-  options: BetterAuthOptions,
+  options: AnyOptions,
   account: Account,
 ) {
   const schema = getAllFields(options, 'account')
@@ -150,7 +150,7 @@ export function parseInputData<T extends Record<string, any>>(
 }
 
 export function parseUserInput(
-  options: BetterAuthOptions,
+  options: AnyOptions,
   user?: Record<string, any>,
   action?: 'create' | 'update',
 ) {
@@ -159,7 +159,7 @@ export function parseUserInput(
 }
 
 export function parseAdditionalUserInput(
-  options: BetterAuthOptions,
+  options: AnyOptions,
   user?: Record<string, any>,
 ) {
   const schema = getAllFields(options, 'user')
@@ -167,7 +167,7 @@ export function parseAdditionalUserInput(
 }
 
 export function parseAccountInput(
-  options: BetterAuthOptions,
+  options: AnyOptions,
   account: Partial<Account>,
 ) {
   const schema = getAllFields(options, 'account')

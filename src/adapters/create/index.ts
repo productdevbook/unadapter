@@ -1,5 +1,5 @@
 import type { FieldAttribute } from '../../db/index.ts'
-import type { Adapter, BetterAuthOptions, Where } from '../../types/index.ts'
+import type { Adapter, AnyOptions, Where } from '../../types/index.ts'
 import type {
   AdapterConfig,
   AdapterTestDebugLogs,
@@ -7,7 +7,7 @@ import type {
   CreateCustomAdapter,
 } from './types.ts'
 import { withApplyDefault } from '../utils.ts'
-import { getAuthTables } from '../../db/get-tables.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import { generateId as defaultGenerateId, logger } from '../../utils/index.ts'
 import { safeJSONParse } from '../../utils/json.ts'
 
@@ -53,7 +53,7 @@ export function createAdapter({
   config: AdapterConfig
   adapter: CreateCustomAdapter
 }) {
-  return (options: BetterAuthOptions): Adapter => {
+  return (options: AnyOptions, schema: UnDbSchema): Adapter => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,
@@ -138,7 +138,7 @@ export function createAdapter({
     }
 
     // End-user's Better-Auth instance's schema
-    const schema = getAuthTables(options)
+    // Using the externally provided schema
 
     /**
      * This function helps us get the default model name from the schema defined by devs.
@@ -911,13 +911,14 @@ export function createAdapter({
       },
       createSchema: adapterInstance.createSchema
         ? async (_, file) => {
-          const tables = getAuthTables(options)
+          // Using the externally provided schema
+          // No longer calling getAuthTables(options)
 
           // TODO: better-auth options.secondaryStorage callback support
 
           // TODO: better-auth options.rateLimit callback support
 
-          return adapterInstance.createSchema!({ file, tables })
+          return adapterInstance.createSchema!({ file, tables: schema })
         }
         : undefined,
       options: {
