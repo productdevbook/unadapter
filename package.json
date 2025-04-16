@@ -54,6 +54,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage.enabled true",
+    "test:coverage:badges": "vitest run --coverage.enabled true && node scripts/update-badges.mjs",
+    "update:badges": "node scripts/update-badges.mjs",
     "prisma:normal:push": "prisma db push --schema src/adapters/prisma-adapter/test/normal-tests/schema.prisma --accept-data-loss",
     "prisma:number-id:push": "prisma db push --schema src/adapters/prisma-adapter/test/number-id-tests/schema.prisma --accept-data-loss",
     "prepare": "npm run build",

@@ -7,8 +7,15 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
-[![JSDocs][jsdocs-src]][jsdocs-href]
+[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
 [![License][license-src]][license-href]
+[![JSDocs][jsdocs-src]][jsdocs-href]
+
+### Test Coverage
+![Lines](https://img.shields.io/badge/Lines-80.65%25-green)
+![Statements](https://img.shields.io/badge/Statements-80.65%25-green)
+![Functions](https://img.shields.io/badge/Functions-79.62%25-yellowgreen)
+![Branches](https://img.shields.io/badge/Branches-78.52%25-yellowgreen)
 
 **A universal adapter interface for connecting various databases and ORMs with a standardized API.**
 
