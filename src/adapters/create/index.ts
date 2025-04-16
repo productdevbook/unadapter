@@ -6,7 +6,7 @@ import type {
   CleanedWhere,
   CreateCustomAdapter,
 } from './types.ts'
-import { withApplyDefault } from '../../adapters/utils.ts'
+import { withApplyDefault } from '../utils.ts'
 import { getAuthTables } from '../../db/get-tables.ts'
 import { generateId as defaultGenerateId, logger } from '../../utils/index.ts'
 import { safeJSONParse } from '../../utils/json.ts'

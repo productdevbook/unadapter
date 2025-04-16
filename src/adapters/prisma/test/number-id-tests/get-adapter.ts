@@ -10,11 +10,6 @@ export function getAdapter() {
       await db.$executeRaw`DELETE FROM sqlite_sequence WHERE name = 'User'`
     }
     catch {}
-    try {
-      // it's `sessions` not `session` because our `createTestOptions` uses `modelName: "sessions"`
-      await db.$executeRaw`DELETE FROM sqlite_sequence WHERE name = 'Sessions'`
-    }
-    catch {}
   }
 
   const adapter = prismaAdapter(db, {

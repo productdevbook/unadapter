@@ -1,1 +1,1 @@
-export * from './create-adapter/index.ts'
+export * from './create/index.ts'

@@ -1,8 +1,8 @@
 import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from 'kysely'
 import type { Where } from '../../types/index.ts'
-import type { AdapterDebugLogs } from '../create-adapter/index.ts'
+import type { AdapterDebugLogs } from '../create/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
-import { createAdapter } from '../create-adapter/index.ts'
+import { createAdapter } from '../create/index.ts'
 
 interface KyselyAdapterConfig {
   /**

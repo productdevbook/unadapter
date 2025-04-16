@@ -2,10 +2,10 @@ import type {
   AlterTableColumnAlteringBuilder,
   CreateTableBuilder,
 } from 'kysely'
-import type { KyselyDatabaseType } from '../adapters/kysely-adapter/types.ts'
+import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type { BetterAuthOptions } from '../types/index.ts'
 import type { FieldAttribute, FieldType } from './index.ts'
-import { createKyselyAdapter } from '../adapters/kysely-adapter/dialect.ts'
+import { createKyselyAdapter } from '../adapters/kysely/dialect.ts'
 import { createLogger } from '../utils/logger.ts'
 import { getSchema } from './get-schema.ts'
 
