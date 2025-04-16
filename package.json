@@ -29,9 +29,29 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs"
     },
-    "./adapters/*": {
-      "types": "./dist/adapters/*.d.ts",
-      "import": "./dist/adapters/*.mjs"
+    "./adapters/drizzle": {
+      "types": "./dist/adapters/drizzle/index.d.ts",
+      "import": "./dist/adapters/drizzle/index.mjs"
+    },
+    "./adapters/kysely": {
+      "types": "./dist/adapters/kysely/index.d.ts",
+      "import": "./dist/adapters/kysely/index.mjs"
+    },
+    "./adapters/memory": {
+      "types": "./dist/adapters/memory/index.d.ts",
+      "import": "./dist/adapters/memory/index.mjs"
+    },
+    "./adapters/mongodb": {
+      "types": "./dist/adapters/mongodb/index.d.ts",
+      "import": "./dist/adapters/mongodb/index.mjs"
+    },
+    "./adapters/prisma": {
+      "types": "./dist/adapters/prisma/index.d.ts",
+      "import": "./dist/adapters/prisma/index.mjs"
+    },
+    "./adapters/create": {
+      "types": "./dist/adapters/create/index.d.ts",
+      "import": "./dist/adapters/create/index.mjs"
     },
     "./types": {
       "types": "./dist/types/index.d.ts",
