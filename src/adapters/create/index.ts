@@ -1,3 +1,4 @@
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { FieldAttribute } from '../../db/index.ts'
 import type { Adapter, AnyOptions, Where } from '../../types/index.ts'
 import type {
@@ -6,10 +7,9 @@ import type {
   CleanedWhere,
   CreateCustomAdapter,
 } from './types.ts'
-import { withApplyDefault } from '../utils.ts'
-import type { UnDbSchema } from '../../db/get-tables.ts'
 import { generateId as defaultGenerateId, logger } from '../../utils/index.ts'
 import { safeJSONParse } from '../../utils/json.ts'
+import { withApplyDefault } from '../utils.ts'
 
 export * from './types.ts'
 

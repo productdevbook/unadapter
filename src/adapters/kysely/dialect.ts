@@ -1,7 +1,7 @@
 import type { Dialect } from 'kysely'
 import type { AnyOptions } from '../../types/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
-import { Kysely, MssqlDialect, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
+import { Kysely, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
 
 function getDatabaseType(
   db: AnyOptions['database'],

@@ -1,7 +1,7 @@
 import type { Db } from 'mongodb'
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { Adapter, AnyOptions, Where } from '../../types/index.ts'
 import { ObjectId } from 'mongodb'
-import type { UnDbSchema } from '../../db/get-tables.ts'
 import { withApplyDefault } from '../utils.ts'
 
 function createTransform(options: AnyOptions, schema: UnDbSchema) {

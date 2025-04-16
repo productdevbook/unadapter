@@ -1,6 +1,6 @@
 import type { AnyOptions } from '../types/index.ts'
-import type { FieldAttribute } from './index.ts'
 import type { UnDbSchema } from './get-tables.ts'
+import type { FieldAttribute } from './index.ts'
 
 export function getSchema(config: AnyOptions, tables: UnDbSchema) {
   const schema: Record<

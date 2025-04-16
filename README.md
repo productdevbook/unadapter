@@ -108,14 +108,13 @@ You'll also need to install the specific database driver or ORM you plan to use.
 - 📊 Support for various data types across different database systems
 - 🏗️ Fully customizable schema definition
 
-
 ## 🚀 Getting Started
 
 ### Basic Usage
 
 ```typescript
-import { memoryAdapter } from 'unadapter/memory'
 import { UnDbSchema } from 'unadapter'
+import { memoryAdapter } from 'unadapter/memory'
 
 // Define a basic schema
 const schema: UnDbSchema = {
@@ -133,8 +132,8 @@ const schema: UnDbSchema = {
   session: {
     modelName: 'session',
     fields: {
-      userId: { 
-        type: 'string', 
+      userId: {
+        type: 'string',
         required: true,
         references: {
           model: 'user',
@@ -344,47 +343,47 @@ When defining your schema, you can use the following field types and attributes:
 ```typescript
 interface FieldAttribute {
   // The type of the field
-  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array';
-  
+  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array'
+
   // Whether this field is required
-  required?: boolean;
-  
+  required?: boolean
+
   // Whether this field should be unique
-  unique?: boolean;
-  
+  unique?: boolean
+
   // The actual column/field name in the database
-  fieldName?: string;
-  
+  fieldName?: string
+
   // Whether this field can be sorted
-  sortable?: boolean;
-  
+  sortable?: boolean
+
   // Default value function
-  defaultValue?: () => any;
-  
+  defaultValue?: () => any
+
   // Reference to another model (for foreign keys)
   references?: {
-    model: string;
-    field: string;
-    onDelete?: 'cascade' | 'set null' | 'restrict';
-  };
-  
+    model: string
+    field: string
+    onDelete?: 'cascade' | 'set null' | 'restrict'
+  }
+
   // Custom transformations
   transform?: {
-    input?: (value: any) => any;
-    output?: (value: any) => any;
-  };
-  
+    input?: (value: any) => any
+    output?: (value: any) => any
+  }
+
   // Custom validators
   validator?: {
-    input?: any;
-    output?: any;
-  };
-  
+    input?: any
+    output?: any
+  }
+
   // Whether this field should be returned in queries
-  returned?: boolean;
-  
+  returned?: boolean
+
   // Whether this field can be used in input operations
-  input?: boolean;
+  input?: boolean
 }
 ```
 
@@ -392,8 +391,8 @@ interface FieldAttribute {
 
 ```typescript
 import { MongoClient } from 'mongodb'
-import { mongodbAdapter } from 'unadapter/mongodb'
 import { UnDbSchema } from 'unadapter'
+import { mongodbAdapter } from 'unadapter/mongodb'
 
 // Define your schema
 const mySchema: UnDbSchema = {
@@ -445,8 +444,8 @@ const user = await adapter.create({
 
 ```typescript
 import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from 'unadapter/prisma'
 import { UnDbSchema } from 'unadapter'
+import { prismaAdapter } from 'unadapter/prisma'
 
 // Define your schema
 const mySchema: UnDbSchema = {
@@ -511,6 +510,112 @@ const user = await adapter.create({
 })
 ```
 
+### Creating Custom Adapters
+
+You can create your own adapters using the `createAdapter` function:
+
+```typescript
+import { UnDbSchema } from 'unadapter'
+import { createAdapter } from 'unadapter/create'
+
+// Define a schema
+const mySchema: UnDbSchema = {
+  user: {
+    modelName: 'user',
+    fields: {
+      name: { type: 'string', required: true },
+      email: { type: 'string', required: true, unique: true },
+      createdAt: { type: 'date', defaultValue: () => new Date() }
+    },
+    order: 1
+  }
+}
+
+// Define options
+const options = {
+  user: {
+    fields: {},
+    additionalFields: {}
+  },
+  advanced: {
+    database: {
+      useNumberId: false
+    }
+  }
+}
+
+const myCustomAdapter = createAdapter({
+  config: {
+    adapterId: 'my-custom',
+    adapterName: 'My Custom Adapter',
+    usePlural: false,
+    supportsJSON: true,
+    supportsDates: true,
+    supportsBooleans: true
+  },
+  adapter: ({ options, schema, getModelName, getFieldName }) => {
+    // Your custom database implementation
+    const db = {
+      user: []
+    }
+
+    // Implement adapter methods
+    return {
+      async create({ model, data }) {
+        // Add ID if not present
+        const record = { id: crypto.randomUUID(), ...data }
+        db[getModelName(model)].push(record)
+        return record
+      },
+
+      async findOne({ model, where, select }) {
+        const modelName = getModelName(model)
+        const records = db[modelName]
+        return records.find((record) => {
+          return where.every((condition) => {
+            const { field, value, operator = 'eq' } = condition
+            const fieldName = getFieldName({ model, field })
+            if (operator === 'eq')
+              return record[fieldName] === value
+            // Implement other operators as needed
+            return false
+          })
+        }) || null
+      },
+
+      async findMany({ model, where, limit, sortBy, offset }) {
+        // Your implementation here
+        return []
+      },
+
+      async update({ model, where, update }) {
+        // Your implementation here
+        return null
+      },
+
+      async updateMany({ model, where, update }) {
+        // Your implementation here
+        return 0
+      },
+
+      async delete({ model, where }) {
+        // Your implementation here
+      },
+
+      async deleteMany({ model, where }) {
+        // Your implementation here
+        return 0
+      },
+
+      async count({ model, where }) {
+        // Your implementation here
+        return 0
+      }
+    }
+  }
+})(options, mySchema)
+```
+
 ## 🔍 API Reference
 
 ### Adapter Interface
@@ -520,21 +625,21 @@ All adapters implement the following interface:
 ```typescript
 interface Adapter {
   id: string;
-  
+
   // Create a new record
   create<T>({
     model: string,
     data: Omit<T, 'id'>,
     select?: string[]
   }): Promise<T>;
-  
+
   // Find a single record
   findOne<T>({
     model: string,
     where: Where[],
     select?: string[]
   }): Promise<T | null>;
-  
+
   // Find multiple records
   findMany<T>({
     model: string,
@@ -546,39 +651,39 @@ interface Adapter {
     },
     offset?: number
   }): Promise<T[]>;
-  
+
   // Update a record
   update<T>({
     model: string,
     where: Where[],
     update: Record<string, any>
   }): Promise<T | null>;
-  
+
   // Update multiple records
   updateMany({
     model: string,
     where: Where[],
     update: Record<string, any>
   }): Promise<number>;
-  
+
   // Delete a record
   delete({
     model: string,
     where: Where[]
   }): Promise<void>;
-  
+
   // Delete multiple records
   deleteMany({
     model: string,
     where: Where[]
   }): Promise<number>;
-  
+
   // Count records
   count({
     model: string,
     where?: Where[]
   }): Promise<number>;
-  
+
   // Additional options
   options?: Record<string, any>;
 }
@@ -590,58 +695,11 @@ The `Where` interface is used for filtering records:
 
 ```typescript
 interface Where {
-  field: string;
-  value?: any;
-  operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains' | 'starts_with' | 'ends_with';
-  connector?: 'AND' | 'OR';
+  field: string
+  value?: any
+  operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains' | 'starts_with' | 'ends_with'
+  connector?: 'AND' | 'OR'
 }
-```
-
-### Creating Custom Adapters
-
-You can create your own adapters using the `createAdapter` function:
-
-```typescript
-import { createAdapter } from 'unadapter/create'
-
-const myCustomAdapter = createAdapter config: {
-    adapterId: 'my-custom',
-    adapterName: 'My Custom Adapter',
-    usePlural: false,
-    supportsJSON: true,
-    supportsDates: true,
-    supportsBooleans: true
-  },
-  adapter: ({ options, schema }) => {
-    // Implement adapter methods
-    return {
-      async create({ model, data }) {
-        // Your implementation here
-      },
-      async findOne({ model, where, select }) {
-        // Your implementation here
-      },
-      async findMany({ model, where, limit, sortBy, offset }) {
-        // Your implementation here
-      },
-      async update({ model, where, update }) {
-        // Your implementation here
-      },
-      async updateMany({ model, where, update }) {
-        // Your implementation here
-      },
-      async delete({ model, where }) {
-        // Your implementation here
-      },
-      async deleteMany({ model, where }) {
-        // Your implementation here
-      },
-      async count({ model, where }) {
-        // Your implementation here
-      }
-    }
-  }
-})
 ```
 
 ## 🤝 Contributing
@@ -657,7 +715,6 @@ This project draws inspiration and core concepts from:
 ## 📝 License
 
 See the [LICENSE](LICENSE) file for details.
-
 
 <hr />
 
