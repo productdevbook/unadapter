@@ -7,26 +7,6 @@ import type {
 } from '../types/index.ts'
 import type { AdapterInstance } from './adapter.ts'
 
-/**
- * Database connection types
- */
-export type DatabaseConnection =
-  | PostgresPool
-  | MysqlPool
-  | Database
-  | Dialect
-  | AdapterInstance
-  | {
-    dialect: Dialect
-    type: KyselyDatabaseType
-    casing?: 'snake' | 'camel'
-  }
-  | {
-    db: Kysely<any>
-    type: KyselyDatabaseType
-    casing?: 'snake' | 'camel'
-  }
-
 export interface UnOptions {}
 
 export interface AnyOptions extends UnOptions {
@@ -77,4 +57,37 @@ export interface AnyOptions extends UnOptions {
       size?: number
     }) => string) | false
   }
+
+  database?:
+    | PostgresPool
+    | MysqlPool
+    | Database
+    | Dialect
+    | AdapterInstance
+    | {
+      dialect: Dialect
+      type: KyselyDatabaseType
+      /**
+       * casing for table names
+       *
+       * @default "camel"
+       */
+      casing?: 'snake' | 'camel'
+    }
+    | {
+    /**
+     * Kysely instance
+     */
+      db: Kysely<any>
+      /**
+       * Database type between postgres, mysql and sqlite
+       */
+      type: KyselyDatabaseType
+      /**
+       * casing for table names
+       *
+       * @default "camel"
+       */
+      casing?: 'snake' | 'camel'
+    }
 }

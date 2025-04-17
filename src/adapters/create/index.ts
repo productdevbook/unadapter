@@ -46,14 +46,16 @@ const colors = {
   },
 }
 
-export function createAdapter({
+export function createAdapter<T extends AnyOptions>({
   adapter,
   config: cfg,
+  schema,
 }: {
   config: AdapterConfig
   adapter: CreateCustomAdapter
+  schema: UnDbSchema
 }) {
-  return (options: AnyOptions, schema: UnDbSchema): Adapter => {
+  return (options: T): Adapter => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,
@@ -136,9 +138,6 @@ export function createAdapter({
         `[${config.adapterName}] Your database or database adapter does not support numeric ids. Please disable "useNumberId" in your config.`,
       )
     }
-
-    // End-user's Better-Auth instance's schema
-    // Using the externally provided schema
 
     /**
      * This function helps us get the default model name from the schema defined by devs.
@@ -911,9 +910,6 @@ export function createAdapter({
       },
       createSchema: adapterInstance.createSchema
         ? async (_, file) => {
-          // Using the externally provided schema
-          // No longer calling getAuthTables(options)
-
           // TODO: better-auth options.secondaryStorage callback support
 
           // TODO: better-auth options.rateLimit callback support

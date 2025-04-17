@@ -1,7 +1,7 @@
 import type { Dialect } from 'kysely'
 import type { AnyOptions } from '../../types/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
-import { Kysely, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
+import { Kysely, MssqlDialect, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
 
 function getDatabaseType(
   db: AnyOptions['database'],
@@ -9,15 +9,23 @@ function getDatabaseType(
   if (!db) {
     return null
   }
-
-  if ('type' in db) {
-    return db.type
+  if ('dialect' in db) {
+    return getDatabaseType(db.dialect as Dialect)
   }
-
   if ('createDriver' in db) {
-    return 'pg'
+    if (db instanceof SqliteDialect) {
+      return 'sqlite'
+    }
+    if (db instanceof MysqlDialect) {
+      return 'mysql'
+    }
+    if (db instanceof PostgresDialect) {
+      return 'postgres'
+    }
+    if (db instanceof MssqlDialect) {
+      return 'mssql'
+    }
   }
-
   if ('aggregate' in db) {
     return 'sqlite'
   }
@@ -25,9 +33,8 @@ function getDatabaseType(
   if ('getConnection' in db) {
     return 'mysql'
   }
-
   if ('connect' in db) {
-    return 'pg'
+    return 'postgres'
   }
 
   return null
