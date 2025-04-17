@@ -123,7 +123,7 @@ const db = {
 }
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'user',
@@ -167,7 +167,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 // Initialize the adapter
 const createAdapter = memoryAdapter(
   db,
-  getAdapter,
+  getTables,
   {} // Additional adapter options
 )
 
@@ -238,7 +238,7 @@ const db = {
 }
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'users', // The actual table/collection name in your database
@@ -329,7 +329,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 // Initialize the adapter
 const createAdapter = memoryAdapter(
   db,
-  getAdapter,
+  getTables,
   {} // Additional adapter options
 )
 
@@ -422,7 +422,7 @@ await client.connect()
 const db = client.db('myDatabase')
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'users',
@@ -455,7 +455,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 }
 
 // Initialize the adapter
-const createAdapter = mongodbAdapter(db, getAdapter)
+const createAdapter = mongodbAdapter(db, getTables)
 
 // Create an adapter instance with options
 const adapter = createAdapter({
@@ -488,7 +488,7 @@ import { prismaAdapter } from 'unadapter/prisma'
 const prisma = new PrismaClient()
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'User', // Match your Prisma model name (case-sensitive)
@@ -554,7 +554,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 // Initialize the adapter
 const createAdapter = prismaAdapter(
   prisma,
-  getAdapter,
+  getTables,
   {
     provider: 'postgresql',
     debugLogs: true,
@@ -596,7 +596,7 @@ const pool = mysql.createPool({
 const db = drizzle(pool)
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'users',
@@ -656,7 +656,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 // Initialize the adapter
 const createAdapter = drizzleAdapter(
   db,
-  getAdapter,
+  getTables,
   {
     provider: 'mysql',
     defaultSchema: 'myapp'
@@ -708,7 +708,7 @@ const db = new Kysely({
 })
 
 // Define a schema builder function
-function getAdapter(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions): UnDbSchema {
   return {
     user: {
       modelName: 'users',
@@ -784,7 +784,7 @@ function getAdapter(options: AdapterOptions): UnDbSchema {
 // Initialize the adapter
 const createAdapter = kyselyAdapter(
   db,
-  getAdapter,
+  getTables,
   {
     defaultSchema: 'public'
   }
