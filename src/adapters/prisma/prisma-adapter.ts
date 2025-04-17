@@ -1,4 +1,5 @@
-import type { Where } from '../../types/index.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
+import type { AdapterOptions, Where } from '../../types/index.ts'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import { BetterAuthError } from '../../error/index.ts'
 import { createAdapter } from '../create/index.ts'
@@ -43,8 +44,13 @@ interface PrismaClientInternal {
   }
 }
 
-export function prismaAdapter(prisma: PrismaClient, config: PrismaConfig) {
+export function prismaAdapter<T extends Record<string, any>>(
+  prisma: PrismaClient,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  config: PrismaConfig,
+) {
   return createAdapter({
+    getTables,
     config: {
       adapterId: 'prisma',
       adapterName: 'Prisma Adapter',

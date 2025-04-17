@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { prismaAdapter } from '../../../src/adapters/prisma/index.ts'
+import { getAuthTables } from '../../better-auth.schema.ts'
 
 export function getAdapter() {
   const db = new PrismaClient()
@@ -12,12 +13,16 @@ export function getAdapter() {
     catch {}
   }
 
-  const adapter = prismaAdapter(db, {
-    provider: 'sqlite',
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const adapter = prismaAdapter(
+    db,
+    getAuthTables,
+    {
+      provider: 'sqlite',
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
 
   return { adapter, clearDb }
 }
