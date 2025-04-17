@@ -49,11 +49,11 @@ const colors = {
 export function createAdapter<T extends Record<string, any>>({
   adapter,
   config: cfg,
-  schema,
+  getTables,
 }: {
   config: AdapterConfig
   adapter: CreateCustomAdapter
-  schema: UnDbSchema
+  getTables: (options: AdapterOptions<T>) => UnDbSchema
 }) {
   return (options: AdapterOptions<T>): Adapter => {
     const config = {
@@ -139,6 +139,8 @@ export function createAdapter<T extends Record<string, any>>({
       )
     }
 
+    const schema = getTables(options)
+
     /**
      * This function helps us get the default model name from the schema defined by devs.
      * Often times, the user will be using the `modelName` which could had been customized by the users.
@@ -223,7 +225,6 @@ export function createAdapter<T extends Record<string, any>>({
      * then we should return the model name ending with an `s`.
      */
     const getModelName = (model: string) => {
-      console.log('model', model, schema)
       return schema[model]?.modelName !== model
         ? schema[model]?.modelName
         : config.usePlural
@@ -910,11 +911,13 @@ export function createAdapter<T extends Record<string, any>>({
       },
       createSchema: adapterInstance.createSchema
         ? async (_, file) => {
+          const tables = getTables(options)
+
           // TODO: better-auth options.secondaryStorage callback support
 
           // TODO: better-auth options.rateLimit callback support
 
-          return adapterInstance.createSchema!({ file, tables: schema })
+          return adapterInstance.createSchema!({ file, tables })
         }
         : undefined,
       options: {

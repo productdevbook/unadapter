@@ -1,4 +1,4 @@
-import type { AnyOptions } from 'undatabase/types'
+import type { AdapterOptions, AnyOptions } from 'undatabase/types'
 import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
 import {
@@ -14,9 +14,13 @@ export interface MemoryAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function memoryAdapter<T extends Record<string, any>>(db: MemoryDB, schema: UnDbSchema, config?: MemoryAdapterConfig) {
-  return createAdapter<T | AnyOptions>({
-    schema,
+export function memoryAdapter<T extends Record<string, any>>(
+  db: MemoryDB,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  config?: MemoryAdapterConfig,
+) {
+  return createAdapter<T>({
+    getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
       adapterName: 'Memory Adapter',

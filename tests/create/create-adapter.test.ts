@@ -53,7 +53,7 @@ async function createTestAdapter<T extends Record<string, any> = Record<string, 
     adapter = () => ({}),
   } = props
   const testAdapter = createAdapter<BetterAuthOptions>({
-    schema: getAuthTables({}),
+    getTables: getAuthTables,
     config: Object.assign(
       {
         adapterId: 'test-id',
@@ -105,6 +105,7 @@ async function createTestAdapter<T extends Record<string, any> = Record<string, 
           return 0
         },
         async findMany(data) {
+          console.log('findMany', data)
           if (x.findMany) {
             return await x.findMany(data)
           }
@@ -1385,7 +1386,7 @@ describe('create Adapter Helper', async () => {
         const parameters: { where: Where[] | undefined, model: string }
 					= await new Promise((r) => {
 					  (async () => {
-					    const adapter = await createTestAdapter({
+					    const adapter = await createTestAdapter<BetterAuthOptions>({
 					      options: {
 					        user: {
 					          fields: {
@@ -1418,6 +1419,7 @@ describe('create Adapter Helper', async () => {
 					      model: 'user',
 					      where: [{ field: 'email', value: 'test@test.com' }],
 					    })
+              console.log('res', res)
 					    expect(res[0]).not.toHaveProperty('email_address')
 					    expect(res[0]).toHaveProperty('email')
 					    expect(res[0]?.email).toEqual('test@test.com')

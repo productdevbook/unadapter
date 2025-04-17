@@ -10,7 +10,7 @@ describe('adapter test', async () => {
     session: [],
     account: [],
   }
-  const adapter = memoryAdapter<BetterAuthOptions>(db, getAuthTables({}), {
+  const adapter = memoryAdapter<BetterAuthOptions>(db, getAuthTables, {
     debugLogs: {
       isRunningAdapterTests: true,
     },
@@ -35,7 +35,7 @@ describe('number Id Adapter Test', async () => {
     session: [],
     account: [],
   }
-  const adapter = memoryAdapter(db, getAuthTables({}), {
+  const adapter = memoryAdapter(db, getAuthTables, {
     debugLogs: {
       isRunningAdapterTests: true,
     },
