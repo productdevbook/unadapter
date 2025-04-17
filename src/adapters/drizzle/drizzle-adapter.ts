@@ -53,7 +53,7 @@ export function drizzleAdapter<T extends Record<string, any>>(
   config: DrizzleAdapterConfig,
 ) {
   return createAdapter({
-    getTables: options => getTables(options as AdapterOptions<T>),
+    getTables,
     config: {
       adapterId: 'drizzle',
       adapterName: 'Drizzle Adapter',

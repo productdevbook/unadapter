@@ -1,5 +1,6 @@
 import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from 'kysely'
-import type { Where } from '../../types/index.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
+import type { AdapterOptions, Where } from '../../types/index.ts'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
 import { createAdapter } from '../create/index.ts'
@@ -23,8 +24,13 @@ interface KyselyAdapterConfig {
   usePlural?: boolean
 }
 
-export function kyselyAdapter(db: Kysely<any>, config?: KyselyAdapterConfig) {
+export function kyselyAdapter<T extends Record<string, any>>(
+  db: Kysely<any>,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  config?: KyselyAdapterConfig,
+) {
   return createAdapter({
+    getTables,
     config: {
       adapterId: 'kysely',
       adapterName: 'Kysely Adapter',
