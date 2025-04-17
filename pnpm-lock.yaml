@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  unadapter: link:.
+
 importers:
 
   .:
@@ -84,6 +87,15 @@ importers:
       vitest:
         specifier: ^3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.14.1)(jiti@2.4.2)(yaml@2.7.1)
+
+  playground:
+    dependencies:
+      unadapter:
+        specifier: link:..
+        version: link:..
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
 
 packages:
 

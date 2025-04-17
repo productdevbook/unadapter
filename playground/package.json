@@ -1,0 +1,13 @@
+{
+  "name": "playground",
+  "type": "module",
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.8.1",
+  "scripts": {
+    "dev:memory": "tsx memory.ts"
+  },
+  "dependencies": {
+    "unadapter": "link:",
+    "zod": "^3.24.2"
+  }
+}

@@ -133,5 +133,8 @@
       "esbuild",
       "prisma"
     ]
+  },
+  "resolutions": {
+    "unadapter": "link:."
   }
 }
