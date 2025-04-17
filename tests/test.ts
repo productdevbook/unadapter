@@ -1,17 +1,17 @@
-import type { Adapter, BetterAuthOptions, User } from '../src/types/index.ts'
+import type { Adapter, AdapterOptions, User } from '../src/types/index.ts'
 import { beforeAll, describe, expect, test } from 'vitest'
 
-interface AdapterTestOptions {
+interface AdapterTestOptions<T extends Record<string, any>> {
   getAdapter: (
-    customOptions?: Omit<BetterAuthOptions, 'database'>,
+    customOptions?: Omit<AdapterOptions<T>, 'database'>,
   ) => Promise<Adapter>
   disableTests?: Partial<Record<keyof typeof adapterTests, boolean>>
   testPrefix?: string
 }
 
-interface NumberIdAdapterTestOptions {
+interface NumberIdAdapterTestOptions<T extends Record<string, any> = Record<string, any>> {
   getAdapter: (
-    customOptions?: Omit<BetterAuthOptions, 'database'>,
+    customOptions?: Omit<AdapterOptions<T>, 'database'>,
   ) => Promise<Adapter>
   disableTests?: Partial<Record<keyof typeof numberIdAdapterTests, boolean>>
   testPrefix?: string
@@ -51,26 +51,26 @@ const numberIdAdapterTests = {
   SHOULD_INCREMENT_THE_ID_BY_1: 'Should increment the id by 1',
 } as const
 
-async function adapterTest(
-  { getAdapter, disableTests: disabledTests, testPrefix }: AdapterTestOptions,
+async function adapterTest<T extends Record<string, any> = Record<string, any>>(
+  { getAdapter, disableTests: disabledTests, testPrefix }: AdapterTestOptions<T>,
   internalOptions?: {
-    predefinedOptions: Omit<BetterAuthOptions, 'database'>
+    predefinedOptions: Omit<T, 'database'>
   },
 ) {
   const adapter = async () =>
     await getAdapter(internalOptions?.predefinedOptions)
 
   async function resetDebugLogs() {
-    // @ts-expect-error
+    // @ts-expect-error - Adapter debug logs are only available in test mode
     (await adapter())?.adapterTestDebugLogs?.resetDebugLogs()
   }
 
   async function printDebugLogs() {
-    // @ts-expect-error
+    // @ts-expect-error - Adapter debug logs are only available in test mode
     (await adapter())?.adapterTestDebugLogs?.printDebugLogs()
   }
 
-  // @ts-expect-error - intentionally omitting id
+  // @ts-expect-error - Intentionally omitting id for test data
   const user: {
     name: string
     email: string
@@ -684,7 +684,7 @@ async function adapterTest(
               generateId: () => 'mocked-id',
             },
           },
-        } satisfies BetterAuthOptions, internalOptions?.predefinedOptions),
+        } satisfies AdapterOptions, internalOptions?.predefinedOptions),
       )
 
       const res = await customAdapter.create({
@@ -703,8 +703,8 @@ async function adapterTest(
   )
 }
 
-export async function runAdapterTest(opts: AdapterTestOptions) {
-  return adapterTest(opts)
+export async function runAdapterTest<T extends Record<string, any>>(opts: AdapterTestOptions<T>) {
+  return adapterTest<T>(opts)
 }
 
 export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
@@ -721,12 +721,12 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
     let idNumber = -1
 
     async function resetDebugLogs() {
-      // @ts-expect-error
+      // @ts-expect-error - Adapter debug logs are only available in test mode
       (await adapter())?.adapterTestDebugLogs?.resetDebugLogs()
     }
 
     async function printDebugLogs() {
-      // @ts-expect-error
+      // @ts-expect-error - Adapter debug logs are only available in test mode
       (await adapter())?.adapterTestDebugLogs?.printDebugLogs()
     }
     test.skipIf(opts.disableTests?.SHOULD_RETURN_A_NUMBER_ID_AS_A_RESULT)(

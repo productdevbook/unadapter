@@ -26,7 +26,7 @@ describe('adapter test', async () => {
   })
 
   const adapter = mongodbAdapter<BetterAuthOptions>(db, getAuthTables({}))
-  await runAdapterTest({
+  await runAdapterTest<BetterAuthOptions>({
     getAdapter: async (customOptions = {}) => {
       return adapter({
         user: {

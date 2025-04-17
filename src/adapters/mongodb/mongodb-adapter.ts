@@ -1,6 +1,6 @@
 import type { Db } from 'mongodb'
 import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { Adapter, AnyOptions, Where } from '../../types/index.ts'
+import type { Adapter, AdapterOptions, AnyOptions, Where } from '../../types/index.ts'
 import { ObjectId } from 'mongodb'
 import { withApplyDefault } from '../utils.ts'
 
@@ -227,7 +227,7 @@ function createTransform(options: AnyOptions, schema: UnDbSchema) {
 }
 
 export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: UnDbSchema) {
-  return (options: AnyOptions) => {
+  return (options: AdapterOptions<T>) => {
     const transform = createTransform(options, schema)
     const hasCustomId = options.advanced?.generateId
     return {

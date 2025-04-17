@@ -91,3 +91,5 @@ export interface AnyOptions extends UnOptions {
       casing?: 'snake' | 'camel'
     }
 }
+
+export type AdapterOptions<T extends Record<string, any> = Record<string, any>> = AnyOptions & T

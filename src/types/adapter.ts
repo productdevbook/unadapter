@@ -1,4 +1,4 @@
-import type { AnyOptions } from './options.ts'
+import type { AdapterOptions, AnyOptions } from './options.ts'
 
 /**
  * Adapter where clause
@@ -25,17 +25,17 @@ export interface Where {
  */
 export interface Adapter<T extends Record<string, any> = Record<string, any>> {
   id: string
-  create: <R = T>(data: {
+  create: <R = AdapterOptions<T>>(data: {
     model: string
     data: Omit<T, 'id'>
     select?: string[]
   }) => Promise<R>
-  findOne: (data: {
+  findOne: <R = AdapterOptions<T>>(data: {
     model: string
     where: Where[]
     select?: string[]
-  }) => Promise<T | null>
-  findMany: (data: {
+  }) => Promise<R | null>
+  findMany: <R = AdapterOptions<T>>(data: {
     model: string
     where?: Where[]
     limit?: number
@@ -44,7 +44,7 @@ export interface Adapter<T extends Record<string, any> = Record<string, any>> {
       direction: 'asc' | 'desc'
     }
     offset?: number
-  }) => Promise<T[]>
+  }) => Promise<R[]>
   count: (data: {
     model: string
     where?: Where[]
@@ -53,11 +53,11 @@ export interface Adapter<T extends Record<string, any> = Record<string, any>> {
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
-  update: (data: {
+  update: <R = AdapterOptions<T>>(data: {
     model: string
     where: Where[]
     update: Record<string, any>
-  }) => Promise<T | null>
+  }) => Promise<R | null>
   updateMany: (data: {
     model: string
     where: Where[]
