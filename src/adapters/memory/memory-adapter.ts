@@ -1,3 +1,5 @@
+import type { AdapterOptions } from 'unadapter/types'
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
 import {
   createAdapter,
@@ -12,8 +14,13 @@ export interface MemoryAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function memoryAdapter(db: MemoryDB, config?: MemoryAdapterConfig) {
-  return createAdapter({
+export function memoryAdapter<T extends Record<string, any>>(
+  db: MemoryDB,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  config?: MemoryAdapterConfig,
+) {
+  return createAdapter<T>({
+    getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
       adapterName: 'Memory Adapter',

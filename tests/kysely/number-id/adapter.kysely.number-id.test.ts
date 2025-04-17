@@ -1,4 +1,5 @@
-import type { BetterAuthOptions } from '../../../src/types/index.ts'
+import type { AdapterOptions } from 'unadapter'
+import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
@@ -9,13 +10,14 @@ import { createPool } from 'mysql2/promise'
 import { afterAll, beforeAll, describe } from 'vitest'
 import { kyselyAdapter } from '../../../src/adapters/kysely/index.ts'
 import { getMigrations } from '../../../src/db/get-migration.ts'
+import { getAuthTables } from '../../better-auth.schema.ts'
 import { runNumberIdAdapterTest } from '../../test.ts'
 import { getState, stateFilePath } from '../state.ts'
 
 export function opts({
   database,
   isNumberIdTest,
-}: { database: BetterAuthOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
   return ({
     database,
     user: {
@@ -34,7 +36,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies BetterAuthOptions
+  }) satisfies AdapterOptions<BetterAuthOptions>
 }
 
 const sqlite = new Database(path.join(__dirname, 'test.db'))
@@ -79,8 +81,8 @@ describe('number ID Adapter tests', async () => {
       })
     })
     console.log(`Now running Number ID Kysely adapter test...`)
-    await (await getMigrations(mysqlOptions)).runMigrations()
-    await (await getMigrations(sqliteOptions)).runMigrations()
+    await (await getMigrations(mysqlOptions, getAuthTables)).runMigrations()
+    await (await getMigrations(sqliteOptions, getAuthTables)).runMigrations()
   })
 
   afterAll(async () => {
@@ -90,12 +92,16 @@ describe('number ID Adapter tests', async () => {
     await fsPromises.unlink(path.join(__dirname, 'test.db'))
   })
 
-  const mysqlAdapter = kyselyAdapter(mysqlKy, {
-    type: 'mysql',
-    debugLogs: {
-      isRunningAdapterTests: false,
+  const mysqlAdapter = kyselyAdapter(
+    mysqlKy,
+    getAuthTables,
+    {
+      type: 'mysql',
+      debugLogs: {
+        isRunningAdapterTests: false,
+      },
     },
-  })
+  )
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
       const merged = merge(customOptions, mysqlOptions)
@@ -104,12 +110,16 @@ describe('number ID Adapter tests', async () => {
     testPrefix: 'mysql',
   })
 
-  const sqliteAdapter = kyselyAdapter(sqliteKy, {
-    type: 'sqlite',
-    debugLogs: {
-      isRunningAdapterTests: false,
+  const sqliteAdapter = kyselyAdapter(
+    sqliteKy,
+    getAuthTables,
+    {
+      type: 'sqlite',
+      debugLogs: {
+        isRunningAdapterTests: false,
+      },
     },
-  })
+  )
 
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {

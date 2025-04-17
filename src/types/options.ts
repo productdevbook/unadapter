@@ -1,161 +1,15 @@
 import type { Database } from 'better-sqlite3'
 import type { Dialect, Kysely, MysqlPool, PostgresPool } from 'kysely'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
-import type { FieldAttribute } from '../db/index.ts'
 import type {
-  Account,
   LiteralUnion,
   Models,
-  OmitId,
-  User,
-  Verification,
 } from '../types/index.ts'
-import type { Logger } from '../utils/index.ts'
-import type { AdapterInstance, SecondaryStorage } from './adapter.ts'
-import type { AuthPluginSchema } from './plugins.ts'
+import type { AdapterInstance } from './adapter.ts'
 
-export interface BetterAuthOptions {
-  /**
-   * The name of the application
-   *
-   * process.env.APP_NAME
-   *
-   * @default "Better Auth"
-   */
-  appName?: string
+export interface UnOptions {}
 
-  plugins?: {
-    schema?: AuthPluginSchema
-  }[]
-  /**
-   * Base URL for the Better Auth. This is typically the
-   * root URL where your application server is hosted.
-   * If not explicitly set,
-   * the system will check the following environment variable:
-   *
-   * process.env.BETTER_AUTH_URL
-   *
-   * If not set it will throw an error.
-   */
-  baseURL?: string
-  /**
-   * Base path for the Better Auth. This is typically
-   * the path where the
-   * Better Auth routes are mounted.
-   *
-   * @default "/api/auth"
-   */
-  basePath?: string
-  /**
-   * The secret to use for encryption,
-   * signing and hashing.
-   *
-   * By default Better Auth will look for
-   * the following environment variables:
-   * process.env.BETTER_AUTH_SECRET,
-   * process.env.AUTH_SECRET
-   * If none of these environment
-   * variables are set,
-   * it will default to
-   * "better-auth-secret-123456789".
-   *
-   * on production if it's not set
-   * it will throw an error.
-   *
-   * you can generate a good secret
-   * using the following command:
-   * @example
-   * ```bash
-   * openssl rand -base64 32
-   * ```
-   */
-  secret?: string
-  /**
-   * Database configuration
-   */
-  database?:
-    | PostgresPool
-    | MysqlPool
-    | Database
-    | Dialect
-    | AdapterInstance
-    | {
-      dialect: Dialect
-      type: KyselyDatabaseType
-      /**
-       * casing for table names
-       *
-       * @default "camel"
-       */
-      casing?: 'snake' | 'camel'
-    }
-    | {
-      /**
-       * Kysely instance
-       */
-      db: Kysely<any>
-      /**
-       * Database type between postgres, mysql and sqlite
-       */
-      type: KyselyDatabaseType
-      /**
-       * casing for table names
-       *
-       * @default "camel"
-       */
-      casing?: 'snake' | 'camel'
-    }
-  /**
-   * Secondary storage configuration
-   *
-   * This is used to store session and rate limit data.
-   */
-  secondaryStorage?: SecondaryStorage
-
-  account?: {
-    modelName?: string
-    fields?: Partial<Record<keyof OmitId<Account>, string>>
-  }
-
-  /**
-   * User configuration
-   */
-  user?: {
-    /**
-     * The model name for the user. Defaults to "user".
-     */
-    modelName?: string
-    /**
-     * Map fields
-     *
-     * @example
-     * ```ts
-     * {
-     *  userId: "user_id"
-     * }
-     * ```
-     */
-    fields?: Partial<Record<keyof OmitId<User>, string>>
-    /**
-     * Additional fields for the session
-     */
-    additionalFields?: {
-      [key: string]: FieldAttribute
-    }
-  }
-  /**
-   * Verification configuration
-   */
-  verification?: {
-    /**
-     * Change the modelName of the verification table
-     */
-    modelName?: string
-    /**
-     * Map verification fields
-     */
-    fields?: Partial<Record<keyof OmitId<Verification>, string>>
-  }
+export interface AnyOptions extends UnOptions {
   /**
    * Advanced options
    */
@@ -185,11 +39,10 @@ export interface BetterAuthOptions {
        * If not provided, random ids will be generated.
        * If set to false, the database's auto generated id will be used.
        */
-      generateId?: | ((options: {
+      generateId?: ((options: {
         model: LiteralUnion<Models, string>
         size?: number
-      }) => string)
-      | false
+      }) => string) | false
     }
     /**
      * Custom generateId function.
@@ -199,11 +52,44 @@ export interface BetterAuthOptions {
      *
      * @deprecated Please use `database.generateId` instead. This will be potentially removed in future releases.
      */
-    generateId?: | ((options: {
+    generateId?: ((options: {
       model: LiteralUnion<Models, string>
       size?: number
-    }) => string)
-    | false
+    }) => string) | false
   }
-  logger?: Logger
+
+  database?:
+    | PostgresPool
+    | MysqlPool
+    | Database
+    | Dialect
+    | AdapterInstance
+    | {
+      dialect: Dialect
+      type: KyselyDatabaseType
+      /**
+       * casing for table names
+       *
+       * @default "camel"
+       */
+      casing?: 'snake' | 'camel'
+    }
+    | {
+    /**
+     * Kysely instance
+     */
+      db: Kysely<any>
+      /**
+       * Database type between postgres, mysql and sqlite
+       */
+      type: KyselyDatabaseType
+      /**
+       * casing for table names
+       *
+       * @default "camel"
+       */
+      casing?: 'snake' | 'camel'
+    }
 }
+
+export type AdapterOptions<T extends Record<string, any> = Record<string, any>> = AnyOptions & T

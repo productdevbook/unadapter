@@ -6,16 +6,16 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "paths": {
-      "undatabase": [
+      "unadapter": [
         "./src/index.ts"
       ],
-      "undatabase/providers/*": [
+      "unadapter/providers/*": [
         "./src/providers/*/index.ts"
       ],
-      "undatabase/types": [
+      "unadapter/types": [
         "./src/types/index.ts"
       ],
-      "undatabase/utils": [
+      "unadapter/utils": [
         "./src/utils/index.ts"
       ]
     },

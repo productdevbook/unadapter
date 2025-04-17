@@ -1,7 +1,9 @@
-import { MongoClient } from 'mongodb'
+import type { BetterAuthOptions } from './better-auth.schema.ts'
 
+import { MongoClient } from 'mongodb'
 import { beforeAll, describe } from 'vitest'
 import { mongodbAdapter } from '../src/adapters/mongodb/index.ts'
+import { getAuthTables } from './better-auth.schema.ts'
 import { runAdapterTest } from './test.ts'
 
 describe('adapter test', async () => {
@@ -23,8 +25,8 @@ describe('adapter test', async () => {
     await clearDb()
   })
 
-  const adapter = mongodbAdapter(db)
-  await runAdapterTest({
+  const adapter = mongodbAdapter<BetterAuthOptions>(db, getAuthTables({}))
+  await runAdapterTest<BetterAuthOptions>({
     getAdapter: async (customOptions = {}) => {
       return adapter({
         user: {

@@ -1,15 +1,15 @@
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { FieldAttribute } from '../../db/index.ts'
-import type { Adapter, BetterAuthOptions, Where } from '../../types/index.ts'
+import type { Adapter, AdapterOptions, Where } from '../../types/index.ts'
 import type {
   AdapterConfig,
   AdapterTestDebugLogs,
   CleanedWhere,
   CreateCustomAdapter,
 } from './types.ts'
-import { withApplyDefault } from '../utils.ts'
-import { getAuthTables } from '../../db/get-tables.ts'
 import { generateId as defaultGenerateId, logger } from '../../utils/index.ts'
 import { safeJSONParse } from '../../utils/json.ts'
+import { withApplyDefault } from '../utils.ts'
 
 export * from './types.ts'
 
@@ -46,14 +46,16 @@ const colors = {
   },
 }
 
-export function createAdapter({
+export function createAdapter<T extends Record<string, any>>({
   adapter,
   config: cfg,
+  getTables,
 }: {
   config: AdapterConfig
   adapter: CreateCustomAdapter
+  getTables: (options: AdapterOptions<T>) => UnDbSchema
 }) {
-  return (options: BetterAuthOptions): Adapter => {
+  return (options: AdapterOptions<T>): Adapter => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,
@@ -137,8 +139,7 @@ export function createAdapter({
       )
     }
 
-    // End-user's Better-Auth instance's schema
-    const schema = getAuthTables(options)
+    const schema = getTables(options)
 
     /**
      * This function helps us get the default model name from the schema defined by devs.
@@ -224,7 +225,6 @@ export function createAdapter({
      * then we should return the model name ending with an `s`.
      */
     const getModelName = (model: string) => {
-      console.log('model', model, schema)
       return schema[model]?.modelName !== model
         ? schema[model]?.modelName
         : config.usePlural
@@ -911,7 +911,7 @@ export function createAdapter({
       },
       createSchema: adapterInstance.createSchema
         ? async (_, file) => {
-          const tables = getAuthTables(options)
+          const tables = getTables(options)
 
           // TODO: better-auth options.secondaryStorage callback support
 

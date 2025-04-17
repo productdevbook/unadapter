@@ -1,9 +1,9 @@
-import type { BetterAuthDbSchema } from '../../db/get-tables.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { FieldAttribute } from '../../db/index.ts'
 import type { Prettify } from '../../types/helper.ts'
 import type {
   AdapterSchemaCreation,
-  BetterAuthOptions,
+  AnyOptions,
   Where,
 } from '../../types/index.ts'
 
@@ -162,13 +162,13 @@ export interface AdapterConfig {
      */
     model: string
     /**
-     * The schema of the user's Better-Auth instance.
+     * The schema of the user's instance.
      */
-    schema: BetterAuthDbSchema
+    schema: UnDbSchema
     /**
-     * The options of the user's Better-Auth instance.
+     * The options of the user's instance.
      */
-    options: BetterAuthOptions
+    options: AnyOptions
   }) => any
   /**
    * Custom transform output function.
@@ -194,13 +194,13 @@ export interface AdapterConfig {
      */
     model: string
     /**
-     * The schema of the user's Better-Auth instance.
+     * The schema of the user's instance.
      */
-    schema: BetterAuthDbSchema
+    schema: UnDbSchema
     /**
-     * The options of the user's Better-Auth instance.
+     * The options of the user's instance.
      */
-    options: BetterAuthOptions
+    options: AnyOptions
   }) => any
   /**
    * Custom ID generator function.
@@ -229,16 +229,19 @@ export interface AdapterConfig {
 
 export type CreateCustomAdapter = ({
   options,
-  debugLog,
   schema,
+  debugLog,
+  getModelName,
+  getFieldName,
   getDefaultModelName,
   getDefaultFieldName,
+  getFieldAttributes,
 }: {
-  options: BetterAuthOptions
+  options: AnyOptions
   /**
-   * The schema of the user's Better-Auth instance.
+   * The schema of the user's instance.
    */
-  schema: BetterAuthDbSchema
+  schema: UnDbSchema
   /**
    * The debug log function.
    *
@@ -361,9 +364,9 @@ export interface CustomAdapter {
      */
     file?: string
     /**
-     * The tables from the user's Better-Auth instance schema.
+     * The tables from the user's instance schema.
      */
-    tables: BetterAuthDbSchema
+    tables: UnDbSchema
   }) => Promise<AdapterSchemaCreation>
   /**
    * Your adapter's options.

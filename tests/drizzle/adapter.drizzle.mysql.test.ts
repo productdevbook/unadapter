@@ -1,5 +1,6 @@
 import type { Pool } from 'mysql2/promise'
-import type { BetterAuthOptions } from '../../src/types/index.ts'
+import type { AdapterOptions } from 'unadapter'
+import type { BetterAuthOptions } from '../better-auth.schema.ts'
 import merge from 'deepmerge'
 import { drizzle } from 'drizzle-orm/mysql2'
 import { Kysely, MysqlDialect } from 'kysely'
@@ -7,6 +8,7 @@ import { createPool } from 'mysql2/promise'
 import { afterAll, beforeAll, describe } from 'vitest'
 import { drizzleAdapter } from '../../src/adapters/drizzle/index.ts'
 import { getMigrations } from '../../src/db/get-migration.ts'
+import { getAuthTables } from '../better-auth.schema.ts'
 import { runAdapterTest, runNumberIdAdapterTest } from '../test.ts'
 import * as schema from './schema.mysql.ts'
 
@@ -54,7 +56,7 @@ function createTestOptions(pool: any, useNumberId = false) {
         useNumberId,
       },
     },
-  }) satisfies BetterAuthOptions
+  }) satisfies AdapterOptions<BetterAuthOptions>
 }
 
 describe('drizzle Adapter Tests (MySQL)', async () => {
@@ -62,19 +64,24 @@ describe('drizzle Adapter Tests (MySQL)', async () => {
   const _mysql: Kysely<any> = createKyselyInstance(pool)
 
   const opts = createTestOptions(pool)
-  const { runMigrations } = await getMigrations(opts)
+  const { runMigrations } = await getMigrations(opts, getAuthTables)
   await runMigrations()
 
   const db = drizzle({
     client: pool,
   })
-  const adapter = drizzleAdapter(db, {
-    provider: 'mysql',
-    schema,
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const adapter = drizzleAdapter(
+    db,
+    getAuthTables,
+    {
+
+      provider: 'mysql',
+      schema,
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
 
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
@@ -94,7 +101,7 @@ describe('drizzle Adapter Number Id Test (MySQL)', async () => {
 
   beforeAll(async () => {
     await cleanupDatabase(pool, false)
-    const { runMigrations } = await getMigrations(opts)
+    const { runMigrations } = await getMigrations(opts, getAuthTables)
     await runMigrations()
   })
 
@@ -105,13 +112,17 @@ describe('drizzle Adapter Number Id Test (MySQL)', async () => {
   const db = drizzle({
     client: pool,
   })
-  const adapter = drizzleAdapter(db, {
-    provider: 'mysql',
-    schema,
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const adapter = drizzleAdapter(
+    db,
+    getAuthTables,
+    {
+      provider: 'mysql',
+      schema,
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
 
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {

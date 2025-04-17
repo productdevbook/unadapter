@@ -1,4 +1,4 @@
-import type { BetterAuthOptions } from './options.ts'
+import type { AdapterOptions, AnyOptions } from './options.ts'
 
 /**
  * Adapter where clause
@@ -23,19 +23,19 @@ export interface Where {
 /**
  * Adapter Interface
  */
-export interface Adapter {
+export interface Adapter<T extends Record<string, any> = Record<string, any>> {
   id: string
-  create: <T extends Record<string, any>, R = T>(data: {
+  create: <R = AdapterOptions<T>>(data: {
     model: string
     data: Omit<T, 'id'>
     select?: string[]
   }) => Promise<R>
-  findOne: <T>(data: {
+  findOne: <R = AdapterOptions<T>>(data: {
     model: string
     where: Where[]
     select?: string[]
-  }) => Promise<T | null>
-  findMany: <T>(data: {
+  }) => Promise<R | null>
+  findMany: <R = AdapterOptions<T>>(data: {
     model: string
     where?: Where[]
     limit?: number
@@ -44,7 +44,7 @@ export interface Adapter {
       direction: 'asc' | 'desc'
     }
     offset?: number
-  }) => Promise<T[]>
+  }) => Promise<R[]>
   count: (data: {
     model: string
     where?: Where[]
@@ -53,17 +53,17 @@ export interface Adapter {
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
-  update: <T>(data: {
+  update: <R = AdapterOptions<T>>(data: {
     model: string
     where: Where[]
     update: Record<string, any>
-  }) => Promise<T | null>
+  }) => Promise<R | null>
   updateMany: (data: {
     model: string
     where: Where[]
     update: Record<string, any>
   }) => Promise<number>
-  delete: <T>(data: { model: string, where: Where[] }) => Promise<void>
+  delete: (data: { model: string, where: Where[] }) => Promise<void>
   deleteMany: (data: { model: string, where: Where[] }) => Promise<number>
   /**
    *
@@ -71,7 +71,7 @@ export interface Adapter {
    * @param file - file path if provided by the user
    */
   createSchema?: (
-    options: BetterAuthOptions,
+    options: AnyOptions,
     file?: string,
   ) => Promise<AdapterSchemaCreation>
   options?: Record<string, any>
@@ -99,7 +99,7 @@ export interface AdapterSchemaCreation {
 }
 
 export interface AdapterInstance {
-  (options: BetterAuthOptions): Adapter
+  (options: AnyOptions): Adapter
 }
 
 export interface SecondaryStorage {

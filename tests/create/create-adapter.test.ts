@@ -1,9 +1,11 @@
 /* eslint-disable style/no-mixed-spaces-and-tabs */
 /* eslint-disable style/no-tabs */
 import type { AdapterConfig, CreateCustomAdapter } from '../../src/adapters/create/types.ts'
-import type { BetterAuthOptions, User, Where } from '../../src/types/index.ts'
+import type { AdapterOptions, User, Where } from '../../src/types/index.ts'
+import type { BetterAuthOptions } from '../better-auth.schema.ts'
 import { describe, expect, it } from 'vitest'
 import { createAdapter } from '../../src/adapters/create/index.ts'
+import { getAuthTables } from '../better-auth.schema.ts'
 
 /*
 
@@ -16,10 +18,10 @@ The rest are just edge cases.
 
 */
 
-async function createTestAdapter(
+async function createTestAdapter<T extends Record<string, any> = Record<string, any>>(
   props: {
     config?: Partial<AdapterConfig>
-    options?: BetterAuthOptions
+    options?: AdapterOptions<T>
     adapter?: (
       ...args: Parameters<CreateCustomAdapter>
     ) => Partial<ReturnType<CreateCustomAdapter>>
@@ -33,7 +35,7 @@ async function createTestAdapter(
       supportsDates: true,
       supportsBooleans: true,
     },
-    options: {},
+    options: {} as AdapterOptions<T>,
     adapter: () => ({}),
   },
 ) {
@@ -50,7 +52,8 @@ async function createTestAdapter(
     options = {},
     adapter = () => ({}),
   } = props
-  const testAdapter = createAdapter({
+  const testAdapter = createAdapter<BetterAuthOptions>({
+    getTables: getAuthTables,
     config: Object.assign(
       {
         adapterId: 'test-id',
@@ -102,6 +105,7 @@ async function createTestAdapter(
           return 0
         },
         async findMany(data) {
+          console.log('findMany', data)
           if (x.findMany) {
             return await x.findMany(data)
           }
@@ -136,7 +140,7 @@ describe('create Adapter Helper', async () => {
   })
 
   it('should use the id generator if passed into the betterAuth config', async () => {
-    const adapter = await createTestAdapter({
+    const adapter = await createTestAdapter<BetterAuthOptions>({
       config: {
         debugLogs: {},
       },
@@ -1382,7 +1386,7 @@ describe('create Adapter Helper', async () => {
         const parameters: { where: Where[] | undefined, model: string }
 					= await new Promise((r) => {
 					  (async () => {
-					    const adapter = await createTestAdapter({
+					    const adapter = await createTestAdapter<BetterAuthOptions>({
 					      options: {
 					        user: {
 					          fields: {
@@ -1415,6 +1419,7 @@ describe('create Adapter Helper', async () => {
 					      model: 'user',
 					      where: [{ field: 'email', value: 'test@test.com' }],
 					    })
+					    console.log('res', res)
 					    expect(res[0]).not.toHaveProperty('email_address')
 					    expect(res[0]).toHaveProperty('email')
 					    expect(res[0]?.email).toEqual('test@test.com')

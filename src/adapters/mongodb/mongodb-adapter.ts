@@ -1,11 +1,10 @@
 import type { Db } from 'mongodb'
-import type { Adapter, BetterAuthOptions, Where } from '../../types/index.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
+import type { Adapter, AdapterOptions, AnyOptions, Where } from '../../types/index.ts'
 import { ObjectId } from 'mongodb'
-import { getAuthTables } from '../../db/index.ts'
 import { withApplyDefault } from '../utils.ts'
 
-function createTransform(options: BetterAuthOptions) {
-  const schema = getAuthTables(options)
+function createTransform(options: AnyOptions, schema: UnDbSchema) {
   /**
    * if custom id gen is provided we don't want to override with object id
    */
@@ -227,9 +226,9 @@ function createTransform(options: BetterAuthOptions) {
   }
 }
 
-export function mongodbAdapter(db: Db) {
-  return (options: BetterAuthOptions) => {
-    const transform = createTransform(options)
+export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: UnDbSchema) {
+  return (options: AdapterOptions<T>) => {
+    const transform = createTransform(options, schema)
     const hasCustomId = options.advanced?.generateId
     return {
       id: 'mongodb-adapter',
@@ -329,6 +328,6 @@ export function mongodbAdapter(db: Db) {
           .deleteMany(clause)
         return res.deletedCount
       },
-    } satisfies Adapter
+    } satisfies Adapter<T>
   }
 }

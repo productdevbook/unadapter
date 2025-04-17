@@ -1,4 +1,5 @@
-import type { BetterAuthOptions } from '../../../src/types/index.ts'
+import type { AdapterOptions } from 'unadapter'
+import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
 import Database from 'better-sqlite3'
@@ -6,11 +7,12 @@ import merge from 'deepmerge'
 import { Kysely, MssqlDialect, MysqlDialect, sql, SqliteDialect } from 'kysely'
 import { createPool } from 'mysql2/promise'
 import * as tarn from 'tarn'
+
 import * as tedious from 'tedious'
 import { afterAll, beforeAll, describe } from 'vitest'
-
 import { kyselyAdapter } from '../../../src/adapters/kysely/index.ts'
 import { getMigrations } from '../../../src/db/get-migration.ts'
+import { getAuthTables } from '../../better-auth.schema.ts'
 import { runAdapterTest } from '../../test.ts'
 import { setState } from '../state.ts'
 
@@ -27,7 +29,7 @@ const mysqlKy = new Kysely({
 export function opts({
   database,
   isNumberIdTest,
-}: { database: BetterAuthOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
   return ({
     database,
     user: {
@@ -47,7 +49,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies BetterAuthOptions
+  }) satisfies AdapterOptions<BetterAuthOptions>
 }
 
 describe('adapter test', async () => {
@@ -69,8 +71,8 @@ describe('adapter test', async () => {
   beforeAll(async () => {
     setState('RUNNING')
     console.log(`Now running Number ID Kysely adapter test...`)
-    await (await getMigrations(mysqlOptions)).runMigrations()
-    await (await getMigrations(sqliteOptions)).runMigrations()
+    await (await getMigrations(mysqlOptions, getAuthTables)).runMigrations()
+    await (await getMigrations(sqliteOptions, getAuthTables)).runMigrations()
   })
 
   afterAll(async () => {
@@ -80,12 +82,16 @@ describe('adapter test', async () => {
     await fsPromises.unlink(path.join(__dirname, 'test.db'))
   })
 
-  const mysqlAdapter = kyselyAdapter(mysqlKy, {
-    type: 'mysql',
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const mysqlAdapter = kyselyAdapter(
+    mysqlKy,
+    getAuthTables,
+    {
+      type: 'mysql',
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
       return mysqlAdapter(merge(customOptions, mysqlOptions))
@@ -93,12 +99,16 @@ describe('adapter test', async () => {
     testPrefix: 'mysql',
   })
 
-  const sqliteAdapter = kyselyAdapter(sqliteKy, {
-    type: 'sqlite',
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const sqliteAdapter = kyselyAdapter(
+    sqliteKy,
+    getAuthTables,
+    {
+      type: 'sqlite',
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
       return sqliteAdapter(merge(customOptions, sqliteOptions))
@@ -140,9 +150,9 @@ describe('mssql', async () => {
     user: {
       modelName: 'users',
     },
-  } satisfies BetterAuthOptions
+  } satisfies AdapterOptions<BetterAuthOptions>
   beforeAll(async () => {
-    const { runMigrations, toBeAdded, toBeCreated } = await getMigrations(opts)
+    const { runMigrations, toBeAdded, toBeCreated } = await getMigrations(opts, getAuthTables)
     await runMigrations()
     return async () => {
       await resetDB()
@@ -155,12 +165,16 @@ describe('mssql', async () => {
   const mssql = new Kysely({
     dialect,
   })
-  const getAdapter = kyselyAdapter(mssql, {
-    type: 'mssql',
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const getAdapter = kyselyAdapter(
+    mssql,
+    getAuthTables,
+    {
+      type: 'mssql',
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
 
   async function resetDB() {
     await sql`DROP TABLE dbo.verification;`.execute(mssql)
