@@ -226,8 +226,8 @@ function createTransform(options: AnyOptions, schema: UnDbSchema) {
   }
 }
 
-export function mongodbAdapter(db: Db) {
-  return (options: AnyOptions, schema: UnDbSchema) => {
+export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: UnDbSchema) {
+  return (options: AnyOptions) => {
     const transform = createTransform(options, schema)
     const hasCustomId = options.advanced?.generateId
     return {

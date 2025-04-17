@@ -1,7 +1,6 @@
 import type { Account, OmitId, SecondaryStorage, User, Verification } from 'undatabase'
 import type { FieldAttribute } from '../src/db/field.ts'
-import type { UnDbSchema } from '../src/db/get-tables.ts'
-import type { AuthPluginSchema } from '../src/types/plugins.ts'
+import type { DbSchema, UnDbSchema } from '../src/db/get-tables.ts'
 
 export interface BetterAuthOptions {
   /**
@@ -14,7 +13,7 @@ export interface BetterAuthOptions {
   appName?: string
 
   plugins?: {
-    schema?: AuthPluginSchema
+    schema?: Omit<DbSchema, 'order'>
   }[]
   /**
    * Base URL for the Better Auth. This is typically the
