@@ -2,9 +2,9 @@ import type {
   AlterTableColumnAlteringBuilder,
   CreateTableBuilder,
 } from 'kysely'
+import type { AdapterOptions, FieldAttribute, FieldType } from 'unadapter/types'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
-import type { AdapterOptions } from '../types/index.ts'
-import type { FieldAttribute, FieldType, UnDbSchema } from './index.ts'
+import type { UnDbSchema } from './index.ts'
 import { createKyselyAdapter } from '../adapters/kysely/dialect.ts'
 import { createLogger } from '../utils/logger.ts'
 import { getSchema } from './get-schema.ts'

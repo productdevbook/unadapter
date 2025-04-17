@@ -1,6 +1,13 @@
-import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from 'kysely'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterOptions, Where } from '../../types/index.ts'
+import type {
+  InsertQueryBuilder,
+  Kysely,
+  UpdateQueryBuilder,
+} from 'kysely'
+import type {
+  AdapterOptions,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
 import { createAdapter } from '../create/index.ts'
@@ -196,7 +203,7 @@ export function kyselyAdapter<T extends Record<string, any>>(
 
           return (await withReturning(data, builder, model, [])) as any
         },
-        async findOne({ model, where, select }) {
+        async findOne({ model, where }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
           if (and) {

@@ -1,9 +1,13 @@
-import type { AdapterOptions } from 'unadapter/types'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
+import type {
+  AdapterOptions,
+  UnDbSchema,
+} from 'unadapter/types'
+import type {
+  AdapterDebugLogs,
+  CleanedWhere,
+} from '../create/index.ts'
 import {
   createAdapter,
-
 } from '../create/index.ts'
 
 export interface MemoryDB {

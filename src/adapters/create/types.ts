@@ -1,5 +1,5 @@
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { FieldAttribute } from '../../db/index.ts'
+import type { UnDbSchema } from 'unadapter/types'
+import type { FieldAttribute } from 'unadapter/types'
 import type { Prettify } from '../../types/helper.ts'
 import type {
   AdapterSchemaCreation,

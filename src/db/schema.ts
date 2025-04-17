@@ -1,7 +1,7 @@
+import type { FieldAttribute } from 'unadapter/types'
 import type { Account, User } from '../types/index.ts'
 import type { AnyOptions } from '../types/options.ts'
 import type { AuthPluginSchema } from '../types/plugins.ts'
-import type { FieldAttribute } from './index.ts'
 import { z } from 'zod'
 
 export const accountSchema = z.object({

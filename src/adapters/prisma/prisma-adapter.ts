@@ -1,5 +1,8 @@
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterOptions, Where } from '../../types/index.ts'
+import type {
+  AdapterOptions,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import { BetterAuthError } from '../../error/index.ts'
 import { createAdapter } from '../create/index.ts'
@@ -90,11 +93,11 @@ export function prismaAdapter<T extends Record<string, any>>(
           }
           return {
             [getFieldName({ model, field: w.field })]:
-							w.operator === 'eq' || !w.operator
-							  ? w.value
-							  : {
-							      [operatorToPrismaOperator(w.operator)]: w.value,
-							    },
+            w.operator === 'eq' || !w.operator
+              ? w.value
+              : {
+                  [operatorToPrismaOperator(w.operator)]: w.value,
+                },
           }
         }
         const and = where.filter(w => w.connector === 'AND' || !w.connector)
@@ -102,11 +105,11 @@ export function prismaAdapter<T extends Record<string, any>>(
         const andClause = and.map((w) => {
           return {
             [getFieldName({ model, field: w.field })]:
-							w.operator === 'eq' || !w.operator
-							  ? w.value
-							  : {
-							      [operatorToPrismaOperator(w.operator)]: w.value,
-							    },
+            w.operator === 'eq' || !w.operator
+              ? w.value
+              : {
+                  [operatorToPrismaOperator(w.operator)]: w.value,
+                },
           }
         })
         const orClause = or.map((w) => {
@@ -163,7 +166,7 @@ export function prismaAdapter<T extends Record<string, any>>(
               ? {
                   orderBy: {
                     [getFieldName({ model, field: sortBy.field })]:
-											sortBy.direction === 'desc' ? 'desc' : 'asc',
+                    sortBy.direction === 'desc' ? 'desc' : 'asc',
                   },
                 }
               : {}),
@@ -207,7 +210,7 @@ export function prismaAdapter<T extends Record<string, any>>(
               where: whereClause,
             })
           }
-          catch (e) {
+          catch {
             // If the record doesn't exist, we don't want to throw an error
           }
         },

@@ -1,6 +1,10 @@
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { FieldAttribute } from '../../db/index.ts'
-import type { Adapter, AdapterOptions, Where } from '../../types/index.ts'
+import type {
+  Adapter,
+  AdapterOptions,
+  FieldAttribute,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import type {
   AdapterConfig,
   AdapterTestDebugLogs,

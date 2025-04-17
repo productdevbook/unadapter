@@ -1,8 +1,11 @@
 import type {
   SQL,
 } from 'drizzle-orm'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterOptions, Where } from '../../types/index.ts'
+import type {
+  AdapterOptions,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import {
   and,
@@ -60,7 +63,7 @@ export function drizzleAdapter<T extends Record<string, any>>(
       usePlural: config.usePlural ?? false,
       debugLogs: config.debugLogs ?? false,
     },
-    adapter: ({ getFieldName, debugLog }) => {
+    adapter: ({ getFieldName }) => {
       function getSchema(model: string) {
         const schema = config.schema || db._.fullSchema
         if (!schema) {

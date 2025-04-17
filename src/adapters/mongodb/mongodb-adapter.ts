@@ -1,6 +1,11 @@
 import type { Db } from 'mongodb'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { Adapter, AdapterOptions, AnyOptions, Where } from '../../types/index.ts'
+import type {
+  Adapter,
+  AdapterOptions,
+  AnyOptions,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import { ObjectId } from 'mongodb'
 import { withApplyDefault } from '../utils.ts'
 
@@ -122,7 +127,7 @@ function createTransform(options: AnyOptions, schema: UnDbSchema) {
     transformOutput(
       data: Record<string, any>,
       model: string,
-			select: string[] = [],
+select: string[] = [],
     ) {
       const transformedData: Record<string, any> = data.id || data._id
         ? select.length === 0 || select.includes('id')
