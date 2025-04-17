@@ -1419,7 +1419,7 @@ describe('create Adapter Helper', async () => {
 					      model: 'user',
 					      where: [{ field: 'email', value: 'test@test.com' }],
 					    })
-              console.log('res', res)
+					    console.log('res', res)
 					    expect(res[0]).not.toHaveProperty('email_address')
 					    expect(res[0]).toHaveProperty('email')
 					    expect(res[0]?.email).toEqual('test@test.com')
