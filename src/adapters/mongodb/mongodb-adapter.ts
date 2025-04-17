@@ -328,6 +328,6 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           .deleteMany(clause)
         return res.deletedCount
       },
-    } satisfies Adapter
+    } satisfies Adapter<T>
   }
 }
