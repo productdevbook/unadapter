@@ -1,4 +1,4 @@
-import type { AdapterOptions, AnyOptions } from 'undatabase/types'
+import type { AdapterOptions } from 'unadapter/types'
 import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
 import {

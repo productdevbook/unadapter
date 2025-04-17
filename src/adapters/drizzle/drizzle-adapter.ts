@@ -1,7 +1,8 @@
 import type {
   SQL,
 } from 'drizzle-orm'
-import type { Where } from '../../types/index.ts'
+import type { UnDbSchema } from '../../db/get-tables.ts'
+import type { AdapterOptions, Where } from '../../types/index.ts'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import {
   and,
@@ -46,8 +47,13 @@ export interface DrizzleAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function drizzleAdapter(db: DB, config: DrizzleAdapterConfig) {
+export function drizzleAdapter<T extends Record<string, any>>(
+  db: DB,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  config: DrizzleAdapterConfig,
+) {
   return createAdapter({
+    getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'drizzle',
       adapterName: 'Drizzle Adapter',

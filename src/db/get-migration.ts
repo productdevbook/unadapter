@@ -3,8 +3,8 @@ import type {
   CreateTableBuilder,
 } from 'kysely'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
-import type { BetterAuthOptions } from '../types/index.ts'
-import type { FieldAttribute, FieldType } from './index.ts'
+import type { AdapterOptions } from '../types/index.ts'
+import type { FieldAttribute, FieldType, UnDbSchema } from './index.ts'
 import { createKyselyAdapter } from '../adapters/kysely/dialect.ts'
 import { createLogger } from '../utils/logger.ts'
 import { getSchema } from './get-schema.ts'
@@ -75,8 +75,11 @@ export function matchType(
   return matches
 }
 
-export async function getMigrations(config: BetterAuthOptions) {
-  const betterAuthSchema = getSchema(config)
+export async function getMigrations<T extends Record<string, any>>(
+  config: AdapterOptions<T>,
+  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+) {
+  const betterAuthSchema = getSchema(config, getTables)
   const logger = createLogger(config.logger)
 
   let { kysely: db, databaseType: dbType } = await createKyselyAdapter(config)

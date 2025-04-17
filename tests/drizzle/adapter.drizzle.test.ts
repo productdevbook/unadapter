@@ -1,4 +1,5 @@
-import type { BetterAuthOptions } from '../../src/types/index.ts'
+import type { AdapterOptions } from 'unadapter'
+import type { BetterAuthOptions } from '../better-auth.schema.ts'
 import merge from 'deepmerge'
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Kysely, PostgresDialect, sql } from 'kysely'
@@ -6,6 +7,7 @@ import { Pool } from 'pg'
 import { afterAll, beforeAll, describe } from 'vitest'
 import { drizzleAdapter } from '../../src/adapters/drizzle/index.ts'
 import { getMigrations } from '../../src/db/get-migration.ts'
+import { getAuthTables } from '../better-auth.schema.ts'
 import { runAdapterTest, runNumberIdAdapterTest } from '../test.ts'
 import * as schema from './schema.ts'
 
@@ -45,7 +47,7 @@ function createTestOptions(pg: Pool, useNumberId = false) {
         useNumberId,
       },
     },
-  }) satisfies BetterAuthOptions
+  }) satisfies AdapterOptions<BetterAuthOptions>
 }
 
 describe('drizzle Adapter Tests', async () => {
@@ -55,14 +57,14 @@ describe('drizzle Adapter Tests', async () => {
   postgres = createKyselyInstance(pg)
   const opts = createTestOptions(pg)
   await cleanupDatabase(postgres, false)
-  const { runMigrations } = await getMigrations(opts)
+  const { runMigrations } = await getMigrations(opts, getAuthTables)
   await runMigrations()
 
   afterAll(async () => {
     await cleanupDatabase(postgres)
   })
   const db = drizzle(pg)
-  const adapter = drizzleAdapter(db, { provider: 'pg', schema })
+  const adapter = drizzleAdapter(db, getAuthTables, { provider: 'pg', schema })
 
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
@@ -84,7 +86,7 @@ describe('drizzle Adapter Number Id Test', async () => {
   const opts = createTestOptions(pg, true)
   beforeAll(async () => {
     await cleanupDatabase(postgres, false)
-    const { runMigrations } = await getMigrations(opts)
+    const { runMigrations } = await getMigrations(opts, getAuthTables)
     await runMigrations()
   })
 
@@ -92,13 +94,17 @@ describe('drizzle Adapter Number Id Test', async () => {
     await cleanupDatabase(postgres)
   })
   const db = drizzle(pg)
-  const adapter = drizzleAdapter(db, {
-    provider: 'pg',
-    schema,
-    debugLogs: {
-      isRunningAdapterTests: true,
+  const adapter = drizzleAdapter(
+    db,
+    getAuthTables,
+    {
+      provider: 'pg',
+      schema,
+      debugLogs: {
+        isRunningAdapterTests: true,
+      },
     },
-  })
+  )
 
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
