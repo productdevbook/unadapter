@@ -1,6 +1,6 @@
 import type { UnDbSchema } from '../../db/get-tables.ts'
 import type { FieldAttribute } from '../../db/index.ts'
-import type { Adapter, AnyOptions, Where } from '../../types/index.ts'
+import type { Adapter, AdapterOptions, Where } from '../../types/index.ts'
 import type {
   AdapterConfig,
   AdapterTestDebugLogs,
@@ -46,7 +46,7 @@ const colors = {
   },
 }
 
-export function createAdapter<T extends AnyOptions>({
+export function createAdapter<T extends Record<string, any>>({
   adapter,
   config: cfg,
   schema,
@@ -55,7 +55,7 @@ export function createAdapter<T extends AnyOptions>({
   adapter: CreateCustomAdapter
   schema: UnDbSchema
 }) {
-  return (options: T): Adapter => {
+  return (options: AdapterOptions<T>): Adapter => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,
