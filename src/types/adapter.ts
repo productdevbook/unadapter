@@ -26,20 +26,23 @@ export interface Where {
  * Adapter Interface
  */
 export interface Adapter<
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  T extends Record<string, any>,
+  Models extends Record<string, any> = InferModelTypes<T>,
 > {
   id: string
+
   create: <M extends keyof Models>(data: {
     model: keyof Models
     data: Omit<Models[M], 'id'>
     select?: string[]
   }) => Promise<Models[M]>
+
   findOne: <M extends keyof Models>(data: {
     model: M & string
     where: Where[]
     select?: string[]
   }) => Promise<Models[M] | null>
+
   findMany: <M extends keyof Models>(data: {
     model: M & string
     where?: Where[]
@@ -51,10 +54,12 @@ export interface Adapter<
     offset?: number
     select?: string[]
   }) => Promise<Models[M][]>
+
   count: (data: {
     model: string
     where?: Where[]
   }) => Promise<number>
+
   /**
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
@@ -64,12 +69,15 @@ export interface Adapter<
     where: Where[]
     update: Partial<Models[M]>
   }) => Promise<Models[M] | null>
+
   updateMany: <M extends keyof Models>(data: {
     model: M & string
     where: Where[]
     update: Partial<Models[M]>
   }) => Promise<number>
+
   delete: (data: { model: string, where: Where[] }) => Promise<void>
+
   deleteMany: (data: { model: string, where: Where[] }) => Promise<number>
   /**
    *
@@ -77,9 +85,10 @@ export interface Adapter<
    * @param file - file path if provided by the user
    */
   createSchema?: (
-    options: AdapterOptions<Schema, Models>,
+    options: AdapterOptions<T>,
     file?: string,
   ) => Promise<AdapterSchemaCreation>
+
   options?: Record<string, any>
 }
 
@@ -105,11 +114,11 @@ export interface AdapterSchemaCreation {
 }
 
 export interface AdapterInstance<
+  T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
 > {
   (
-    options: AdapterOptions<Schema, Models>,
-    table: (options: AdapterOptions<Schema, Models>) => Schema,
-  ): Adapter<Schema, Models>
+    options: AdapterOptions<T>,
+    table: (options: AdapterOptions<T>) => Schema,
+  ): Adapter<T>
 }

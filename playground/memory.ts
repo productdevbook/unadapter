@@ -6,7 +6,7 @@ const db = {
   session: [],
 }
 
-const tables = createTable((options) => {
+const tables = createTable((_options) => {
   return {
     user: {
       modelName: 'user',
