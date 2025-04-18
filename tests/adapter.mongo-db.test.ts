@@ -25,7 +25,10 @@ describe('adapter test', async () => {
     await clearDb()
   })
 
-  const adapter = mongodbAdapter<BetterAuthOptions>(db, getAuthTables({}))
+  const adapter = mongodbAdapter<BetterAuthOptions>(
+    db,
+    getAuthTables,
+  )
   await runAdapterTest<BetterAuthOptions>({
     getAdapter: async (customOptions = {}) => {
       return adapter({
