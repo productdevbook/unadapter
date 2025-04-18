@@ -1,4 +1,4 @@
-// @ts-nocheck - Test dosyasında tip kontrolleri devre dışı bırakıldı
+// @ts-nocheck
 import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fs from 'node:fs'
@@ -18,7 +18,7 @@ import { getState, stateFilePath } from '../state.ts'
 export function opts({
   database,
   isNumberIdTest,
-}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }): AdapterOptions<BetterAuthOptions> {
   return ({
     database,
     user: {
@@ -37,7 +37,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies AdapterOptions<BetterAuthOptions>
+  }) as AdapterOptions<BetterAuthOptions>
 }
 
 const sqlite = new Database(path.join(__dirname, 'test.db'))

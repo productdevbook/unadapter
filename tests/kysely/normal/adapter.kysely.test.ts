@@ -1,4 +1,4 @@
-// @ts-nocheck - Test dosyasında tip kontrolleri devre dışı bırakıldı
+// @ts-nocheck
 import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fsPromises from 'node:fs/promises'
@@ -30,7 +30,7 @@ const mysqlKy = new Kysely({
 export function opts({
   database,
   isNumberIdTest,
-}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }): AdapterOptions<BetterAuthOptions> {
   return ({
     database,
     user: {
@@ -50,7 +50,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies AdapterOptions<BetterAuthOptions>
+  }) as AdapterOptions<BetterAuthOptions>
 }
 
 describe('adapter test', async () => {

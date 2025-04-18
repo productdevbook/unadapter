@@ -23,4 +23,10 @@ export default antfu(
       'jsdoc/require-returns-check': 'off', // Disable JSDoc require returns check in markdown files
     },
   },
+  {
+    files: ['tests/**/*.ts'],
+    rules: {
+      'ts/ban-ts-comment': 'off', // Disable ts/ban-ts-comment in tests
+    },
+  },
 )

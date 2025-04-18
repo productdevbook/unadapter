@@ -1,4 +1,4 @@
-// @ts-nocheck - Test dosyasında tip kontrolleri devre dışı bırakıldı
+// @ts-nocheck
 import type { Adapter, AdapterOptions, User } from '../src/types/index.ts'
 import { beforeAll, describe, expect, test } from 'vitest'
 
