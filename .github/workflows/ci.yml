@@ -47,11 +47,11 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # - name: 👀 Lint
-      #   run: pnpm lint
+      - name: 👀 Lint
+        run: pnpm lint
 
-      # - name: 👀 Typecheck
-      #   run: pnpm type-check
+      - name: 👀 Typecheck
+        run: pnpm type-check
 
       - name: 🚀 Build
         run: pnpm build

@@ -153,7 +153,7 @@ describe('mssql', async () => {
     },
   } satisfies AdapterOptions<BetterAuthOptions>
   beforeAll(async () => {
-    const { runMigrations, toBeAdded, toBeCreated } = await getMigrations(opts, getAuthTables)
+    const { runMigrations, _toBeAdded, _toBeCreated } = await getMigrations(opts, getAuthTables)
     await runMigrations()
     return async () => {
       await resetDB()

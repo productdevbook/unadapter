@@ -51,10 +51,8 @@ function createTestOptions(pg: Pool, useNumberId = false) {
 }
 
 describe('drizzle Adapter Tests', async () => {
-  let pg: Pool
-  let postgres: Kysely<any>
-  pg = createTestPool()
-  postgres = createKyselyInstance(pg)
+  const pg = createTestPool()
+  const postgres = createKyselyInstance(pg)
   const opts = createTestOptions(pg)
   await cleanupDatabase(postgres, false)
   const { runMigrations } = await getMigrations(opts, getAuthTables)
@@ -69,7 +67,7 @@ describe('drizzle Adapter Tests', async () => {
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
       const db = opts.database
-      // @ts-ignore
+      // @ts-expect-error - Temporarily unsetting database for merge
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
@@ -79,10 +77,8 @@ describe('drizzle Adapter Tests', async () => {
 })
 
 describe('drizzle Adapter Number Id Test', async () => {
-  let pg: Pool
-  let postgres: Kysely<any>
-  pg = createTestPool()
-  postgres = createKyselyInstance(pg)
+  const pg = createTestPool()
+  const postgres = createKyselyInstance(pg)
   const opts = createTestOptions(pg, true)
   beforeAll(async () => {
     await cleanupDatabase(postgres, false)
@@ -109,7 +105,7 @@ describe('drizzle Adapter Number Id Test', async () => {
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
       const db = opts.database
-      // @ts-ignore
+      // @ts-expect-error - Temporarily unsetting database for merge
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
