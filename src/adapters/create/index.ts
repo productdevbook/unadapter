@@ -215,7 +215,7 @@ export function createAdapter<
 
       let f = schema[model]?.fields[field]
       if (!f) {
-        // @ts-expect-error
+        // @ts-expect-error - Field name might be a custom property not in the type definition
         f = Object.values(schema[model]?.fields).find(
           f => f.fieldName === field,
         )
@@ -575,7 +575,7 @@ export function createAdapter<
             .join('\n')
             .replace('Error:', 'Create method with `id` being called at:')
           console.log(stack)
-          // @ts-ignore
+          // @ts-expect-error - Intentionally modifying input data before processing
           unsafeData.id = undefined
         }
         debugLog(

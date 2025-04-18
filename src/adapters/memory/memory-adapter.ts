@@ -56,7 +56,7 @@ export function memoryAdapter<
               if (!Array.isArray(value)) {
                 throw new TypeError('Value must be an array')
               }
-              // @ts-ignore
+              // @ts-expect-error - Record may have any structure
               return value.includes(record[field])
             }
             else if (operator === 'contains') {
@@ -80,7 +80,7 @@ export function memoryAdapter<
           data,
         }) => {
           if (options.advanced?.database?.useNumberId) {
-            // @ts-ignore
+            // @ts-expect-error - Dynamically adding id property to data object
             data.id = db[model].length + 1
           }
           db[model].push(data)

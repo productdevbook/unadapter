@@ -21,7 +21,7 @@ type Primitive =
   | string[]
   | number[]
 
-export interface FieldAttributeConfig<T extends FieldType = FieldType> {
+export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
   /**
    * If the field should be required on a new record.
    * @default true

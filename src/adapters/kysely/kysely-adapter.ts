@@ -214,7 +214,7 @@ export function kyselyAdapter<
         findOne: async ({
           model,
           where,
-          select,
+          select: _select,
         }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
