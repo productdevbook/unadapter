@@ -132,14 +132,10 @@ export function prismaAdapter<
       }
 
       return {
-        async create<M extends keyof Models>({
+        async create({
           model,
           data: values,
           select,
-        }: {
-          model: M & string
-          data: Omit<Models[M], 'id'>
-          select?: string[]
         }) {
           if (!db[model]) {
             throw new BetterAuthError(
@@ -151,14 +147,10 @@ export function prismaAdapter<
             select: convertSelect(select, model),
           })
         },
-        async findOne<M extends keyof Models>({
+        async findOne({
           model,
           where,
           select,
-        }: {
-          model: M & string
-          where: Where[]
-          select?: string[]
         }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
@@ -171,20 +163,13 @@ export function prismaAdapter<
             select: convertSelect(select, model),
           })
         },
-        async findMany<M extends keyof Models>({
+        async findMany({
           model,
           where,
           limit,
           offset,
           sortBy,
           select,
-        }: {
-          model: M & string
-          where?: Where[]
-          limit?: number
-          offset?: number
-          sortBy?: { field: string, direction: 'asc' | 'desc' }
-          select?: string[]
         }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
@@ -206,7 +191,7 @@ export function prismaAdapter<
                 }
               : {}),
             select: convertSelect(select, model),
-          })) as Models[M][]
+          }))
         },
         async count({ model, where }) {
           const whereClause = convertWhereClause(model, where)
@@ -219,14 +204,10 @@ export function prismaAdapter<
             where: whereClause,
           })
         },
-        async update<M extends keyof Models>({
+        async update({
           model,
           where,
           update,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           if (!db[model]) {
             throw new BetterAuthError(
@@ -239,14 +220,10 @@ export function prismaAdapter<
             data: update,
           })
         },
-        async updateMany<M extends keyof Models>({
+        async updateMany({
           model,
           where,
           update,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           const whereClause = convertWhereClause(model, where)
           const result = await db[model].updateMany({

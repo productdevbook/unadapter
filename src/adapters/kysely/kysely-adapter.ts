@@ -203,26 +203,18 @@ export function kyselyAdapter<
         }
       }
       return {
-        async create<M extends keyof Models>({
+        async create({
           data,
           model,
-        }: {
-          model: M & string
-          data: Omit<Models[M], 'id'>
-          select?: string[]
         }) {
           const builder = db.insertInto(model).values(data)
-          return (await withReturning(data, builder, model, [])) as any
+          return (await withReturning(data, builder, model, []))
         },
 
-        async findOne<M extends keyof Models>({
+        async findOne({
           model,
           where,
           select,
-        }: {
-          model: M & string
-          where: Where[]
-          select?: string[]
         }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
@@ -235,7 +227,7 @@ export function kyselyAdapter<
           const res = await query.executeTakeFirst()
           if (!res)
             return null
-          return res as Models[M] | null
+          return res
         },
         async findMany({ model, where, limit, offset, sortBy }) {
           const { and, or } = convertWhereClause(model, where)
@@ -275,17 +267,13 @@ export function kyselyAdapter<
           const res = await query.selectAll().execute()
           if (!res)
             return []
-          return res as Models[M][]
+          return res
         },
 
-        async update<M extends keyof Models>({
+        async update({
           model,
           where,
           update: values,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           const { and, or } = convertWhereClause(model, where)
 
@@ -296,17 +284,13 @@ export function kyselyAdapter<
           if (or) {
             query = query.where(eb => eb.or(or.map(expr => expr(eb))))
           }
-          return await withReturning(values as any, query, model, where) as Models[M] | null
+          return await withReturning(values as any, query, model, where)
         },
 
-        async updateMany<M extends keyof Models>({
+        async updateMany({
           model,
           where,
           update: values,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.updateTable(model).set(values as any)
@@ -339,7 +323,7 @@ export function kyselyAdapter<
             query = query.where(eb => eb.or(or.map(expr => expr(eb))))
           }
           const res = await query.execute()
-          return res[0].count as number
+          return res[0].count
         },
 
         async delete({

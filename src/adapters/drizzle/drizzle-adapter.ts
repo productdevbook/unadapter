@@ -249,13 +249,9 @@ export function drizzleAdapter<
         }
       }
       return {
-        async create<M extends keyof Models>({
+        async create({
           model,
           data: values,
-        }: {
-          model: M & string
-          data: Omit<Models[M], 'id'>
-          select?: string[]
         }) {
           const schemaModel = getSchema(model)
           checkMissingFields(schemaModel, model, values)
@@ -263,13 +259,9 @@ export function drizzleAdapter<
           const returned = await withReturning(model, builder, values)
           return returned
         },
-        async findOne<M extends keyof Models>({
+        async findOne({
           model,
           where,
-        }: {
-          model: M & string
-          where: Where[]
-          select?: string[]
         }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
@@ -279,21 +271,14 @@ export function drizzleAdapter<
             .where(...clause)
           if (!res.length)
             return null
-          return res[0] as Models[M] | null
+          return res[0]
         },
-        async findMany<M extends keyof Models>({
+        async findMany({
           model,
           where,
           sortBy,
           limit,
           offset,
-        }: {
-          model: M & string
-          where?: Where[]
-          sortBy?: { field: string, direction: 'asc' | 'desc' }
-          limit?: number
-          offset?: number
-          select?: string[]
         }) {
           const schemaModel = getSchema(model)
           const clause = where ? convertWhereClause(where, model) : []
@@ -311,7 +296,7 @@ export function drizzleAdapter<
               ),
             )
           }
-          return (await builder.where(...clause)) as Models[M][]
+          return (await builder.where(...clause))
         },
         async count({
           model,
@@ -328,14 +313,10 @@ export function drizzleAdapter<
             .where(...clause)
           return res[0].count
         },
-        async update<M extends keyof Models>({
+        async update({
           model,
           where,
           update: values,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
@@ -343,16 +324,12 @@ export function drizzleAdapter<
             .update(schemaModel)
             .set(values)
             .where(...clause)
-          return await withReturning(model, builder, values as any, where) as Models[M] | null
+          return await withReturning(model, builder, values as any, where)
         },
-        async updateMany<M extends keyof Models>({
+        async updateMany({
           model,
           where,
           update: values,
-        }: {
-          model: M & string
-          where: Where[]
-          update: Partial<Models[M]>
         }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)

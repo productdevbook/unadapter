@@ -243,14 +243,10 @@ export function mongodbAdapter<
     const hasCustomId = options.advanced?.generateId
     return {
       id: 'mongodb-adapter',
-      async create<M extends keyof Models>({
+      async create({
         model,
         data: values,
         select,
-      }: {
-        model: M & string
-        data: Omit<Models[M], 'id'>
-        select?: string[]
       }) {
         const transformedData = transform.transformInput(values, model, 'create')
         if (transformedData.id && !hasCustomId) {
@@ -265,14 +261,10 @@ export function mongodbAdapter<
         const t = transform.transformOutput(insertedData, model, select)
         return t
       },
-      async findOne<M extends keyof Models>({
+      async findOne({
         model,
         where,
         select,
-      }: {
-        model: M & string
-        where: Where[]
-        select?: string[]
       }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
@@ -281,22 +273,15 @@ export function mongodbAdapter<
         if (!res)
           return null
         const transformedData = transform.transformOutput(res, model, select)
-        return transformedData as Models[M] | null
+        return transformedData
       },
-      async findMany<M extends keyof Models>({
+      async findMany({
         model,
         where,
         limit,
         offset,
         sortBy,
         select,
-      }: {
-        model: M & string
-        where?: Where[]
-        limit?: number
-        offset?: number
-        sortBy?: { field: string, direction: 'asc' | 'desc' }
-        select?: string[]
       }) {
         const clause = where ? transform.convertWhereClause(where, model) : {}
         const cursor = db.collection(transform.getModelName(model)).find(clause)
@@ -311,14 +296,11 @@ export function mongodbAdapter<
           )
         }
         const res = await cursor.toArray()
-        return res.map(r => transform.transformOutput(r, model, select)) as Models[M][]
+        return res.map(r => transform.transformOutput(r, model, select))
       },
       async count({
         model,
         where,
-      }: {
-        model: string
-        where?: Where[]
       }) {
         const clause = where ? transform.convertWhereClause(where, model) : {}
         const res = await db
@@ -326,14 +308,10 @@ export function mongodbAdapter<
           .countDocuments(clause)
         return res
       },
-      async update<M extends keyof Models>({
+      async update({
         model,
         where,
         update: values,
-      }: {
-        model: M & string
-        where: Where[]
-        update: Partial<Models[M]>
       }) {
         const clause = transform.convertWhereClause(where, model)
 
@@ -350,16 +328,12 @@ export function mongodbAdapter<
           )
         if (!res)
           return null
-        return transform.transformOutput(res, model) as Models[M] | null
+        return transform.transformOutput(res, model)
       },
-      async updateMany<M extends keyof Models>({
+      async updateMany({
         model,
         where,
         update: values,
-      }: {
-        model: M & string
-        where: Where[]
-        update: Partial<Models[M]>
       }) {
         const clause = transform.convertWhereClause(where, model)
         const transformedData = transform.transformInput(values, model, 'update')
@@ -371,9 +345,6 @@ export function mongodbAdapter<
       async delete({
         model,
         where,
-      }: {
-        model: string
-        where: Where[]
       }) {
         const clause = transform.convertWhereClause(where, model)
         await db
@@ -383,9 +354,6 @@ export function mongodbAdapter<
       async deleteMany({
         model,
         where,
-      }: {
-        model: string
-        where: Where[]
       }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
