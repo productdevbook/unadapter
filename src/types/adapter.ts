@@ -1,4 +1,6 @@
-import type { AnyOptions } from './options.ts'
+import type { InferModelTypes } from './db.ts'
+import type { AdapterOptions, AnyOptions } from './options.ts'
+import type { UnDbSchema } from './schema.ts'
 
 /**
  * Adapter where clause
@@ -99,34 +101,28 @@ export interface AdapterSchemaCreation {
   overwrite?: boolean
 }
 
-export interface AdapterInstance<Models extends Record<string, any> = Record<string, any>> {
-  (options: AnyOptions): Adapter<Models>
+export interface AdapterInstance<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+> {
+  (
+    options: AdapterOptions<T>,
+    getTables: (options: AdapterOptions<T>) => Schema,
+  ): Adapter<Models>
 }
 
-export interface SecondaryStorage {
-  /**
-   *
-   * @param key - Key to get
-   * @returns - Value of the key
-   */
-  get: (key: string) => Promise<string | null> | string | null
-  set: (
-  /**
-   * Key to store
-   */
-    key: string,
-  /**
-   * Value to store
-   */
-    value: string,
-  /**
-   * Time to live in seconds
-   */
-    ttl?: number,
-  ) => Promise<void | null | string> | void
-  /**
-   *
-   * @param key - Key to delete
-   */
-  delete: (key: string) => Promise<void | null | string> | void
+export interface CreateAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+> {
+  options?: AdapterOptions<T>
+  tables: (
+    options: AdapterOptions<Record<string, any>>
+  ) => Schema
+  adapter: (
+    options: AdapterOptions<T>,
+    getTables: (options: AdapterOptions<T>) => Schema,
+  ) => Adapter<Models>
 }

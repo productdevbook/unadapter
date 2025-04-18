@@ -1,5 +1,4 @@
 import type {
-  AdapterOptions,
   InferModelTypes,
   UnDbSchema,
 } from 'unadapter/types'
@@ -25,11 +24,9 @@ export function memoryAdapter<
   Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: MemoryDB,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
   return createAdapter<T, Schema, Models>({
-    getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
       adapterName: 'Memory Adapter',

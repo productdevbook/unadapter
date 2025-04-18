@@ -58,13 +58,12 @@ export function createAdapter<
 >({
   adapter,
   config: cfg,
-  getTables,
 }: {
   config: AdapterConfig
   adapter: CreateCustomAdapter<Models>
-  getTables: (options: AdapterOptions<T>) => Schema
 }) {
-  return (options: AdapterOptions<T>): Adapter<Models> => {
+  return (options: AdapterOptions<T>, getTables: (options: AdapterOptions<T>) => Schema,
+  ): Adapter<Models> => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,

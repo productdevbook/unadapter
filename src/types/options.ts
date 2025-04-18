@@ -5,7 +5,6 @@ import type {
   LiteralUnion,
   Models,
 } from '../types/index.ts'
-import type { AdapterInstance } from './adapter.ts'
 
 export interface UnOptions {}
 
@@ -63,7 +62,6 @@ export interface AnyOptions extends UnOptions {
     | MysqlPool
     | Database
     | Dialect
-    | AdapterInstance
     | {
       dialect: Dialect
       type: KyselyDatabaseType

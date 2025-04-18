@@ -1,37 +1,18 @@
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
 const db = {
   user: [],
   session: [],
 }
-// Initialize the adapter
-
-interface CreateAdapter<
-  T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = Record<string, any>,
-> {
-  tables: (options: AdapterOptions) => Schema
-}
-
-function createAdapter<
-  T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = Record<string, any>,
->(options: CreateAdapter<T, Schema, Models>) {
-  const createAdapter = memoryAdapter(
-    db,
-    options.tables,
-    {},
-  )
-  // Create an adapter instance
-  const adapter = createAdapter({})
-  return adapter
-}
+// (options: AdapterOptions<T>, getTables: (options: AdapterOptions<T>) => Schema,
+//   ): Adapter<Models>
 
 const adapter = createAdapter({
-  tables: (options?: AdapterOptions) => {
+  options: {
+
+  },
+  tables: (options) => {
     return {
       user: {
         modelName: 'user',
@@ -74,8 +55,12 @@ const adapter = createAdapter({
           },
         },
       },
-    } satisfies UnDbSchema
+    }
   },
+  adapter: memoryAdapter(
+    db,
+    {},
+  ),
 })
 
 // eslint-disable-next-line antfu/no-top-level-await

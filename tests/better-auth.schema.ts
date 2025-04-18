@@ -3,11 +3,38 @@ import type {
   DbSchema,
   FieldAttribute,
   OmitId,
-  SecondaryStorage,
   UnDbSchema,
   User,
   Verification,
 } from 'unadapter/types'
+
+interface SecondaryStorage {
+  /**
+   *
+   * @param key - Key to get
+   * @returns - Value of the key
+   */
+  get: (key: string) => Promise<string | null> | string | null
+  set: (
+  /**
+   * Key to store
+   */
+    key: string,
+  /**
+   * Value to store
+   */
+    value: string,
+  /**
+   * Time to live in seconds
+   */
+    ttl?: number,
+  ) => Promise<void | null | string> | void
+  /**
+   *
+   * @param key - Key to delete
+   */
+  delete: (key: string) => Promise<void | null | string> | void
+}
 
 export interface BetterAuthOptions {
   /**
