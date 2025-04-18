@@ -50,9 +50,6 @@ jobs:
       - name: 👀 Lint
         run: pnpm lint
 
-      - name: 👀 Typecheck
-        run: pnpm type-check
-
       - name: 🚀 Build
         run: pnpm build
 
@@ -68,6 +65,9 @@ jobs:
           MAILCRAB_HOST: localhost
           MAILCRAB_SMTP_PORT: 1025
           MAILCRAB_UI_PORT: 1080
+
+      - name: 👀 Typecheck
+        run: pnpm type-check
 
       - name: 📝 Upload coverage
         if: always()
