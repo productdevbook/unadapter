@@ -304,7 +304,7 @@ export interface CustomAdapter<Models = any> {
     model: M & string
     data: Omit<Models[M], 'id'>
     select?: string[]
-  }) => Promise<Models[M]>
+  }) => Promise<any> // Return any here since it'll be transformed by the adapter later
 
   update: <M extends keyof Models>({
     model,
@@ -324,7 +324,7 @@ export interface CustomAdapter<Models = any> {
     model: M & string
     where: CleanedWhere[]
     update: Partial<Models[M]>
-  }) => Promise<number>
+  }) => Promise<number | Models[M] | null>
 
   findOne: <M extends keyof Models>({
     model,

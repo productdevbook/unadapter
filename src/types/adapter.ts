@@ -1,4 +1,4 @@
-import type { AdapterOptions, AnyOptions } from './options.ts'
+import type { AnyOptions } from './options.ts'
 
 /**
  * Adapter where clause

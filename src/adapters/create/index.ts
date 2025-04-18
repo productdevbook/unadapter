@@ -2,7 +2,6 @@ import type {
   Adapter,
   AdapterOptions,
   FieldAttribute,
-  InferFieldsInput,
   InferModelTypes,
   UnDbSchema,
   Where,

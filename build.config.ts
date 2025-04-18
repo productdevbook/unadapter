@@ -1,5 +1,3 @@
-import { glob, readFile, rm, writeFile } from 'node:fs/promises'
-import { resolve } from 'pathe'
 import { defineBuildConfig } from 'unbuild'
 import packagejson from './package.json'
 
