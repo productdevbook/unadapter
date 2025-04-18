@@ -301,9 +301,6 @@ export function drizzleAdapter<
         async count({
           model,
           where,
-        }: {
-          model: string
-          where?: Where[]
         }) {
           const schemaModel = getSchema(model)
           const clause = where ? convertWhereClause(where, model) : []
@@ -342,9 +339,6 @@ export function drizzleAdapter<
         async delete({
           model,
           where,
-        }: {
-          model: string
-          where: Where[]
         }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
