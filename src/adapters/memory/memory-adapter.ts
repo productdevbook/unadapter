@@ -19,20 +19,15 @@ export interface MemoryAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-type InferModelTypes<Schema extends UnDbSchema> = {
-  [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
-}
-
 export function memoryAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema,
-  Models = InferModelTypes<Schema>,
 >(
   db: MemoryDB,
   getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
+  return createAdapter<T, Schema>({
     getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',

@@ -3,6 +3,7 @@ import type {
   AdapterOptions,
   FieldAttribute,
   InferFieldsInput,
+  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -50,24 +51,21 @@ const colors = {
     white: '\x1B[47m',
   },
 }
-type InferModelTypes<Schema extends UnDbSchema> = {
-  [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
-}
 
 export function createAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema,
-  Models = InferModelTypes<Schema>,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
 >({
   adapter,
   config: cfg,
   getTables,
 }: {
   config: AdapterConfig
-  adapter: CreateCustomAdapter
-  getTables: (options: AdapterOptions<T>) => UnDbSchema
+  adapter: CreateCustomAdapter<Models>
+  getTables: (options: AdapterOptions<T>) => Schema
 }) {
-  return (options: AdapterOptions<T>): Adapter => {
+  return (options: AdapterOptions<T>): Adapter<Models> => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,

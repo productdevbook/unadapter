@@ -227,7 +227,7 @@ export interface AdapterConfig {
   }) => string
 }
 
-export type CreateCustomAdapter = ({
+export type CreateCustomAdapter<Models extends Record<string, any> = Record<string, any>> = ({
   options,
   schema,
   debugLog,

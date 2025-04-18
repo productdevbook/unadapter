@@ -23,20 +23,20 @@ export interface Where {
 /**
  * Adapter Interface
  */
-export interface Adapter<T extends Record<string, any> = Record<string, any>> {
+export interface Adapter<Models extends Record<string, any> = Record<string, any>> {
   id: string
-  create: <R = AdapterOptions<T>>(data: {
-    model: string
-    data: Omit<T, 'id'>
+  create: <M extends keyof Models>(data: {
+    model: M & string
+    data: Omit<Models[M], 'id'>
     select?: string[]
-  }) => Promise<R>
-  findOne: <R = AdapterOptions<T>>(data: {
-    model: string
+  }) => Promise<Models[M]>
+  findOne: <M extends keyof Models>(data: {
+    model: M & string
     where: Where[]
     select?: string[]
-  }) => Promise<R | null>
-  findMany: <R = AdapterOptions<T>>(data: {
-    model: string
+  }) => Promise<Models[M] | null>
+  findMany: <M extends keyof Models>(data: {
+    model: M & string
     where?: Where[]
     limit?: number
     sortBy?: {
@@ -44,7 +44,7 @@ export interface Adapter<T extends Record<string, any> = Record<string, any>> {
       direction: 'asc' | 'desc'
     }
     offset?: number
-  }) => Promise<R[]>
+  }) => Promise<Models[M][]>
   count: (data: {
     model: string
     where?: Where[]
@@ -53,15 +53,15 @@ export interface Adapter<T extends Record<string, any> = Record<string, any>> {
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
-  update: <R = AdapterOptions<T>>(data: {
-    model: string
+  update: <M extends keyof Models>(data: {
+    model: M & string
     where: Where[]
-    update: Record<string, any>
-  }) => Promise<R | null>
-  updateMany: (data: {
-    model: string
+    update: Partial<Models[M]>
+  }) => Promise<Models[M] | null>
+  updateMany: <M extends keyof Models>(data: {
+    model: M & string
     where: Where[]
-    update: Record<string, any>
+    update: Partial<Models[M]>
   }) => Promise<number>
   delete: (data: { model: string, where: Where[] }) => Promise<void>
   deleteMany: (data: { model: string, where: Where[] }) => Promise<number>
@@ -98,8 +98,8 @@ export interface AdapterSchemaCreation {
   overwrite?: boolean
 }
 
-export interface AdapterInstance {
-  (options: AnyOptions): Adapter
+export interface AdapterInstance<Models extends Record<string, any> = Record<string, any>> {
+  (options: AnyOptions): Adapter<Models>
 }
 
 export interface SecondaryStorage {
