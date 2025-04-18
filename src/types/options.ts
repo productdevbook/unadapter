@@ -2,13 +2,18 @@ import type { Database } from 'better-sqlite3'
 import type { Dialect, Kysely, MysqlPool, PostgresPool } from 'kysely'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type {
+  AdapterInstance,
+  InferModelTypes,
   LiteralUnion,
-  Models,
+  UnDbSchema,
 } from '../types/index.ts'
 
 export interface UnOptions {}
 
-export interface AnyOptions extends UnOptions {
+export interface AdapterOptions<
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+> extends UnOptions {
   /**
    * Advanced options
    */
@@ -58,6 +63,7 @@ export interface AnyOptions extends UnOptions {
   }
 
   database?:
+    | AdapterInstance<Schema, Models>
     | PostgresPool
     | MysqlPool
     | Database
@@ -89,5 +95,3 @@ export interface AnyOptions extends UnOptions {
       casing?: 'snake' | 'camel'
     }
 }
-
-export type AdapterOptions<T extends Record<string, any> = Record<string, any>> = AnyOptions & T

@@ -1,5 +1,5 @@
 import type { InferModelTypes } from './db.ts'
-import type { AdapterOptions, AnyOptions } from './options.ts'
+import type { AdapterOptions } from './options.ts'
 import type { UnDbSchema } from './schema.ts'
 
 /**
@@ -25,10 +25,13 @@ export interface Where {
 /**
  * Adapter Interface
  */
-export interface Adapter<Models extends Record<string, any> = Record<string, any>> {
+export interface Adapter<
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+> {
   id: string
   create: <M extends keyof Models>(data: {
-    model: M & string
+    model: keyof Models
     data: Omit<Models[M], 'id'>
     select?: string[]
   }) => Promise<Models[M]>
@@ -74,7 +77,7 @@ export interface Adapter<Models extends Record<string, any> = Record<string, any
    * @param file - file path if provided by the user
    */
   createSchema?: (
-    options: AnyOptions,
+    options: AdapterOptions<Schema, Models>,
     file?: string,
   ) => Promise<AdapterSchemaCreation>
   options?: Record<string, any>
@@ -102,27 +105,11 @@ export interface AdapterSchemaCreation {
 }
 
 export interface AdapterInstance<
-  T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
   Models extends Record<string, any> = InferModelTypes<Schema>,
 > {
   (
-    options: AdapterOptions<T>,
-    getTables: (options: AdapterOptions<T>) => Schema,
-  ): Adapter<Models>
-}
-
-export interface CreateAdapter<
-  T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
-> {
-  options?: AdapterOptions<T>
-  tables: (
-    options: AdapterOptions<Record<string, any>>
-  ) => Schema
-  adapter: (
-    options: AdapterOptions<T>,
-    getTables: (options: AdapterOptions<T>) => Schema,
-  ) => Adapter<Models>
+    options: AdapterOptions<Schema, Models>,
+    table: (options: AdapterOptions<Schema, Models>) => Schema,
+  ): Adapter<Schema, Models>
 }

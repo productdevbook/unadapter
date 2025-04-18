@@ -1,15 +1,35 @@
-import type { AdapterOptions, CreateAdapter, InferModelTypes, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, InferModelTypes, UnDbSchema } from 'unadapter/types'
 
 export function createAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
   Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
-  options: CreateAdapter<T, Schema, Models>,
+  table: (
+    options: AdapterOptions<Schema, Models>,
+  ) => T,
+  options: AdapterOptions<T>,
 ) {
-  const adapter = options.adapter(
-    options.options as AdapterOptions<T> || {} as AdapterOptions<T>,
-    options.tables,
-  )
+  if (!options.database) {
+    throw new Error('Adapter not provided')
+  }
+  let adapter
+  if (typeof options.database === 'function') {
+    // If it's an AdapterInstance (function)
+    adapter = options.database(
+      options,
+      table,
+    )
+  }
+  else {
+    throw new TypeError('Invalid adapter provided')
+  }
   return adapter
+}
+
+export function createTable<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+>(table: (options: AdapterOptions<T>) => Schema) {
+  return table
 }

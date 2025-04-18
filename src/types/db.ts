@@ -222,7 +222,7 @@ export type InferFieldsFromPlugins<
 
 export type InferFieldsFromOptions<
   Options extends AdapterOptions,
-  Key extends string,
+  Key extends keyof Options,
   Format extends 'output' | 'input' = 'output',
 > = Options[Key] extends {
   additionalFields: infer Field
