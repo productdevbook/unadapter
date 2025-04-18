@@ -61,10 +61,6 @@
       "types": "./dist/db/index.d.mts",
       "import": "./dist/db/index.mjs"
     },
-    "./error": {
-      "types": "./dist/error/index.d.mts",
-      "import": "./dist/error/index.mjs"
-    },
     "./utils": {
       "types": "./dist/utils/index.d.mts",
       "import": "./dist/utils/index.mjs"

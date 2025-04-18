@@ -6,7 +6,7 @@ const db = {
   session: [],
 }
 
-export function getTables(options: AdapterOptions): UnDbSchema {
+export function getTables(options?: AdapterOptions) {
   return {
     user: {
       modelName: 'user',
@@ -49,8 +49,9 @@ export function getTables(options: AdapterOptions): UnDbSchema {
         },
       },
     },
-  }
+  } satisfies UnDbSchema
 }
+
 
 // Initialize the adapter
 const createAdapter = memoryAdapter(
