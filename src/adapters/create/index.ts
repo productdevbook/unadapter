@@ -2,6 +2,7 @@ import type {
   Adapter,
   AdapterOptions,
   FieldAttribute,
+  InferFieldsInput,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -49,8 +50,15 @@ const colors = {
     white: '\x1B[47m',
   },
 }
+type InferModelTypes<Schema extends UnDbSchema> = {
+  [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
+}
 
-export function createAdapter<T extends Record<string, any>>({
+export function createAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema,
+  Models = InferModelTypes<Schema>,
+>({
   adapter,
   config: cfg,
   getTables,

@@ -1,5 +1,6 @@
 import type {
   AdapterOptions,
+  InferFieldsInput,
   UnDbSchema,
 } from 'unadapter/types'
 import type {
@@ -18,12 +19,20 @@ export interface MemoryAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function memoryAdapter<T extends Record<string, any>>(
+type InferModelTypes<Schema extends UnDbSchema> = {
+  [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
+}
+
+export function memoryAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema,
+  Models = InferModelTypes<Schema>,
+>(
   db: MemoryDB,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T>({
+  return createAdapter<T, Schema, Models>({
     getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
@@ -70,7 +79,13 @@ export function memoryAdapter<T extends Record<string, any>>(
         })
       }
       return {
-        create: async ({ model, data }) => {
+        create: async <M extends keyof Models>({
+          model,
+          data,
+        }: {
+          model: M & string
+          data: Omit<Models[M], 'id'>
+        }) => {
           if (options.advanced?.database?.useNumberId) {
             // @ts-ignore
             data.id = db[model].length + 1
@@ -78,13 +93,31 @@ export function memoryAdapter<T extends Record<string, any>>(
           db[model].push(data)
           return data
         },
-        findOne: async ({ model, where }) => {
+        findOne: async <M extends keyof Models>({
+          model,
+          where,
+        }: {
+          model: M & string
+          where: CleanedWhere[]
+        }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           const record = res[0] || null
-          return record
+          return record as (Models[M] | null)
         },
-        findMany: async ({ model, where, sortBy, limit, offset }) => {
+        findMany: async <M extends keyof Models>({
+          model,
+          where,
+          sortBy,
+          limit,
+          offset,
+        }: {
+          model: M & string
+          where?: CleanedWhere[]
+          sortBy?: { field: string, direction: 'asc' | 'desc' }
+          limit?: number
+          offset?: number
+        }) => {
           let table = db[model]
           if (where) {
             table = convertWhereClause(where, table)
@@ -106,18 +139,26 @@ export function memoryAdapter<T extends Record<string, any>>(
           if (limit !== undefined) {
             table = table.slice(0, limit)
           }
-          return table
+          return table as Models[M][]
         },
         count: async ({ model }) => {
           return db[model].length
         },
-        update: async ({ model, where, update }) => {
+        update: async <M extends keyof Models>({
+          model,
+          where,
+          update,
+        }: {
+          model: M & string
+          where: CleanedWhere[]
+          update: Partial<Models[M]>
+        }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
             Object.assign(record, update)
           })
-          return res[0] || null
+          return res[0] || null as (Models[M] | null)
         },
         delete: async ({ model, where }) => {
           const table = db[model]
@@ -137,13 +178,21 @@ export function memoryAdapter<T extends Record<string, any>>(
           })
           return count
         },
-        updateMany({ model, where, update }) {
+        updateMany<M extends keyof Models>({
+          model,
+          where,
+          update,
+        }: {
+          model: M & string
+          where: CleanedWhere[]
+          update: Partial<Models[M]>
+        }) {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
             Object.assign(record, update)
           })
-          return res[0] || null
+          return res[0] || null as (Models[M] | null)
         },
       }
     },
