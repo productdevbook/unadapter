@@ -123,7 +123,7 @@ const db = {
 }
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'user',
@@ -161,7 +161,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
         },
       },
     },
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -238,7 +238,7 @@ const db = {
 }
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'users', // The actual table/collection name in your database
@@ -323,7 +323,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
         }
       }
     }
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -422,7 +422,7 @@ await client.connect()
 const db = client.db('myDatabase')
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'users',
@@ -451,7 +451,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
       },
       order: 1
     }
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -488,7 +488,7 @@ import { prismaAdapter } from 'unadapter/prisma'
 const prisma = new PrismaClient()
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'User', // Match your Prisma model name (case-sensitive)
@@ -548,7 +548,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
       },
       order: 2
     }
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -596,7 +596,7 @@ const pool = mysql.createPool({
 const db = drizzle(pool)
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'users',
@@ -650,7 +650,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
       },
       order: 2
     }
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -708,7 +708,7 @@ const db = new Kysely({
 })
 
 // Define a schema builder function
-function getTables(options: AdapterOptions): UnDbSchema {
+function getTables(options: AdapterOptions) {
   return {
     user: {
       modelName: 'users',
@@ -778,7 +778,7 @@ function getTables(options: AdapterOptions): UnDbSchema {
       },
       order: 2
     }
-  }
+  } satisfies UnDbSchema
 }
 
 // Initialize the adapter
@@ -824,7 +824,7 @@ import { UnDbSchema } from 'unadapter'
 import { createAdapter } from 'unadapter/create'
 
 // Define a schema
-const mySchema: UnDbSchema = {
+const mySchema = {
   user: {
     modelName: 'user',
     fields: {
@@ -834,7 +834,7 @@ const mySchema: UnDbSchema = {
     },
     order: 1
   }
-}
+} satisfies UnDbSchema
 
 // Define options
 const options = {
