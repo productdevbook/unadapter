@@ -1,6 +1,7 @@
 import type {
   AdapterOptions,
   InferFieldsInput,
+  InferModelTypes,
   UnDbSchema,
 } from 'unadapter/types'
 import type {
@@ -22,12 +23,13 @@ export interface MemoryAdapterConfig {
 export function memoryAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: MemoryDB,
   getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T, Schema>({
+  return createAdapter<T, Schema, Models>({
     getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
