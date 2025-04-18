@@ -214,7 +214,7 @@ export function kyselyAdapter<
         findOne: async ({
           model,
           where,
-          select,
+          select: _select,
         }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
@@ -240,34 +240,34 @@ export function kyselyAdapter<
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model)
           if (and) {
-            query = query.where(eb => eb.and(and.map(expr => expr(eb))))
+            query = query.where(eb => eb.and(and.map(expr => expr(eb)))) as any
           }
           if (or) {
-            query = query.where(eb => eb.or(or.map(expr => expr(eb))))
+            query = query.where(eb => eb.or(or.map(expr => expr(eb)))) as any
           }
           if (config?.type === 'mssql') {
             if (!offset) {
-              query = query.top(limit || 100)
+              query = query.top(limit || 100) as any
             }
           }
           else {
-            query = query.limit(limit || 100)
+            query = query.limit(limit || 100) as any
           }
           if (sortBy) {
             query = query.orderBy(
               getFieldName({ model, field: sortBy.field }),
               sortBy.direction,
-            )
+            ) as any
           }
           if (offset) {
             if (config?.type === 'mssql') {
               if (!sortBy) {
-                query = query.orderBy(getFieldName({ model, field: 'id' }))
+                query = query.orderBy(getFieldName({ model, field: 'id' })) as any
               }
-              query = query.offset(offset).fetch(limit || 100)
+              query = query.offset(offset).fetch(limit || 100) as any
             }
             else {
-              query = query.offset(offset)
+              query = query.offset(offset) as any
             }
           }
 

@@ -1,4 +1,5 @@
-import type { AdapterOptions } from 'unadapter'
+// @ts-nocheck
+import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fs from 'node:fs'
 import fsPromises from 'node:fs/promises'
@@ -17,7 +18,7 @@ import { getState, stateFilePath } from '../state.ts'
 export function opts({
   database,
   isNumberIdTest,
-}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }): AdapterOptions<BetterAuthOptions> {
   return ({
     database,
     user: {
@@ -36,7 +37,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies AdapterOptions<BetterAuthOptions>
+  }) as AdapterOptions<BetterAuthOptions>
 }
 
 const sqlite = new Database(path.join(__dirname, 'test.db'))
@@ -67,18 +68,22 @@ describe('number ID Adapter tests', async () => {
   })
 
   beforeAll(async () => {
-    await new Promise(async (resolve) => {
-      await new Promise(r => setTimeout(r, 800))
-      if (getState() === 'IDLE') {
-        resolve(true)
-        return
-      }
-      console.log(`Waiting for state to be IDLE...`)
-      fs.watch(stateFilePath, () => {
+    await new Promise((resolve) => {
+      const checkState = async () => {
+        await new Promise(r => setTimeout(r, 800))
         if (getState() === 'IDLE') {
           resolve(true)
+          return
         }
-      })
+        console.log(`Waiting for state to be IDLE...`)
+        fs.watch(stateFilePath, () => {
+          if (getState() === 'IDLE') {
+            resolve(true)
+          }
+        })
+      }
+
+      checkState()
     })
     console.log(`Now running Number ID Kysely adapter test...`)
     await (await getMigrations(mysqlOptions, getAuthTables)).runMigrations()

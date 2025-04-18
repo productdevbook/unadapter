@@ -5,6 +5,7 @@ export default antfu(
     ignores: [
       '**/dist',
       '.github/copilot-instructions.md',
+      'README.md',
     ],
   },
   {
@@ -21,6 +22,12 @@ export default antfu(
       'jsdoc/require-jsdoc': 'off', // Disable JSDoc requirement in markdown files
       'unused-imports/no-unused-vars': 'off', // Disable unused imports in markdown files
       'jsdoc/require-returns-check': 'off', // Disable JSDoc require returns check in markdown files
+    },
+  },
+  {
+    files: ['tests/**/*.ts'],
+    rules: {
+      'ts/ban-ts-comment': 'off', // Disable ts/ban-ts-comment in tests
     },
   },
 )

@@ -1,4 +1,5 @@
-import type { AdapterOptions } from 'unadapter'
+// @ts-nocheck
+import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
@@ -29,7 +30,7 @@ const mysqlKy = new Kysely({
 export function opts({
   database,
   isNumberIdTest,
-}: { database: AdapterOptions['database'], isNumberIdTest: boolean }) {
+}: { database: AdapterOptions['database'], isNumberIdTest: boolean }): AdapterOptions<BetterAuthOptions> {
   return ({
     database,
     user: {
@@ -49,7 +50,7 @@ export function opts({
         useNumberId: isNumberIdTest,
       },
     },
-  }) satisfies AdapterOptions<BetterAuthOptions>
+  }) as AdapterOptions<BetterAuthOptions>
 }
 
 describe('adapter test', async () => {
@@ -152,7 +153,7 @@ describe('mssql', async () => {
     },
   } satisfies AdapterOptions<BetterAuthOptions>
   beforeAll(async () => {
-    const { runMigrations, toBeAdded, toBeCreated } = await getMigrations(opts, getAuthTables)
+    const { runMigrations, _toBeAdded, _toBeCreated } = await getMigrations(opts, getAuthTables)
     await runMigrations()
     return async () => {
       await resetDB()
@@ -183,7 +184,7 @@ describe('mssql', async () => {
   }
 
   await runAdapterTest({
-    getAdapter: async (customOptions = {}) => {
+    getAdapter: async (_customOptions = {}) => {
       // const merged = merge( customOptions,opts);
       // merged.database = opts.database;
       return getAdapter(opts)

@@ -79,7 +79,7 @@ export async function createKyselyAdapter(config: AnyOptions) {
   }
 
   if ('getConnection' in db) {
-    // @ts-ignore - mysql2/promise
+    // @ts-expect-error - mysql2/promise connection object compatibility
     dialect = new MysqlDialect(db)
   }
 

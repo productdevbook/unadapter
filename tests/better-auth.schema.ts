@@ -1,6 +1,13 @@
-import type { Account, OmitId, SecondaryStorage, User, Verification } from 'undatabase'
-import type { FieldAttribute } from '../src/db/field.ts'
-import type { DbSchema, UnDbSchema } from '../src/db/get-tables.ts'
+import type {
+  Account,
+  DbSchema,
+  FieldAttribute,
+  OmitId,
+  SecondaryStorage,
+  UnDbSchema,
+  User,
+  Verification,
+} from 'unadapter/types'
 
 export interface BetterAuthOptions {
   /**
@@ -122,9 +129,9 @@ export function getAuthTables(options: BetterAuthOptions): UnDbSchema {
         acc[key] = {
           fields: {
             ...acc[key]?.fields,
-            ...value.fields,
+            ...(typeof value === 'object' && value !== null && 'fields' in value ? value.fields as unknown as Record<string, FieldAttribute> : {}),
           },
-          modelName: value.modelName || key,
+          modelName: (typeof value === 'object' && value !== null && 'modelName' in value ? String(value.modelName) : key) || key,
         }
       }
       return acc

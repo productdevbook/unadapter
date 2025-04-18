@@ -1,4 +1,4 @@
-import type { FieldAttribute } from '../db/index.ts'
+import type { FieldAttribute } from 'unadapter/types'
 
 export function withApplyDefault(
   value: any,

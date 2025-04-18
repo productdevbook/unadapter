@@ -76,22 +76,22 @@ You'll also need to install the specific database driver or ORM you plan to use.
     <td>✅ Ready</td>
   </tr>
   <tr>
-    <td><b><a href="https://www.prisma.io/">Prisma Adapter</a></td>
+    <td><b><a href="https://www.prisma.io/">Prisma Adapter</a></b></td>
     <td>For Prisma ORM</td>
     <td>✅ Ready</td>
   </tr>
   <tr>
-    <td><b><a href="https://www.mongodb.com/">MongoDB Adapter</a></td>
+    <td><b><a href="https://www.mongodb.com/">MongoDB Adapter</a></b></td>
     <td>For MongoDB</td>
     <td>✅ Ready</td>
   </tr>
   <tr>
-    <td><b><a href="https://orm.drizzle.team/">Drizzle Adapter</a></td>
+    <td><b><a href="https://orm.drizzle.team/">Drizzle Adapter</a></b></td>
     <td>For Drizzle ORM</td>
     <td>✅ Ready</td>
   </tr>
   <tr>
-    <td><b><a href="https://kysely.dev/">Kysely Adapter</a></td>
+    <td><b><a href="https://kysely.dev/">Kysely Adapter</a></b></td>
     <td>For Kysely SQL query builder</td>
     <td>✅ Ready</td>
   </tr>

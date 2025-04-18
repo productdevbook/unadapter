@@ -215,7 +215,7 @@ export function createAdapter<
 
       let f = schema[model]?.fields[field]
       if (!f) {
-        // @ts-expect-error
+        // @ts-expect-error - Field name might be a custom property not in the type definition
         f = Object.values(schema[model]?.fields).find(
           f => f.fieldName === field,
         )
@@ -575,7 +575,7 @@ export function createAdapter<
             .join('\n')
             .replace('Error:', 'Create method with `id` being called at:')
           console.log(stack)
-          // @ts-ignore
+          // @ts-expect-error - Intentionally modifying input data before processing
           unsafeData.id = undefined
         }
         debugLog(
@@ -595,7 +595,7 @@ export function createAdapter<
           `${formatMethod('create')} ${formatAction('Parsed Input')}:`,
           { model, data },
         )
-        const res = await adapterInstance.create<T>({ data, model })
+        const res = await adapterInstance.create({ data: data as any, model })
         debugLog(
           { method: 'create' },
           `${formatTransactionId(thisTransactionId)} ${formatStep(3, 4)}`,
@@ -640,10 +640,10 @@ export function createAdapter<
           `${formatMethod('update')} ${formatAction('Parsed Input')}:`,
           { model, data },
         )
-        const res = await adapterInstance.update<T>({
+        const res = await adapterInstance.update({
           model,
           where,
-          update: data,
+          update: data as any,
         })
         debugLog(
           { method: 'update' },
@@ -689,7 +689,7 @@ export function createAdapter<
         const updatedCount = await adapterInstance.updateMany({
           model,
           where,
-          update: data,
+          update: data as any,
         })
         debugLog(
           { method: 'updateMany' },
@@ -723,7 +723,7 @@ export function createAdapter<
           `${formatMethod('findOne')}:`,
           { model, where, select },
         )
-        const res = await adapterInstance.findOne<T>({
+        const res = await adapterInstance.findOne({
           model,
           where,
           select,
@@ -771,7 +771,7 @@ export function createAdapter<
           `${formatMethod('findMany')}:`,
           { model, where, limit, sortBy, offset },
         )
-        const res = await adapterInstance.findMany<T>({
+        const res = await adapterInstance.findMany({
           model,
           where,
           limit,
