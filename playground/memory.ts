@@ -5,8 +5,6 @@ const db = {
   user: [],
   session: [],
 }
-// (options: AdapterOptions<T>, getTables: (options: AdapterOptions<T>) => Schema,
-//   ): Adapter<Models>
 
 const adapter = createAdapter({
   options: {
