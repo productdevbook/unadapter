@@ -1,11 +1,11 @@
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { FieldAttribute } from '../../db/index.ts'
-import type { Prettify } from '../../types/helper.ts'
 import type {
   AdapterSchemaCreation,
   AnyOptions,
+  FieldAttribute,
+  Prettify,
+  UnDbSchema,
   Where,
-} from '../../types/index.ts'
+} from 'unadapter/types'
 
 export type AdapterDebugLogs =
   | boolean
@@ -227,7 +227,7 @@ export interface AdapterConfig {
   }) => string
 }
 
-export type CreateCustomAdapter = ({
+export type CreateCustomAdapter<Models extends Record<string, any> = Record<string, any>> = ({
   options,
   schema,
   debugLog,
@@ -293,50 +293,65 @@ export type CreateCustomAdapter = ({
     model,
     field,
   }: { model: string, field: string }) => FieldAttribute
-}) => CustomAdapter
+}) => CustomAdapter<Models>
 
-export interface CustomAdapter {
-  create: <T extends Record<string, any>>({
-    data,
+export interface CustomAdapter<Models = any> {
+  create: <M extends keyof Models>({
     model,
+    data,
     select,
   }: {
-    model: string
-    data: T
+    model: M & string
+    data: Omit<Models[M], 'id'>
     select?: string[]
-  }) => Promise<T>
-  update: <T>(data: {
-    model: string
+  }) => Promise<any> // Return any here since it'll be transformed by the adapter later
+
+  update: <M extends keyof Models>({
+    model,
+    where,
+    update,
+  }: {
+    model: M & string
     where: CleanedWhere[]
-    update: T
-  }) => Promise<T | null>
-  updateMany: (data: {
-    model: string
+    update: Partial<Models[M]>
+  }) => Promise<Models[M] | null>
+
+  updateMany: <M extends keyof Models>({
+    model,
+    where,
+    update,
+  }: {
+    model: M & string
     where: CleanedWhere[]
-    update: Record<string, any>
+    update: Partial<Models[M]>
   }) => Promise<number>
-  findOne: <T>({
+
+  findOne: <M extends keyof Models>({
     model,
     where,
     select,
   }: {
-    model: string
+    model: M & string
     where: CleanedWhere[]
     select?: string[]
-  }) => Promise<T | null>
-  findMany: <T>({
+  }) => Promise<Models[M] | null>
+
+  findMany: <M extends keyof Models>({
     model,
     where,
     limit,
     sortBy,
     offset,
+    select,
   }: {
-    model: string
+    model: M & string
     where?: CleanedWhere[]
-    limit: number
+    limit?: number
     sortBy?: { field: string, direction: 'asc' | 'desc' }
     offset?: number
-  }) => Promise<T[]>
+    select?: string[]
+  }) => Promise<Models[M][]>
+
   delete: ({
     model,
     where,
@@ -344,6 +359,7 @@ export interface CustomAdapter {
     model: string
     where: CleanedWhere[]
   }) => Promise<void>
+
   deleteMany: ({
     model,
     where,
@@ -351,6 +367,7 @@ export interface CustomAdapter {
     model: string
     where: CleanedWhere[]
   }) => Promise<number>
+
   count: ({
     model,
     where,
@@ -358,6 +375,7 @@ export interface CustomAdapter {
     model: string
     where?: CleanedWhere[]
   }) => Promise<number>
+
   createSchema?: (props: {
     /**
      * The file the user may have passed in to the `generate` command as the expected schema file output path.
@@ -368,6 +386,7 @@ export interface CustomAdapter {
      */
     tables: UnDbSchema
   }) => Promise<AdapterSchemaCreation>
+
   /**
    * Your adapter's options.
    */

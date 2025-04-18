@@ -1,5 +1,9 @@
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterOptions, Where } from '../../types/index.ts'
+import type {
+  AdapterOptions,
+  InferModelTypes,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
 import { BetterAuthError } from '../../error/index.ts'
 import { createAdapter } from '../create/index.ts'
@@ -44,12 +48,16 @@ interface PrismaClientInternal {
   }
 }
 
-export function prismaAdapter<T extends Record<string, any>>(
+export function prismaAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(
   prisma: PrismaClient,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config: PrismaConfig,
 ) {
-  return createAdapter({
+  return createAdapter<T, Schema, Models>({
     getTables,
     config: {
       adapterId: 'prisma',
@@ -90,11 +98,11 @@ export function prismaAdapter<T extends Record<string, any>>(
           }
           return {
             [getFieldName({ model, field: w.field })]:
-							w.operator === 'eq' || !w.operator
-							  ? w.value
-							  : {
-							      [operatorToPrismaOperator(w.operator)]: w.value,
-							    },
+            w.operator === 'eq' || !w.operator
+              ? w.value
+              : {
+                  [operatorToPrismaOperator(w.operator)]: w.value,
+                },
           }
         }
         const and = where.filter(w => w.connector === 'AND' || !w.connector)
@@ -102,11 +110,11 @@ export function prismaAdapter<T extends Record<string, any>>(
         const andClause = and.map((w) => {
           return {
             [getFieldName({ model, field: w.field })]:
-							w.operator === 'eq' || !w.operator
-							  ? w.value
-							  : {
-							      [operatorToPrismaOperator(w.operator)]: w.value,
-							    },
+            w.operator === 'eq' || !w.operator
+              ? w.value
+              : {
+                  [operatorToPrismaOperator(w.operator)]: w.value,
+                },
           }
         })
         const orClause = or.map((w) => {
@@ -124,7 +132,11 @@ export function prismaAdapter<T extends Record<string, any>>(
       }
 
       return {
-        async create({ model, data: values, select }) {
+        async create({
+          model,
+          data: values,
+          select,
+        }) {
           if (!db[model]) {
             throw new BetterAuthError(
               `Model ${model} does not exist in the database. If you haven't generated the Prisma client, you need to run 'npx prisma generate'`,
@@ -135,7 +147,11 @@ export function prismaAdapter<T extends Record<string, any>>(
             select: convertSelect(select, model),
           })
         },
-        async findOne({ model, where, select }) {
+        async findOne({
+          model,
+          where,
+          select,
+        }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
             throw new BetterAuthError(
@@ -147,7 +163,14 @@ export function prismaAdapter<T extends Record<string, any>>(
             select: convertSelect(select, model),
           })
         },
-        async findMany({ model, where, limit, offset, sortBy }) {
+        async findMany({
+          model,
+          where,
+          limit,
+          offset,
+          sortBy,
+          select,
+        }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
             throw new BetterAuthError(
@@ -163,11 +186,12 @@ export function prismaAdapter<T extends Record<string, any>>(
               ? {
                   orderBy: {
                     [getFieldName({ model, field: sortBy.field })]:
-											sortBy.direction === 'desc' ? 'desc' : 'asc',
+                    sortBy.direction === 'desc' ? 'desc' : 'asc',
                   },
                 }
               : {}),
-          })) as any[]
+            select: convertSelect(select, model),
+          }))
         },
         async count({ model, where }) {
           const whereClause = convertWhereClause(model, where)
@@ -180,7 +204,11 @@ export function prismaAdapter<T extends Record<string, any>>(
             where: whereClause,
           })
         },
-        async update({ model, where, update }) {
+        async update({
+          model,
+          where,
+          update,
+        }) {
           if (!db[model]) {
             throw new BetterAuthError(
               `Model ${model} does not exist in the database. If you haven't generated the Prisma client, you need to run 'npx prisma generate'`,
@@ -192,7 +220,11 @@ export function prismaAdapter<T extends Record<string, any>>(
             data: update,
           })
         },
-        async updateMany({ model, where, update }) {
+        async updateMany({
+          model,
+          where,
+          update,
+        }) {
           const whereClause = convertWhereClause(model, where)
           const result = await db[model].updateMany({
             where: whereClause,
@@ -207,7 +239,7 @@ export function prismaAdapter<T extends Record<string, any>>(
               where: whereClause,
             })
           }
-          catch (e) {
+          catch {
             // If the record doesn't exist, we don't want to throw an error
           }
         },

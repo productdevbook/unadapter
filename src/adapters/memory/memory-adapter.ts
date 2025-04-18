@@ -1,9 +1,14 @@
-import type { AdapterOptions } from 'unadapter/types'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { AdapterDebugLogs, CleanedWhere } from '../create/index.ts'
+import type {
+  AdapterOptions,
+  InferModelTypes,
+  UnDbSchema,
+} from 'unadapter/types'
+import type {
+  AdapterDebugLogs,
+  CleanedWhere,
+} from '../create/index.ts'
 import {
   createAdapter,
-
 } from '../create/index.ts'
 
 export interface MemoryDB {
@@ -14,12 +19,16 @@ export interface MemoryAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function memoryAdapter<T extends Record<string, any>>(
+export function memoryAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(
   db: MemoryDB,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T>({
+  return createAdapter<T, Schema, Models>({
     getTables: options => getTables(options as AdapterOptions<T>),
     config: {
       adapterId: 'memory',
@@ -66,7 +75,10 @@ export function memoryAdapter<T extends Record<string, any>>(
         })
       }
       return {
-        create: async ({ model, data }) => {
+        create: async ({
+          model,
+          data,
+        }) => {
           if (options.advanced?.database?.useNumberId) {
             // @ts-ignore
             data.id = db[model].length + 1
@@ -74,13 +86,22 @@ export function memoryAdapter<T extends Record<string, any>>(
           db[model].push(data)
           return data
         },
-        findOne: async ({ model, where }) => {
+        findOne: async ({
+          model,
+          where,
+        }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           const record = res[0] || null
           return record
         },
-        findMany: async ({ model, where, sortBy, limit, offset }) => {
+        findMany: async ({
+          model,
+          where,
+          sortBy,
+          limit,
+          offset,
+        }) => {
           let table = db[model]
           if (where) {
             table = convertWhereClause(where, table)
@@ -107,7 +128,11 @@ export function memoryAdapter<T extends Record<string, any>>(
         count: async ({ model }) => {
           return db[model].length
         },
-        update: async ({ model, where, update }) => {
+        update: async ({
+          model,
+          where,
+          update,
+        }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
@@ -133,7 +158,11 @@ export function memoryAdapter<T extends Record<string, any>>(
           })
           return count
         },
-        updateMany({ model, where, update }) {
+        updateMany({
+          model,
+          where,
+          update,
+        }) {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {

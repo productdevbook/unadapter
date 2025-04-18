@@ -1,6 +1,7 @@
 import type { ZodSchema } from 'zod'
-import type { LiteralString } from '../types/helper.ts'
-import type { BetterAuthOptions } from '../types/index.ts'
+import type { LiteralString } from './helper.ts'
+import type { AdapterOptions } from './options.ts'
+import type { UnDbSchema } from './schema.ts'
 
 export type FieldType =
   | 'string'
@@ -202,7 +203,7 @@ export type PluginFieldAttribute = Omit<
 >
 
 export type InferFieldsFromPlugins<
-  Options extends BetterAuthOptions,
+  Options extends AdapterOptions,
   Key extends string,
   Format extends 'output' | 'input' = 'output',
 > = Options['plugins'] extends Array<infer T>
@@ -220,8 +221,8 @@ export type InferFieldsFromPlugins<
   : object
 
 export type InferFieldsFromOptions<
-  Options extends BetterAuthOptions,
-  Key extends 'user',
+  Options extends AdapterOptions,
+  Key extends string,
   Format extends 'output' | 'input' = 'output',
 > = Options[Key] extends {
   additionalFields: infer Field
@@ -230,3 +231,7 @@ export type InferFieldsFromOptions<
     ? InferFieldsOutput<Field>
     : InferFieldsInput<Field>
   : object
+
+export type InferModelTypes<Schema extends UnDbSchema> = {
+  [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
+}

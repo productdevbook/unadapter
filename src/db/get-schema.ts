@@ -1,6 +1,4 @@
-import type { AdapterOptions, AnyOptions } from '../types/index.ts'
-import type { UnDbSchema } from './get-tables.ts'
-import type { FieldAttribute } from './index.ts'
+import type { AdapterOptions, AnyOptions, FieldAttribute, UnDbSchema } from 'unadapter/types'
 
 export function getSchema<T extends Record<string, any>>(
   config: AnyOptions,

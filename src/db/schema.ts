@@ -1,7 +1,9 @@
+import type {
+  FieldAttribute,
+  UnDbSchema,
+} from 'unadapter/types'
 import type { Account, User } from '../types/index.ts'
-import type { AnyOptions } from '../types/options.ts'
-import type { AuthPluginSchema } from '../types/plugins.ts'
-import type { FieldAttribute } from './index.ts'
+import type { AdapterOptions } from '../types/options.ts'
 import { z } from 'zod'
 
 export const accountSchema = z.object({
@@ -73,7 +75,7 @@ export function parseOutputData<T extends Record<string, any>>(
   return parsedData as T
 }
 
-export function getAllFields(options: AnyOptions, table: string) {
+export function getAllFields(options: AdapterOptions, table: string) {
   let schema: Record<string, FieldAttribute> = {
     ...(table === 'user' ? options.user?.additionalFields : {}),
   }
@@ -88,13 +90,13 @@ export function getAllFields(options: AnyOptions, table: string) {
   return schema
 }
 
-export function parseUserOutput(options: AnyOptions, user: User) {
+export function parseUserOutput(options: AdapterOptions, user: User) {
   const schema = getAllFields(options, 'user')
   return parseOutputData(user, { fields: schema })
 }
 
 export function parseAccountOutput(
-  options: AnyOptions,
+  options: AdapterOptions,
   account: Account,
 ) {
   const schema = getAllFields(options, 'account')
@@ -150,7 +152,7 @@ export function parseInputData<T extends Record<string, any>>(
 }
 
 export function parseUserInput(
-  options: AnyOptions,
+  options: AdapterOptions,
   user?: Record<string, any>,
   action?: 'create' | 'update',
 ) {
@@ -159,7 +161,7 @@ export function parseUserInput(
 }
 
 export function parseAdditionalUserInput(
-  options: AnyOptions,
+  options: AdapterOptions,
   user?: Record<string, any>,
 ) {
   const schema = getAllFields(options, 'user')
@@ -167,14 +169,14 @@ export function parseAdditionalUserInput(
 }
 
 export function parseAccountInput(
-  options: AnyOptions,
+  options: AdapterOptions,
   account: Partial<Account>,
 ) {
   const schema = getAllFields(options, 'account')
   return parseInputData(account, { fields: schema })
 }
 
-export function mergeSchema<S extends AuthPluginSchema>(
+export function mergeSchema<S extends UnDbSchema>(
   schema: S,
   newSchema?: {
     [K in keyof S]?: {

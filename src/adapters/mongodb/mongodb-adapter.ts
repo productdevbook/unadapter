@@ -1,6 +1,12 @@
 import type { Db } from 'mongodb'
-import type { UnDbSchema } from '../../db/get-tables.ts'
-import type { Adapter, AdapterOptions, AnyOptions, Where } from '../../types/index.ts'
+import type {
+  Adapter,
+  AdapterOptions,
+  AnyOptions,
+  InferModelTypes,
+  UnDbSchema,
+  Where,
+} from 'unadapter/types'
 import { ObjectId } from 'mongodb'
 import { withApplyDefault } from '../utils.ts'
 
@@ -122,7 +128,7 @@ function createTransform(options: AnyOptions, schema: UnDbSchema) {
     transformOutput(
       data: Record<string, any>,
       model: string,
-			select: string[] = [],
+select: string[] = [],
     ) {
       const transformedData: Record<string, any> = data.id || data._id
         ? select.length === 0 || select.includes('id')
@@ -226,14 +232,22 @@ function createTransform(options: AnyOptions, schema: UnDbSchema) {
   }
 }
 
-export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: UnDbSchema) {
-  return (options: AdapterOptions<T>) => {
+export function mongodbAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(db: Db, getTables: (options: AdapterOptions<T>) => Schema) {
+  return (options: AdapterOptions<T>): Adapter<Models> => {
+    const schema = getTables(options)
     const transform = createTransform(options, schema)
     const hasCustomId = options.advanced?.generateId
     return {
       id: 'mongodb-adapter',
-      async create(data) {
-        const { model, data: values, select } = data
+      async create({
+        model,
+        data: values,
+        select,
+      }) {
         const transformedData = transform.transformInput(values, model, 'create')
         if (transformedData.id && !hasCustomId) {
           // biome-ignore lint/performance/noDelete: setting id to undefined will cause the id to be null in the database which is not what we want
@@ -247,8 +261,11 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
         const t = transform.transformOutput(insertedData, model, select)
         return t
       },
-      async findOne(data) {
-        const { model, where, select } = data
+      async findOne({
+        model,
+        where,
+        select,
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
           .collection(transform.getModelName(model))
@@ -258,8 +275,14 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
         const transformedData = transform.transformOutput(res, model, select)
         return transformedData
       },
-      async findMany(data) {
-        const { model, where, limit, offset, sortBy } = data
+      async findMany({
+        model,
+        where,
+        limit,
+        offset,
+        sortBy,
+        select,
+      }) {
         const clause = where ? transform.convertWhereClause(where, model) : {}
         const cursor = db.collection(transform.getModelName(model)).find(clause)
         if (limit)
@@ -273,17 +296,23 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           )
         }
         const res = await cursor.toArray()
-        return res.map(r => transform.transformOutput(r, model))
+        return res.map(r => transform.transformOutput(r, model, select))
       },
-      async count(data) {
-        const { model } = data
+      async count({
+        model,
+        where,
+      }) {
+        const clause = where ? transform.convertWhereClause(where, model) : {}
         const res = await db
           .collection(transform.getModelName(model))
-          .countDocuments()
+          .countDocuments(clause)
         return res
       },
-      async update(data) {
-        const { model, where, update: values } = data
+      async update({
+        model,
+        where,
+        update: values,
+      }) {
         const clause = transform.convertWhereClause(where, model)
 
         const transformedData = transform.transformInput(values, model, 'update')
@@ -301,8 +330,11 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           return null
         return transform.transformOutput(res, model)
       },
-      async updateMany(data) {
-        const { model, where, update: values } = data
+      async updateMany({
+        model,
+        where,
+        update: values,
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const transformedData = transform.transformInput(values, model, 'update')
         const res = await db
@@ -310,24 +342,25 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           .updateMany(clause, { $set: transformedData })
         return res.modifiedCount
       },
-      async delete(data) {
-        const { model, where } = data
+      async delete({
+        model,
+        where,
+      }) {
         const clause = transform.convertWhereClause(where, model)
-        const res = await db
+        await db
           .collection(transform.getModelName(model))
           .findOneAndDelete(clause)
-        if (!res)
-          return null
-        return transform.transformOutput(res, model)
       },
-      async deleteMany(data) {
-        const { model, where } = data
+      async deleteMany({
+        model,
+        where,
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
           .collection(transform.getModelName(model))
           .deleteMany(clause)
-        return res.deletedCount
+        return res.deletedCount || 0
       },
-    } satisfies Adapter<T>
+    }
   }
 }
