@@ -184,7 +184,7 @@ describe('mssql', async () => {
   }
 
   await runAdapterTest({
-    getAdapter: async (customOptions = {}) => {
+    getAdapter: async (_customOptions = {}) => {
       // const merged = merge( customOptions,opts);
       // merged.database = opts.database;
       return getAdapter(opts)

@@ -7,18 +7,22 @@ import { createTestOptions } from '../test-options.ts'
 
 describe('number Id Adapter Test', async () => {
   beforeAll(async () => {
-    await new Promise(async (resolve) => {
-      await new Promise(r => setTimeout(r, 500))
-      if (getState() === 'IDLE') {
-        resolve(true)
-        return
-      }
-      console.log(`Waiting for state to be IDLE...`)
-      fs.watch(stateFilePath, () => {
+    await new Promise((resolve) => {
+      const checkState = async () => {
+        await new Promise(r => setTimeout(r, 500))
         if (getState() === 'IDLE') {
           resolve(true)
+          return
         }
-      })
+        console.log(`Waiting for state to be IDLE...`)
+        fs.watch(stateFilePath, () => {
+          if (getState() === 'IDLE') {
+            resolve(true)
+          }
+        })
+      }
+
+      checkState()
     })
     console.log(`Now running Number ID Prisma adapter test...`)
     await pushPrismaSchema('number-id')
