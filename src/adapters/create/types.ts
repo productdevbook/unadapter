@@ -324,7 +324,7 @@ export interface CustomAdapter<Models = any> {
     model: M & string
     where: CleanedWhere[]
     update: Partial<Models[M]>
-  }) => Promise<number | Models[M] | null>
+  }) => Promise<number>
 
   findOne: <M extends keyof Models>({
     model,

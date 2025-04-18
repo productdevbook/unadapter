@@ -5,6 +5,7 @@ import type {
 } from 'kysely'
 import type {
   AdapterOptions,
+  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -31,12 +32,16 @@ interface KyselyAdapterConfig {
   usePlural?: boolean
 }
 
-export function kyselyAdapter<T extends Record<string, any>>(
+export function kyselyAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(
   db: Kysely<any>,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config?: KyselyAdapterConfig,
 ) {
-  return createAdapter({
+  return createAdapter<T, Schema, Models>({
     getTables,
     config: {
       adapterId: 'kysely',
@@ -198,12 +203,27 @@ export function kyselyAdapter<T extends Record<string, any>>(
         }
       }
       return {
-        async create({ data, model }) {
+        async create<M extends keyof Models>({
+          data,
+          model,
+        }: {
+          model: M & string
+          data: Omit<Models[M], 'id'>
+          select?: string[]
+        }) {
           const builder = db.insertInto(model).values(data)
-
           return (await withReturning(data, builder, model, [])) as any
         },
-        async findOne({ model, where }) {
+
+        async findOne<M extends keyof Models>({
+          model,
+          where,
+          select,
+        }: {
+          model: M & string
+          where: Where[]
+          select?: string[]
+        }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
           if (and) {
@@ -215,7 +235,7 @@ export function kyselyAdapter<T extends Record<string, any>>(
           const res = await query.executeTakeFirst()
           if (!res)
             return null
-          return res as any
+          return res as Models[M] | null
         },
         async findMany({ model, where, limit, offset, sortBy }) {
           const { and, or } = convertWhereClause(model, where)
@@ -255,9 +275,18 @@ export function kyselyAdapter<T extends Record<string, any>>(
           const res = await query.selectAll().execute()
           if (!res)
             return []
-          return res as any
+          return res as Models[M][]
         },
-        async update({ model, where, update: values }) {
+
+        async update<M extends keyof Models>({
+          model,
+          where,
+          update: values,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           const { and, or } = convertWhereClause(model, where)
 
           let query = db.updateTable(model).set(values as any)
@@ -267,9 +296,18 @@ export function kyselyAdapter<T extends Record<string, any>>(
           if (or) {
             query = query.where(eb => eb.or(or.map(expr => expr(eb))))
           }
-          return await withReturning(values as any, query, model, where)
+          return await withReturning(values as any, query, model, where) as Models[M] | null
         },
-        async updateMany({ model, where, update: values }) {
+
+        async updateMany<M extends keyof Models>({
+          model,
+          where,
+          update: values,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.updateTable(model).set(values as any)
           if (and) {
@@ -281,7 +319,14 @@ export function kyselyAdapter<T extends Record<string, any>>(
           const res = await query.execute()
           return res.length
         },
-        async count({ model, where }) {
+
+        async count({
+          model,
+          where,
+        }: {
+          model: string
+          where?: Where[]
+        }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db
             .selectFrom(model)
@@ -296,7 +341,14 @@ export function kyselyAdapter<T extends Record<string, any>>(
           const res = await query.execute()
           return res[0].count as number
         },
-        async delete({ model, where }) {
+
+        async delete({
+          model,
+          where,
+        }: {
+          model: string
+          where: Where[]
+        }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.deleteFrom(model)
           if (and) {
@@ -308,7 +360,14 @@ export function kyselyAdapter<T extends Record<string, any>>(
           }
           await query.execute()
         },
-        async deleteMany({ model, where }) {
+
+        async deleteMany({
+          model,
+          where,
+        }: {
+          model: string
+          where: Where[]
+        }) {
           const { and, or } = convertWhereClause(model, where)
           let query = db.deleteFrom(model)
           if (and) {

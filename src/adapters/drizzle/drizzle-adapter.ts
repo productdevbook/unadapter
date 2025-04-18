@@ -3,6 +3,7 @@ import type {
 } from 'drizzle-orm'
 import type {
   AdapterOptions,
+  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -50,12 +51,16 @@ export interface DrizzleAdapterConfig {
   debugLogs?: AdapterDebugLogs
 }
 
-export function drizzleAdapter<T extends Record<string, any>>(
+export function drizzleAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(
   db: DB,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config: DrizzleAdapterConfig,
 ) {
-  return createAdapter({
+  return createAdapter<T, Schema, Models>({
     getTables,
     config: {
       adapterId: 'drizzle',
@@ -244,14 +249,28 @@ export function drizzleAdapter<T extends Record<string, any>>(
         }
       }
       return {
-        async create({ model, data: values }) {
+        async create<M extends keyof Models>({
+          model,
+          data: values,
+        }: {
+          model: M & string
+          data: Omit<Models[M], 'id'>
+          select?: string[]
+        }) {
           const schemaModel = getSchema(model)
           checkMissingFields(schemaModel, model, values)
           const builder = db.insert(schemaModel).values(values)
           const returned = await withReturning(model, builder, values)
           return returned
         },
-        async findOne({ model, where }) {
+        async findOne<M extends keyof Models>({
+          model,
+          where,
+        }: {
+          model: M & string
+          where: Where[]
+          select?: string[]
+        }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
           const res = await db
@@ -260,9 +279,22 @@ export function drizzleAdapter<T extends Record<string, any>>(
             .where(...clause)
           if (!res.length)
             return null
-          return res[0]
+          return res[0] as Models[M] | null
         },
-        async findMany({ model, where, sortBy, limit, offset }) {
+        async findMany<M extends keyof Models>({
+          model,
+          where,
+          sortBy,
+          limit,
+          offset,
+        }: {
+          model: M & string
+          where?: Where[]
+          sortBy?: { field: string, direction: 'asc' | 'desc' }
+          limit?: number
+          offset?: number
+          select?: string[]
+        }) {
           const schemaModel = getSchema(model)
           const clause = where ? convertWhereClause(where, model) : []
 
@@ -279,9 +311,15 @@ export function drizzleAdapter<T extends Record<string, any>>(
               ),
             )
           }
-          return (await builder.where(...clause)) as any[]
+          return (await builder.where(...clause)) as Models[M][]
         },
-        async count({ model, where }) {
+        async count({
+          model,
+          where,
+        }: {
+          model: string
+          where?: Where[]
+        }) {
           const schemaModel = getSchema(model)
           const clause = where ? convertWhereClause(where, model) : []
           const res = await db
@@ -290,16 +328,32 @@ export function drizzleAdapter<T extends Record<string, any>>(
             .where(...clause)
           return res[0].count
         },
-        async update({ model, where, update: values }) {
+        async update<M extends keyof Models>({
+          model,
+          where,
+          update: values,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
           const builder = db
             .update(schemaModel)
             .set(values)
             .where(...clause)
-          return await withReturning(model, builder, values as any, where)
+          return await withReturning(model, builder, values as any, where) as Models[M] | null
         },
-        async updateMany({ model, where, update: values }) {
+        async updateMany<M extends keyof Models>({
+          model,
+          where,
+          update: values,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
           const builder = db
@@ -308,17 +362,28 @@ export function drizzleAdapter<T extends Record<string, any>>(
             .where(...clause)
           return await builder
         },
-        async delete({ model, where }) {
+        async delete({
+          model,
+          where,
+        }: {
+          model: string
+          where: Where[]
+        }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
-          const builder = db.delete(schemaModel).where(...clause)
-          return await builder
+          await db.delete(schemaModel).where(...clause)
         },
-        async deleteMany({ model, where }) {
+        async deleteMany({
+          model,
+          where,
+        }: {
+          model: string
+          where: Where[]
+        }) {
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
-          const builder = db.delete(schemaModel).where(...clause)
-          return await builder
+          const result = await db.delete(schemaModel).where(...clause)
+          return result.length || 0
         },
         options: config,
       }

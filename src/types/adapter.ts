@@ -44,6 +44,7 @@ export interface Adapter<Models extends Record<string, any> = Record<string, any
       direction: 'asc' | 'desc'
     }
     offset?: number
+    select?: string[]
   }) => Promise<Models[M][]>
   count: (data: {
     model: string

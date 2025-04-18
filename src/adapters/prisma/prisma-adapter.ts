@@ -1,5 +1,6 @@
 import type {
   AdapterOptions,
+  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -47,12 +48,16 @@ interface PrismaClientInternal {
   }
 }
 
-export function prismaAdapter<T extends Record<string, any>>(
+export function prismaAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(
   prisma: PrismaClient,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => Schema,
   config: PrismaConfig,
 ) {
-  return createAdapter({
+  return createAdapter<T, Schema, Models>({
     getTables,
     config: {
       adapterId: 'prisma',
@@ -127,7 +132,15 @@ export function prismaAdapter<T extends Record<string, any>>(
       }
 
       return {
-        async create({ model, data: values, select }) {
+        async create<M extends keyof Models>({
+          model,
+          data: values,
+          select,
+        }: {
+          model: M & string
+          data: Omit<Models[M], 'id'>
+          select?: string[]
+        }) {
           if (!db[model]) {
             throw new BetterAuthError(
               `Model ${model} does not exist in the database. If you haven't generated the Prisma client, you need to run 'npx prisma generate'`,
@@ -138,7 +151,15 @@ export function prismaAdapter<T extends Record<string, any>>(
             select: convertSelect(select, model),
           })
         },
-        async findOne({ model, where, select }) {
+        async findOne<M extends keyof Models>({
+          model,
+          where,
+          select,
+        }: {
+          model: M & string
+          where: Where[]
+          select?: string[]
+        }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
             throw new BetterAuthError(
@@ -150,7 +171,21 @@ export function prismaAdapter<T extends Record<string, any>>(
             select: convertSelect(select, model),
           })
         },
-        async findMany({ model, where, limit, offset, sortBy }) {
+        async findMany<M extends keyof Models>({
+          model,
+          where,
+          limit,
+          offset,
+          sortBy,
+          select,
+        }: {
+          model: M & string
+          where?: Where[]
+          limit?: number
+          offset?: number
+          sortBy?: { field: string, direction: 'asc' | 'desc' }
+          select?: string[]
+        }) {
           const whereClause = convertWhereClause(model, where)
           if (!db[model]) {
             throw new BetterAuthError(
@@ -170,7 +205,8 @@ export function prismaAdapter<T extends Record<string, any>>(
                   },
                 }
               : {}),
-          })) as any[]
+            select: convertSelect(select, model),
+          })) as Models[M][]
         },
         async count({ model, where }) {
           const whereClause = convertWhereClause(model, where)
@@ -183,7 +219,15 @@ export function prismaAdapter<T extends Record<string, any>>(
             where: whereClause,
           })
         },
-        async update({ model, where, update }) {
+        async update<M extends keyof Models>({
+          model,
+          where,
+          update,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           if (!db[model]) {
             throw new BetterAuthError(
               `Model ${model} does not exist in the database. If you haven't generated the Prisma client, you need to run 'npx prisma generate'`,
@@ -195,7 +239,15 @@ export function prismaAdapter<T extends Record<string, any>>(
             data: update,
           })
         },
-        async updateMany({ model, where, update }) {
+        async updateMany<M extends keyof Models>({
+          model,
+          where,
+          update,
+        }: {
+          model: M & string
+          where: Where[]
+          update: Partial<Models[M]>
+        }) {
           const whereClause = convertWhereClause(model, where)
           const result = await db[model].updateMany({
             where: whereClause,

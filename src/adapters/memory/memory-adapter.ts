@@ -21,7 +21,7 @@ export interface MemoryAdapterConfig {
 
 export function memoryAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema,
+  Schema extends UnDbSchema = UnDbSchema,
   Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: MemoryDB,
@@ -75,12 +75,9 @@ export function memoryAdapter<
         })
       }
       return {
-        create: async <M extends keyof Models>({
+        create: async ({
           model,
           data,
-        }: {
-          model: M & string
-          data: Omit<Models[M], 'id'>
         }) => {
           if (options.advanced?.database?.useNumberId) {
             // @ts-ignore
@@ -89,30 +86,21 @@ export function memoryAdapter<
           db[model].push(data)
           return data
         },
-        findOne: async <M extends keyof Models>({
+        findOne: async ({
           model,
           where,
-        }: {
-          model: M & string
-          where: CleanedWhere[]
         }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           const record = res[0] || null
-          return record as (Models[M] | null)
+          return record
         },
-        findMany: async <M extends keyof Models>({
+        findMany: async ({
           model,
           where,
           sortBy,
           limit,
           offset,
-        }: {
-          model: M & string
-          where?: CleanedWhere[]
-          sortBy?: { field: string, direction: 'asc' | 'desc' }
-          limit?: number
-          offset?: number
         }) => {
           let table = db[model]
           if (where) {
@@ -135,26 +123,22 @@ export function memoryAdapter<
           if (limit !== undefined) {
             table = table.slice(0, limit)
           }
-          return table as Models[M][]
+          return table
         },
         count: async ({ model }) => {
           return db[model].length
         },
-        update: async <M extends keyof Models>({
+        update: async ({
           model,
           where,
           update,
-        }: {
-          model: M & string
-          where: CleanedWhere[]
-          update: Partial<Models[M]>
         }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
             Object.assign(record, update)
           })
-          return res[0] || null as (Models[M] | null)
+          return res[0] || null
         },
         delete: async ({ model, where }) => {
           const table = db[model]
@@ -174,21 +158,17 @@ export function memoryAdapter<
           })
           return count
         },
-        updateMany<M extends keyof Models>({
+        updateMany({
           model,
           where,
           update,
-        }: {
-          model: M & string
-          where: CleanedWhere[]
-          update: Partial<Models[M]>
         }) {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
             Object.assign(record, update)
           })
-          return res[0] || null as (Models[M] | null)
+          return res[0] || null
         },
       }
     },

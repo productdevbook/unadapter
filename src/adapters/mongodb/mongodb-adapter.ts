@@ -3,6 +3,7 @@ import type {
   Adapter,
   AdapterOptions,
   AnyOptions,
+  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -231,14 +232,26 @@ select: string[] = [],
   }
 }
 
-export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: UnDbSchema) {
-  return (options: AdapterOptions<T>) => {
+export function mongodbAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends Record<string, any> = InferModelTypes<Schema>,
+>(db: Db, getTables: (options: AdapterOptions<T>) => Schema) {
+  return (options: AdapterOptions<T>): Adapter<Models> => {
+    const schema = getTables(options)
     const transform = createTransform(options, schema)
     const hasCustomId = options.advanced?.generateId
     return {
       id: 'mongodb-adapter',
-      async create(data) {
-        const { model, data: values, select } = data
+      async create<M extends keyof Models>({
+        model,
+        data: values,
+        select,
+      }: {
+        model: M & string
+        data: Omit<Models[M], 'id'>
+        select?: string[]
+      }) {
         const transformedData = transform.transformInput(values, model, 'create')
         if (transformedData.id && !hasCustomId) {
           // biome-ignore lint/performance/noDelete: setting id to undefined will cause the id to be null in the database which is not what we want
@@ -252,8 +265,15 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
         const t = transform.transformOutput(insertedData, model, select)
         return t
       },
-      async findOne(data) {
-        const { model, where, select } = data
+      async findOne<M extends keyof Models>({
+        model,
+        where,
+        select,
+      }: {
+        model: M & string
+        where: Where[]
+        select?: string[]
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
           .collection(transform.getModelName(model))
@@ -261,10 +281,23 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
         if (!res)
           return null
         const transformedData = transform.transformOutput(res, model, select)
-        return transformedData
+        return transformedData as Models[M] | null
       },
-      async findMany(data) {
-        const { model, where, limit, offset, sortBy } = data
+      async findMany<M extends keyof Models>({
+        model,
+        where,
+        limit,
+        offset,
+        sortBy,
+        select,
+      }: {
+        model: M & string
+        where?: Where[]
+        limit?: number
+        offset?: number
+        sortBy?: { field: string, direction: 'asc' | 'desc' }
+        select?: string[]
+      }) {
         const clause = where ? transform.convertWhereClause(where, model) : {}
         const cursor = db.collection(transform.getModelName(model)).find(clause)
         if (limit)
@@ -278,17 +311,30 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           )
         }
         const res = await cursor.toArray()
-        return res.map(r => transform.transformOutput(r, model))
+        return res.map(r => transform.transformOutput(r, model, select)) as Models[M][]
       },
-      async count(data) {
-        const { model } = data
+      async count({
+        model,
+        where,
+      }: {
+        model: string
+        where?: Where[]
+      }) {
+        const clause = where ? transform.convertWhereClause(where, model) : {}
         const res = await db
           .collection(transform.getModelName(model))
-          .countDocuments()
+          .countDocuments(clause)
         return res
       },
-      async update(data) {
-        const { model, where, update: values } = data
+      async update<M extends keyof Models>({
+        model,
+        where,
+        update: values,
+      }: {
+        model: M & string
+        where: Where[]
+        update: Partial<Models[M]>
+      }) {
         const clause = transform.convertWhereClause(where, model)
 
         const transformedData = transform.transformInput(values, model, 'update')
@@ -304,10 +350,17 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           )
         if (!res)
           return null
-        return transform.transformOutput(res, model)
+        return transform.transformOutput(res, model) as Models[M] | null
       },
-      async updateMany(data) {
-        const { model, where, update: values } = data
+      async updateMany<M extends keyof Models>({
+        model,
+        where,
+        update: values,
+      }: {
+        model: M & string
+        where: Where[]
+        update: Partial<Models[M]>
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const transformedData = transform.transformInput(values, model, 'update')
         const res = await db
@@ -315,24 +368,31 @@ export function mongodbAdapter<T extends Record<string, any>>(db: Db, schema: Un
           .updateMany(clause, { $set: transformedData })
         return res.modifiedCount
       },
-      async delete(data) {
-        const { model, where } = data
+      async delete({
+        model,
+        where,
+      }: {
+        model: string
+        where: Where[]
+      }) {
         const clause = transform.convertWhereClause(where, model)
-        const res = await db
+        await db
           .collection(transform.getModelName(model))
           .findOneAndDelete(clause)
-        if (!res)
-          return null
-        return transform.transformOutput(res, model)
       },
-      async deleteMany(data) {
-        const { model, where } = data
+      async deleteMany({
+        model,
+        where,
+      }: {
+        model: string
+        where: Where[]
+      }) {
         const clause = transform.convertWhereClause(where, model)
         const res = await db
           .collection(transform.getModelName(model))
           .deleteMany(clause)
-        return res.deletedCount
+        return res.deletedCount || 0
       },
-    } satisfies Adapter<T>
+    }
   }
 }

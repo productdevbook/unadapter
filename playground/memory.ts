@@ -73,5 +73,16 @@ const user = await adapter.create({
     updatedAt: new Date(),
   },
 })
+// eslint-disable-next-line antfu/no-top-level-await
+const _users = await adapter.findMany({
+  model: 'user',
+  where: [
+    {
+      field: 'email',
+      value: 'john@example.com',
+      operator: 'eq',
+    },
+  ],
+})
 
-console.log('Created user:', user, db)
+console.log('Found users:', user, db)

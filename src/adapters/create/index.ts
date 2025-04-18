@@ -53,7 +53,7 @@ const colors = {
 
 export function createAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema,
+  Schema extends UnDbSchema = UnDbSchema,
   Models extends Record<string, any> = InferModelTypes<Schema>,
 >({
   adapter,
@@ -554,15 +554,11 @@ export function createAdapter<
     }
 
     return {
-      create: async <T extends Record<string, any>, R = T>({
+      create: async ({
         data: unsafeData,
         model: unsafeModel,
         select,
-      }: {
-        model: string
-        data: T
-        select?: string[]
-      }): Promise<R> => {
+      }) => {
         transactionId++
         const thisTransactionId = transactionId
         const model = getModelName(unsafeModel)
@@ -615,15 +611,11 @@ export function createAdapter<
         )
         return transformed
       },
-      update: async <T>({
+      update: async ({
         model: unsafeModel,
         where: unsafeWhere,
         update: unsafeData,
-      }: {
-        model: string
-        where: Where[]
-        update: Record<string, any>
-      }): Promise<T | null> => {
+      }) => {
         transactionId++
         const thisTransactionId = transactionId
         const model = getModelName(unsafeModel)
@@ -672,10 +664,6 @@ export function createAdapter<
         model: unsafeModel,
         where: unsafeWhere,
         update: unsafeData,
-      }: {
-        model: string
-        where: Where[]
-        update: Record<string, any>
       }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -717,14 +705,10 @@ export function createAdapter<
         )
         return updatedCount
       },
-      findOne: async <T extends Record<string, any>>({
+      findOne: async ({
         model: unsafeModel,
         where: unsafeWhere,
         select,
-      }: {
-        model: string
-        where: Where[]
-        select?: string[]
       }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -763,18 +747,12 @@ export function createAdapter<
         )
         return transformed
       },
-      findMany: async <T extends Record<string, any>>({
+      findMany: async ({
         model: unsafeModel,
         where: unsafeWhere,
         limit: unsafeLimit,
         sortBy,
         offset,
-      }: {
-        model: string
-        where?: Where[]
-        limit?: number
-        sortBy?: { field: string, direction: 'asc' | 'desc' }
-        offset?: number
       }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -820,9 +798,6 @@ export function createAdapter<
       delete: async ({
         model: unsafeModel,
         where: unsafeWhere,
-      }: {
-        model: string
-        where: Where[]
       }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -851,9 +826,6 @@ export function createAdapter<
       deleteMany: async ({
         model: unsafeModel,
         where: unsafeWhere,
-      }: {
-        model: string
-        where: Where[]
       }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -883,9 +855,6 @@ export function createAdapter<
       count: async ({
         model: unsafeModel,
         where: unsafeWhere,
-      }: {
-        model: string
-        where?: Where[]
       }) => {
         transactionId++
         const thisTransactionId = transactionId
