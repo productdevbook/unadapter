@@ -1,6 +1,13 @@
-import type { Account, OmitId, SecondaryStorage, User, Verification } from 'undatabase'
-import type { FieldAttribute } from '../src/db/field.ts'
-import type { DbSchema, UnDbSchema } from '../src/db/get-tables.ts'
+import type {
+  Account,
+  DbSchema,
+  FieldAttribute,
+  OmitId,
+  SecondaryStorage,
+  UnDbSchema,
+  User,
+  Verification,
+} from 'unadapter/types'
 
 export interface BetterAuthOptions {
   /**

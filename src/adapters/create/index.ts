@@ -595,7 +595,7 @@ export function createAdapter<
           `${formatMethod('create')} ${formatAction('Parsed Input')}:`,
           { model, data },
         )
-        const res = await adapterInstance.create<T>({ data, model })
+        const res = await adapterInstance.create({ data, model })
         debugLog(
           { method: 'create' },
           `${formatTransactionId(thisTransactionId)} ${formatStep(3, 4)}`,
@@ -640,7 +640,7 @@ export function createAdapter<
           `${formatMethod('update')} ${formatAction('Parsed Input')}:`,
           { model, data },
         )
-        const res = await adapterInstance.update<T>({
+        const res = await adapterInstance.update({
           model,
           where,
           update: data,
@@ -723,7 +723,7 @@ export function createAdapter<
           `${formatMethod('findOne')}:`,
           { model, where, select },
         )
-        const res = await adapterInstance.findOne<T>({
+        const res = await adapterInstance.findOne({
           model,
           where,
           select,
@@ -771,7 +771,7 @@ export function createAdapter<
           `${formatMethod('findMany')}:`,
           { model, where, limit, sortBy, offset },
         )
-        const res = await adapterInstance.findMany<T>({
+        const res = await adapterInstance.findMany({
           model,
           where,
           limit,

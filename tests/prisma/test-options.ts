@@ -1,6 +1,7 @@
-import type { Adapter, BetterAuthOptions } from '../../src/types/index.ts'
+import type { Adapter, AdapterOptions } from '../../src/types/index.ts'
+import type { BetterAuthOptions } from '../better-auth.schema.ts'
 
-export function createTestOptions(adapter: (options: BetterAuthOptions) => Adapter, useNumberId = false) {
+export function createTestOptions(adapter: (options: AdapterOptions<BetterAuthOptions>) => Adapter, useNumberId = false) {
   return ({
     database: adapter,
     user: {
@@ -17,5 +18,5 @@ export function createTestOptions(adapter: (options: BetterAuthOptions) => Adapt
         useNumberId,
       },
     },
-  }) satisfies BetterAuthOptions
+  }) satisfies AdapterOptions<BetterAuthOptions>
 }

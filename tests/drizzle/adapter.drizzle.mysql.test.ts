@@ -1,5 +1,5 @@
 import type { Pool } from 'mysql2/promise'
-import type { AdapterOptions } from 'unadapter'
+import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../better-auth.schema.ts'
 import merge from 'deepmerge'
 import { drizzle } from 'drizzle-orm/mysql2'

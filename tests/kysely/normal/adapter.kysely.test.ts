@@ -1,4 +1,4 @@
-import type { AdapterOptions } from 'unadapter'
+import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fsPromises from 'node:fs/promises'
 import path from 'node:path'
