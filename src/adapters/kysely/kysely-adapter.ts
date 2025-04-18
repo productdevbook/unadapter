@@ -203,19 +203,19 @@ export function kyselyAdapter<
         }
       }
       return {
-        async create({
+        create: async ({
           data,
           model,
-        }) {
+        }) => {
           const builder = db.insertInto(model).values(data)
-          return (await withReturning(data, builder, model, []))
+          return await withReturning(data, builder, model, [])
         },
 
-        async findOne({
+        findOne: async ({
           model,
           where,
           select,
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model).selectAll()
           if (and) {
@@ -224,12 +224,19 @@ export function kyselyAdapter<
           if (or) {
             query = query.where(eb => eb.or(or.map(expr => expr(eb))))
           }
-          const res = await query.executeTakeFirst()
+          const res = await query.executeTakeFirst() as any
           if (!res)
             return null
           return res
         },
-        async findMany({ model, where, limit, offset, sortBy }) {
+
+        findMany: async ({
+          model,
+          where,
+          limit,
+          offset,
+          sortBy,
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.selectFrom(model)
           if (and) {
@@ -264,17 +271,17 @@ export function kyselyAdapter<
             }
           }
 
-          const res = await query.selectAll().execute()
+          const res = await query.selectAll().execute() as any
           if (!res)
             return []
           return res
         },
 
-        async update({
+        update: async ({
           model,
           where,
           update: values,
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
 
           let query = db.updateTable(model).set(values as any)
@@ -287,11 +294,11 @@ export function kyselyAdapter<
           return await withReturning(values as any, query, model, where)
         },
 
-        async updateMany({
+        updateMany: async ({
           model,
           where,
           update: values,
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.updateTable(model).set(values as any)
           if (and) {
@@ -304,13 +311,10 @@ export function kyselyAdapter<
           return res.length
         },
 
-        async count({
+        count: async ({
           model,
           where,
-        }: {
-          model: string
-          where?: Where[]
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db
             .selectFrom(model)
@@ -323,16 +327,24 @@ export function kyselyAdapter<
             query = query.where(eb => eb.or(or.map(expr => expr(eb))))
           }
           const res = await query.execute()
+
+          // string | number | bigint
+          if (typeof res[0].count === 'string') {
+            return Number.parseInt(res[0].count, 10)
+          }
+          if (typeof res[0].count === 'bigint') {
+            return Number(res[0].count)
+          }
+          if (typeof res[0].count === 'number') {
+            return res[0].count
+          }
           return res[0].count
         },
 
-        async delete({
+        delete: async ({
           model,
           where,
-        }: {
-          model: string
-          where: Where[]
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.deleteFrom(model)
           if (and) {
@@ -345,13 +357,10 @@ export function kyselyAdapter<
           await query.execute()
         },
 
-        async deleteMany({
+        deleteMany: async ({
           model,
           where,
-        }: {
-          model: string
-          where: Where[]
-        }) {
+        }) => {
           const { and, or } = convertWhereClause(model, where)
           let query = db.deleteFrom(model)
           if (and) {
