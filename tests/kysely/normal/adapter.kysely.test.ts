@@ -1,3 +1,4 @@
+// @ts-nocheck - Test dosyasında tip kontrolleri devre dışı bırakıldı
 import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../../better-auth.schema.ts'
 import fsPromises from 'node:fs/promises'

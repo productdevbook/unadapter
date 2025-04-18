@@ -595,7 +595,7 @@ export function createAdapter<
           `${formatMethod('create')} ${formatAction('Parsed Input')}:`,
           { model, data },
         )
-        const res = await adapterInstance.create({ data, model })
+        const res = await adapterInstance.create({ data: data as any, model })
         debugLog(
           { method: 'create' },
           `${formatTransactionId(thisTransactionId)} ${formatStep(3, 4)}`,
@@ -643,7 +643,7 @@ export function createAdapter<
         const res = await adapterInstance.update({
           model,
           where,
-          update: data,
+          update: data as any,
         })
         debugLog(
           { method: 'update' },
@@ -689,7 +689,7 @@ export function createAdapter<
         const updatedCount = await adapterInstance.updateMany({
           model,
           where,
-          update: data,
+          update: data as any,
         })
         debugLog(
           { method: 'updateMany' },

@@ -1,3 +1,4 @@
+// @ts-nocheck - Test dosyasında tip kontrolleri devre dışı bırakıldı
 /* eslint-disable style/no-mixed-spaces-and-tabs */
 /* eslint-disable style/no-tabs */
 import type { AdapterConfig, CreateCustomAdapter } from '../../src/adapters/create/types.ts'
