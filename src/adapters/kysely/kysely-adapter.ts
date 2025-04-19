@@ -35,14 +35,11 @@ interface KyselyAdapterConfig {
 export function kyselyAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: Kysely<any>,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config?: KyselyAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
-    getTables,
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'kysely',
       adapterName: 'Kysely Adapter',

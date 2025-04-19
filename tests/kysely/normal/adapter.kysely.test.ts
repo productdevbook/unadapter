@@ -85,7 +85,6 @@ describe('adapter test', async () => {
 
   const mysqlAdapter = kyselyAdapter(
     mysqlKy,
-    getAuthTables,
     {
       type: 'mysql',
       debugLogs: {
@@ -95,14 +94,13 @@ describe('adapter test', async () => {
   )
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
-      return mysqlAdapter(merge(customOptions, mysqlOptions))
+      return mysqlAdapter(getAuthTables, merge(customOptions, mysqlOptions))
     },
     testPrefix: 'mysql',
   })
 
   const sqliteAdapter = kyselyAdapter(
     sqliteKy,
-    getAuthTables,
     {
       type: 'sqlite',
       debugLogs: {
@@ -112,7 +110,7 @@ describe('adapter test', async () => {
   )
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
-      return sqliteAdapter(merge(customOptions, sqliteOptions))
+      return sqliteAdapter(getAuthTables, merge(customOptions, sqliteOptions))
     },
     testPrefix: 'sqlite',
   })
@@ -168,7 +166,6 @@ describe('mssql', async () => {
   })
   const getAdapter = kyselyAdapter(
     mssql,
-    getAuthTables,
     {
       type: 'mssql',
       debugLogs: {
@@ -187,7 +184,7 @@ describe('mssql', async () => {
     getAdapter: async (_customOptions = {}) => {
       // const merged = merge( customOptions,opts);
       // merged.database = opts.database;
-      return getAdapter(opts)
+      return getAdapter(getAuthTables, opts)
     },
     disableTests: {
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true,
