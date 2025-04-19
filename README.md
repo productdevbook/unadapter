@@ -1,35 +1,52 @@
-<div align="center">
+# unadapter 
 
-# unadapter
+**A universal adapter interface for connecting various databases and ORMs with a standardized API.**
+
 
 <img src="https://img.shields.io/badge/Status-Work%20In%20Progress-orange" alt="Work In Progress"/>
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
-[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
 [![License][license-src]][license-href]
-[![JSDocs][jsdocs-src]][jsdocs-href]
-
-### Test Coverage
+[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
 ![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
 ![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
 ![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
 ![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
 
-**A universal adapter interface for connecting various databases and ORMs with a standardized API.**
 
-<hr />
+## 🚀 Features
 
-</div>
+- 🔄 Standardized interface for common database operations (create, read, update, delete)
+- 🛡️ Type-safe operations
+- 🔍 Support for complex queries and transformations
+- 🌐 Database-agnostic application code
+- 🔄 Easy switching between different database providers
+- 🗺️ Custom field mapping
+- 📊 Support for various data types across different database systems
+- 🏗️ Fully customizable schema definition
 
-## 🚧 Ongoing Development
-> **Note:** This project is currently under active development. Features and APIs may change.
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Installation](#-installation)
+- [Available Adapters](#-available-adapters)
+- [Getting Started](#-getting-started)
+- [API Reference](#-api-reference)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+## 🌟 Overview
+
+unadapter provides a consistent interface for database operations, allowing you to switch between different database solutions without changing your application code. This is particularly useful for applications that need database-agnostic operations or might need to switch database providers in the future.
+
+<details>
+<summary><b>🚧 Development Status</b></summary>
 
 This project is based on the adapter architecture from [better-auth](https://github.com/better-auth) and is being developed to provide a standalone, ESM-compatible adapter solution that can be used across various open-source projects.
 
-<details>
-<summary><b>📋 Development Roadmap</b></summary>
+#### Development Roadmap
 
 - [x] Initial adapter architecture
 - [x] Basic adapters implementation
@@ -39,13 +56,16 @@ This project is based on the adapter architecture from [better-auth](https://git
 - [ ] Integration examples
 - [ ] Complete abstraction from better-auth and compatibility with all software systems
 
+#### Test Coverage
+![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
+![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
+![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
+![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
+
+[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
+[![JSDocs][jsdocs-src]][jsdocs-href]
+
 </details>
-
-## 🌟 Overview
-
-unadapter provides a consistent interface for database operations, allowing you to switch between different database solutions without changing your application code. This is particularly useful for applications that need database-agnostic operations or might need to switch database providers in the future.
-
-I've seen the need for this kind of adapter system in several of my own projects and across the open-source ecosystem. In the future, better-auth might utilize unadapter, bringing this unified adapter structure to a wider range of open-source projects with full ESM support.
 
 ## 📦 Installation
 
@@ -97,20 +117,10 @@ You'll also need to install the specific database driver or ORM you plan to use.
   </tr>
 </table>
 
-## ✨ Features
-
-- 🔄 Standardized interface for common database operations (create, read, update, delete)
-- 🛡️ Type-safe operations
-- 🔍 Support for complex queries and transformations
-- 🌐 Database-agnostic application code
-- 🔄 Easy switching between different database providers
-- 🗺️ Custom field mapping
-- 📊 Support for various data types across different database systems
-- 🏗️ Fully customizable schema definition
-
 ## 🚀 Getting Started
 
-### Basic Usage
+<details open>
+<summary><b>Basic Usage</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
@@ -215,10 +225,10 @@ const foundUsers = await adapter.findMany({
   ]
 })
 ```
+</details>
 
-### Using Custom Schema and Plugins
-
-unadapter allows you to define your own database schema and extend it with plugins.
+<details>
+<summary><b>Using Custom Schema and Plugins</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
@@ -364,8 +374,12 @@ const product = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using MongoDB Adapter with Custom Schema
+### Database-Specific Adapters
+
+<details>
+<summary><b>MongoDB Adapter Example</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
@@ -443,8 +457,10 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using Prisma Adapter with Custom Schema
+<details>
+<summary><b>Prisma Adapter Example</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
@@ -561,8 +577,10 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using Drizzle Adapter with Custom Schema
+<details>
+<summary><b>Drizzle Adapter Example</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
@@ -681,8 +699,10 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using Kysely Adapter with Custom Schema
+<details>
+<summary><b>Kysely Adapter Example</b></summary>
 
 ```typescript
 import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
@@ -819,27 +839,170 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
+
+## 🔍 API Reference
+
+<details>
+<summary><b>Adapter Interface</b></summary>
+
+All adapters implement the following interface:
+
+```typescript
+interface Adapter {
+  // Create a new record
+  create<T>({
+    model: string,
+    data: Omit<T, 'id'>,
+    select?: string[]
+  }): Promise<T>;
+
+  // Find multiple records
+  findMany<T>({
+    model: string,
+    where?: Where[],
+    limit?: number,
+    sortBy?: {
+      field: string,
+      direction: 'asc' | 'desc'
+    },
+    offset?: number
+  }): Promise<T[]>;
+
+  // Update a record
+  update<T>({
+    model: string,
+    where: Where[],
+    update: Record<string, any>
+  }): Promise<T | null>;
+
+  // Update multiple records
+  updateMany({
+    model: string,
+    where: Where[],
+    update: Record<string, any>
+  }): Promise<number>;
+
+  // Delete a record
+  delete({
+    model: string,
+    where: Where[]
+  }): Promise<void>;
+
+  // Delete multiple records
+  deleteMany({
+    model: string,
+    where: Where[]
+  }): Promise<number>;
+
+  // Count records
+  count({
+    model: string,
+    where?: Where[]
+  }): Promise<number>;
+}
+```
+</details>
+
+<details>
+<summary><b>Where Clause Interface</b></summary>
+
+The `Where` interface is used for filtering records:
+
+```typescript
+interface Where {
+  field: string
+  value?: any
+  operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains' | 'starts_with' | 'ends_with'
+  connector?: 'AND' | 'OR'
+}
+```
+</details>
+
+<details>
+<summary><b>Field Types and Attributes</b></summary>
+
+When defining your schema, you can use the following field types and attributes:
+
+```typescript
+interface FieldAttribute {
+  // The type of the field
+  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array'
+
+  // Whether this field is required
+  required?: boolean
+
+  // Whether this field should be unique
+  unique?: boolean
+
+  // The actual column/field name in the database
+  fieldName?: string
+
+  // Whether this field can be sorted
+  sortable?: boolean
+
+  // Default value function
+  defaultValue?: () => any
+
+  // Reference to another model (for foreign keys)
+  references?: {
+    model: string
+    field: string
+    onDelete?: 'cascade' | 'set null' | 'restrict'
+  }
+
+  // Custom transformations
+  transform?: {
+    input?: (value: any) => any
+    output?: (value: any) => any
+  }
+}
+```
+</details>
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests to help improve unadapter.
+Contributions are welcome! Feel free to [open issues](https://github.com/productdevbook/unadapter/issues) or [submit pull requests](https://github.com/productdevbook/unadapter/pulls) to help improve unadapter.
+
+<details>
+<summary><b>Development Setup</b></summary>
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/productdevbook/unadapter.git
+   cd unadapter
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Run tests:
+   ```bash
+   pnpm test
+   ```
+
+4. Build the project:
+   ```bash
+   pnpm build
+   ```
+</details>
 
 ## 🙏 Credits
 
 This project draws inspiration and core concepts from:
-
 - [better-auth](https://github.com/better-auth) - The original adapter architecture that inspired this project
 
 ## 📝 License
 
 See the [LICENSE](LICENSE) file for details.
 
-<hr />
-
 <div align="center">
   <p><i>unadapter is a work in progress. Stay tuned for updates!</i></p>
 </div>
 
+<!-- Links -->
 [npm-version-src]: https://img.shields.io/npm/v/unadapter?style=flat&colorA=080f12&colorB=1fa669
 [npm-version-href]: https://npmjs.com/package/unadapter
 [npm-downloads-src]: https://img.shields.io/npm/dm/unadapter?style=flat&colorA=080f12&colorB=1fa669
