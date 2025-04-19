@@ -52,6 +52,7 @@ const colors = {
 }
 
 export function createAdapter<
+  O extends Record<string, any>,
   T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
   Models extends Record<string, any> = InferModelTypes<Schema>,
@@ -62,7 +63,7 @@ export function createAdapter<
   config: AdapterConfig
   adapter: CreateCustomAdapter<Models>
 }) {
-  return (options: AdapterOptions<T>, getTables: (options: AdapterOptions<T>) => Schema,
+  return (options: AdapterOptions<O, T>, getTables: (options: AdapterOptions<O, T>) => Schema,
   ): Adapter<Models> => {
     const config = {
       ...cfg,

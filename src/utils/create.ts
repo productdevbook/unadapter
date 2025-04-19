@@ -1,13 +1,14 @@
 import type { Adapter, AdapterOptions, UnDbSchema } from 'unadapter/types'
 
 export function createAdapter<
-  T extends Record<string, any>,
+  O extends Record<string, any>,
+  T extends Record<string, any> = object,
   Schema extends UnDbSchema = UnDbSchema,
 >(
   table: (
-    options: AdapterOptions<T>,
+    options: AdapterOptions<T, O>,
   ) => Schema,
-  options: AdapterOptions<T>,
+  options: AdapterOptions<T, O>,
 ) {
   if (!options.database) {
     throw new Error('Adapter not provided')
@@ -27,8 +28,9 @@ export function createAdapter<
 }
 
 export function createTable<
-  T extends Record<string, any>,
+  O extends Record<string, any>,
+  T extends Record<string, any> = object,
   Schema extends UnDbSchema = UnDbSchema,
->(table: (options: AdapterOptions<T>) => Schema) {
+>(table: (options: AdapterOptions<O, T>) => Schema) {
   return table
 }

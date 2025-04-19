@@ -7,6 +7,7 @@ import type {
   User,
   Verification,
 } from 'unadapter/types'
+import { createTable } from 'unadapter'
 
 interface SecondaryStorage {
   /**
@@ -146,7 +147,7 @@ export interface BetterAuthOptions {
   }
 }
 
-export function getAuthTables(options: BetterAuthOptions): UnDbSchema {
+export const getAuthTables = createTable<BetterAuthOptions>((options) => {
   const pluginSchema = options.plugins?.reduce(
     (acc, plugin) => {
       const schema = plugin.schema
@@ -324,5 +325,5 @@ export function getAuthTables(options: BetterAuthOptions): UnDbSchema {
       order: 4,
     },
     ...pluginTables,
-  } satisfies UnDbSchema
-}
+  }
+})

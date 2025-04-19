@@ -8,9 +8,10 @@ import type {
 
 export interface UnOptions {}
 
-export interface AdapterOptions<
+export type AdapterOptions<
   T extends Record<string, any>,
-> extends UnOptions {
+  O extends Record<string, any>,
+> = O & UnOptions & {
   /**
    * Advanced options
    */
