@@ -27,23 +27,23 @@ export interface Where {
  */
 export interface Adapter<
   T extends Record<string, any>,
-  Models extends Record<string, any> = InferModelTypes<T>,
+  Schema extends UnDbSchema = UnDbSchema,
 > {
   id: string
 
-  create: <M extends keyof Models>(data: {
-    model: keyof Models
-    data: Omit<Models[M], 'id'>
+  create: <M extends keyof InferModelTypes<Schema>>(data: {
+    model: keyof InferModelTypes<Schema>
+    data: Omit<InferModelTypes<Schema>[M], 'id'>
     select?: string[]
-  }) => Promise<Models[M]>
+  }) => Promise<InferModelTypes<Schema>[M]>
 
-  findOne: <M extends keyof Models>(data: {
+  findOne: <M extends keyof InferModelTypes<Schema>>(data: {
     model: M & string
     where: Where[]
     select?: string[]
-  }) => Promise<Models[M] | null>
+  }) => Promise<InferModelTypes<Schema>[M] | null>
 
-  findMany: <M extends keyof Models>(data: {
+  findMany: <M extends keyof InferModelTypes<Schema>>(data: {
     model: M & string
     where?: Where[]
     limit?: number
@@ -53,7 +53,7 @@ export interface Adapter<
     }
     offset?: number
     select?: string[]
-  }) => Promise<Models[M][]>
+  }) => Promise<InferModelTypes<Schema>[M][]>
 
   count: (data: {
     model: string
@@ -64,16 +64,16 @@ export interface Adapter<
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
-  update: <M extends keyof Models>(data: {
+  update: <M extends keyof InferModelTypes<Schema>>(data: {
     model: M & string
     where: Where[]
-    update: Partial<Models[M]>
-  }) => Promise<Models[M] | null>
+    update: Partial<InferModelTypes<Schema>[M]>
+  }) => Promise<InferModelTypes<Schema>[M] | null>
 
-  updateMany: <M extends keyof Models>(data: {
+  updateMany: <M extends keyof InferModelTypes<Schema>>(data: {
     model: M & string
     where: Where[]
-    update: Partial<Models[M]>
+    update: Partial<InferModelTypes<Schema>[M]>
   }) => Promise<number>
 
   delete: (data: { model: string, where: Where[] }) => Promise<void>
@@ -85,7 +85,7 @@ export interface Adapter<
    * @param file - file path if provided by the user
    */
   createSchema?: (
-    options: AdapterOptions<T>,
+    options: AdapterOptions<T, Schema>,
     file?: string,
   ) => Promise<AdapterSchemaCreation>
 
@@ -118,7 +118,7 @@ export interface AdapterInstance<
   Schema extends UnDbSchema = UnDbSchema,
 > {
   (
-    options: AdapterOptions<T>,
-    table: (options: AdapterOptions<T>) => Schema,
-  ): Adapter<T>
+    table: (options: AdapterOptions<T, Schema>) => Schema,
+    options: AdapterOptions<T, Schema>,
+  ): Adapter<T, Schema>
 }

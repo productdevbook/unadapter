@@ -52,19 +52,19 @@ const colors = {
 }
 
 export function createAdapter<
-  O extends Record<string, any>,
   T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
 >({
   adapter,
   config: cfg,
 }: {
   config: AdapterConfig
-  adapter: CreateCustomAdapter<Models>
+  adapter: CreateCustomAdapter<Schema>
 }) {
-  return (options: AdapterOptions<O, T>, getTables: (options: AdapterOptions<O, T>) => Schema,
-  ): Adapter<Models> => {
+  return (
+    getTables: (options: AdapterOptions<T, Schema>) => Schema,
+    options: AdapterOptions<T, Schema>,
+  ): Adapter<T, Schema> => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,

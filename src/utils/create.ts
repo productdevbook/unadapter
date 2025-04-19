@@ -1,36 +1,36 @@
-import type { Adapter, AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
 
 export function createAdapter<
-  O extends Record<string, any>,
-  T extends Record<string, any> = object,
+  T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
 >(
   table: (
-    options: AdapterOptions<T, O>,
+    options: AdapterOptions<T>,
   ) => Schema,
-  options: AdapterOptions<T, O>,
+  options: AdapterOptions<T>,
 ) {
   if (!options.database) {
     throw new Error('Adapter not provided')
   }
-  let adapter: Adapter<Schema>
+  let adapter
   if (typeof options.database === 'function') {
     // If it's an AdapterInstance (function)
     adapter = options.database(
-      options,
       table,
-    ) as Adapter<Schema>
+      options,
+    )
   }
   else {
     throw new TypeError('Invalid adapter provided')
   }
-  return adapter as Adapter<Schema>
+  return adapter
 }
 
 export function createTable<
-  O extends Record<string, any>,
-  T extends Record<string, any> = object,
+  T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
->(table: (options: AdapterOptions<O, T>) => Schema) {
+>(
+  table: (options: AdapterOptions<T>) => Schema,
+) {
   return table
 }

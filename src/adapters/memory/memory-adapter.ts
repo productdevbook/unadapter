@@ -19,14 +19,13 @@ export interface MemoryAdapterConfig {
 }
 
 export function memoryAdapter<
-  T extends Record<string, any>,
+  T extends Record<string, any> = object,
   Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: MemoryDB,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'memory',
       adapterName: 'Memory Adapter',

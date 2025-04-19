@@ -2,7 +2,6 @@ import type {
   SQL,
 } from 'drizzle-orm'
 import type {
-  AdapterOptions,
   InferModelTypes,
   UnDbSchema,
   Where,
@@ -57,11 +56,9 @@ export function drizzleAdapter<
   Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: DB,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config: DrizzleAdapterConfig,
 ) {
   return createAdapter<T, Schema, Models>({
-    getTables,
     config: {
       adapterId: 'drizzle',
       adapterName: 'Drizzle Adapter',

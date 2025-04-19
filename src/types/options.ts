@@ -4,14 +4,15 @@ import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type {
   AdapterInstance,
   LiteralUnion,
+  UnDbSchema,
 } from '../types/index.ts'
 
 export interface UnOptions {}
 
 export type AdapterOptions<
-  T extends Record<string, any>,
-  O extends Record<string, any>,
-> = O & UnOptions & {
+  T extends Record<string, any> = Record<string, any>,
+  _Schema extends UnDbSchema = UnDbSchema,
+> = T & UnOptions & {
   /**
    * Advanced options
    */
@@ -42,7 +43,7 @@ export type AdapterOptions<
        * If set to false, the database's auto generated id will be used.
        */
       generateId?: ((options: {
-        model: LiteralUnion<T, string>
+        model: LiteralUnion<any, string>
         size?: number
       }) => string) | false
     }
@@ -55,17 +56,17 @@ export type AdapterOptions<
      * @deprecated Please use `database.generateId` instead. This will be potentially removed in future releases.
      */
     generateId?: ((options: {
-      model: LiteralUnion<T, string>
+      model: LiteralUnion<any, string>
       size?: number
     }) => string) | false
   }
 
   database?:
-    | AdapterInstance<T>
     | PostgresPool
     | MysqlPool
     | Database
     | Dialect
+    | AdapterInstance<T>
     | {
       dialect: Dialect
       type: KyselyDatabaseType

@@ -1,7 +1,7 @@
-import type { AdapterOptions, AnyOptions, FieldAttribute, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, FieldAttribute, UnDbSchema } from 'unadapter/types'
 
 export function getSchema<T extends Record<string, any>>(
-  config: AnyOptions,
+  config: AdapterOptions<T>,
   getTables: (options: AdapterOptions<T>) => UnDbSchema,
 ) {
   const tables = getTables(config as AdapterOptions<T>)

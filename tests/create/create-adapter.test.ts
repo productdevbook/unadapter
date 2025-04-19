@@ -53,80 +53,84 @@ async function createTestAdapter<T extends Record<string, any> = Record<string, 
     options = {},
     adapter = () => ({}),
   } = props
-  const testAdapter = createAdapter<BetterAuthOptions>({
-    getTables: getAuthTables,
-    config: Object.assign(
-      {
-        adapterId: 'test-id',
-        adapterName: 'Test Adapter',
-        usePlural: false,
-        debugLogs: false,
-        supportsJSON: true,
-        supportsDates: true,
-        supportsBooleans: true,
+  const testAdapter = createAdapter<BetterAuthOptions>(
+    {
+      config: Object.assign(
+        {
+          adapterId: 'test-id',
+          adapterName: 'Test Adapter',
+          usePlural: false,
+          debugLogs: false,
+          supportsJSON: true,
+          supportsDates: true,
+          supportsBooleans: true,
+        },
+        config,
+      ),
+      adapter: (...args) => {
+        const x = adapter(...args) as Partial<ReturnType<CreateCustomAdapter>>
+        return {
+          async create(data) {
+            if (x.create) {
+              return await x.create(data)
+            }
+            return data.data
+          },
+          async update(data) {
+            if (x.update) {
+              return await x.update(data)
+            }
+            return data.update
+          },
+          async updateMany(data) {
+            if (x.updateMany) {
+              return await x.updateMany(data)
+            }
+            return 0
+          },
+          async count(data) {
+            if (x.count) {
+              return await x.count(data)
+            }
+            return 0
+          },
+          async delete(data) {
+            if (x.delete) {
+              return await x.delete(data)
+            }
+          },
+          async deleteMany(data) {
+            if (x.deleteMany) {
+              return await x.deleteMany(data)
+            }
+            return 0
+          },
+          async findMany(data) {
+            console.log('findMany', data)
+            if (x.findMany) {
+              return await x.findMany(data)
+            }
+            return []
+          },
+          async findOne(data) {
+            if (x.findOne) {
+              return await x.findOne(data)
+            }
+            return null
+          },
+          options: x.options ?? {},
+        }
       },
-      config,
-    ),
-    adapter: (...args) => {
-      const x = adapter(...args) as Partial<ReturnType<CreateCustomAdapter>>
-      return {
-        async create(data) {
-          if (x.create) {
-            return await x.create(data)
-          }
-          return data.data
-        },
-        async update(data) {
-          if (x.update) {
-            return await x.update(data)
-          }
-          return data.update
-        },
-        async updateMany(data) {
-          if (x.updateMany) {
-            return await x.updateMany(data)
-          }
-          return 0
-        },
-        async count(data) {
-          if (x.count) {
-            return await x.count(data)
-          }
-          return 0
-        },
-        async delete(data) {
-          if (x.delete) {
-            return await x.delete(data)
-          }
-        },
-        async deleteMany(data) {
-          if (x.deleteMany) {
-            return await x.deleteMany(data)
-          }
-          return 0
-        },
-        async findMany(data) {
-          console.log('findMany', data)
-          if (x.findMany) {
-            return await x.findMany(data)
-          }
-          return []
-        },
-        async findOne(data) {
-          if (x.findOne) {
-            return await x.findOne(data)
-          }
-          return null
-        },
-        options: x.options ?? {},
-      }
     },
-  })
+  )
 
-  return testAdapter({
-    ...options,
-    database: testAdapter,
-  })
+  return testAdapter(
+    getAuthTables,
+    {
+      ...options,
+      database: testAdapter,
+    },
+  )
 }
 
 describe('create Adapter Helper', async () => {

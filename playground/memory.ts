@@ -51,7 +51,6 @@ const tables = createTable((_options) => {
     },
   }
 })
-
 const adapter = createAdapter(tables, {
   database: memoryAdapter(
     db,
