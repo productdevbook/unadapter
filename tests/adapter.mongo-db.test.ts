@@ -27,11 +27,10 @@ describe('adapter test', async () => {
 
   const adapter = mongodbAdapter<BetterAuthOptions>(
     db,
-    getAuthTables,
   )
   await runAdapterTest<BetterAuthOptions>({
     getAdapter: async (customOptions = {}) => {
-      return adapter({
+      return adapter(getAuthTables, {
         user: {
           fields: {
             email: 'email_address',
