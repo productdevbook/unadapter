@@ -26,7 +26,7 @@ export interface Where {
  * Adapter Interface
  */
 export interface Adapter<
-  T extends Record<string, any>,
+  T extends Record<string, any> = Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
 > {
   id: string
@@ -118,7 +118,7 @@ export interface AdapterInstance<
   Schema extends UnDbSchema = UnDbSchema,
 > {
   (
-    table: (options: AdapterOptions<T, Schema>) => Schema,
+    getTables: (options: AdapterOptions<T, Schema>) => Schema,
     options: AdapterOptions<T, Schema>,
   ): Adapter<T, Schema>
 }

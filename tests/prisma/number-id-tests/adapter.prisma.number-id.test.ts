@@ -1,5 +1,6 @@
 import * as fs from 'node:fs'
 import { beforeAll, describe } from 'vitest'
+import { getAuthTables } from '../../better-auth.schema.ts'
 import { runNumberIdAdapterTest } from '../../test.ts'
 import { pushPrismaSchema } from '../push-schema.ts'
 import { getState, stateFilePath } from '../state.ts'
@@ -37,7 +38,7 @@ describe('number Id Adapter Test', async () => {
       const { getAdapter } = await import('./get-adapter.ts')
       const { adapter } = getAdapter()
       const { advanced, database, user } = createTestOptions(adapter)
-      return adapter({
+      return adapter(getAuthTables, {
         ...customOptions,
         user: {
           ...user,

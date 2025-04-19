@@ -53,12 +53,11 @@ export interface DrizzleAdapterConfig {
 export function drizzleAdapter<
   T extends Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
 >(
   db: DB,
   config: DrizzleAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'drizzle',
       adapterName: 'Drizzle Adapter',
