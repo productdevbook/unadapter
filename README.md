@@ -133,6 +133,7 @@ const db = {
   session: []
 }
 
+// Define a consistent options interface that can be reused
 interface CustomOptions {
   appName?: string
   plugins?: {
@@ -242,6 +243,7 @@ const db = {
   products: []
 }
 
+// Using the same pattern for CustomOptions
 interface CustomOptions {
   appName?: string
   plugins?: {
@@ -394,7 +396,12 @@ const client = new MongoClient('mongodb://localhost:27017')
 await client.connect()
 const db = client.db('myDatabase')
 
+// Using the same pattern for CustomOptions
 interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
       name?: string
@@ -474,7 +481,12 @@ import { prismaAdapter } from 'unadapter/prisma'
 // Initialize Prisma client
 const prisma = new PrismaClient()
 
+// Using the same pattern for CustomOptions
 interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
       name?: string
@@ -589,119 +601,128 @@ const user = await adapter.create({
 ```typescript
 import type { PluginSchema } from 'unadapter/types'
 import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { drizzle } from 'drizzle-orm/mysql2'
-import mysql from 'mysql2/promise'
+import { sql } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/node-postgres'
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
 import { drizzleAdapter } from 'unadapter/drizzle'
+import 'dotenv/config'
 
-// Create a database connection pool
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'myapp'
-})
+// Define your Drizzle schema
+export const role = pgTable(
+  'role',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    name: varchar('name', { length: 255 }).notNull(),
+    key: varchar('key', { length: 255 }).notNull().unique(),
+    type: varchar('type', { length: 255 }).notNull().default('user'),
+    description: varchar('description', { length: 500 }).notNull(),
+    userId: uuid('user_id').notNull(),
+    permissions: text('permissions')
+      .notNull()
+      .default('0'),
+    updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+    createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  },
+)
 
-// Initialize Drizzle
-const db = drizzle(pool)
-
+// Using the same pattern for CustomOptions
 interface CustomOptions {
-  user?: {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
+  role?: {
     fields?: {
       name?: string
-      email?: string
-      role?: string
-    }
-  }
-  task?: {
-    fields?: {
-      title?: string
-      completed?: string
+      description?: string
+      key?: string
+      permissions?: string
       userId?: string
     }
   }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, task, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, role, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
-    user: {
-      modelName: 'users',
+    role: {
+      modelName: 'role',
       fields: {
         name: {
           type: 'string',
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.role?.fields?.name || 'name',
         },
-        email: {
-          type: 'string',
-          unique: true,
-          required: true,
-          fieldName: options?.user?.fields?.email || 'email',
-        },
-        role: {
-          type: 'string',
-          defaultValue: () => 'user',
-          fieldName: options?.user?.fields?.role || 'role',
-        },
-        createdAt: {
-          type: 'date',
-          defaultValue: () => new Date(),
-          fieldName: 'created_at',
-        },
-        ...user?.fields,
-        ...options?.user?.fields,
-      }
-    },
-    task: {
-      modelName: 'tasks',
-      fields: {
-        title: {
+        description: {
           type: 'string',
           required: true,
-          fieldName: options?.task?.fields?.title || 'title',
+          fieldName: options?.role?.fields?.description || 'description',
         },
-        completed: {
-          type: 'boolean',
-          defaultValue: () => false,
-          fieldName: options?.task?.fields?.completed || 'completed',
+        key: {
+          type: 'string',
+          required: true,
+          fieldName: options?.role?.fields?.key || 'key',
+        },
+        permissions: {
+          type: 'string',
+          required: true,
+          fieldName: options?.role?.fields?.permissions || 'permissions',
         },
         userId: {
           type: 'string',
+          required: true,
           references: {
             model: 'user',
             field: 'id',
+            onDelete: 'cascade',
           },
-          required: true,
-          fieldName: options?.task?.fields?.userId || 'user_id',
+          fieldName: options?.role?.fields?.userId || 'user_id',
         },
-        ...task?.fields,
-        ...options?.task?.fields,
-      }
-    }
+        createdAt: {
+          type: 'date',
+          required: true,
+          defaultValue: new Date(),
+        },
+        updatedAt: {
+          type: 'date',
+          required: true,
+          defaultValue: new Date(),
+        },
+        ...role?.fields,
+        ...options?.role?.fields,
+      },
+    },
   }
 })
 
-// Initialize the adapter
+// Initialize the adapter with the Drizzle schema
 const adapter = createAdapter(tables, {
   database: drizzleAdapter(
-    db,
+    drizzle(process.env.DATABASE_URL!),
     {
-      provider: 'mysql',
-      defaultSchema: 'myapp'
-    }
+      provider: 'pg',
+      debugLogs: true,
+      schema: {
+        role,
+      },
+    },
   ),
-  plugins: []
+  plugins: [], // Optional plugins
 })
 
 // Use the adapter
-const user = await adapter.create({
-  model: 'user',
+const role = await adapter.create({
+  model: 'role',
   data: {
-    name: 'Alice Johnson',
-    email: 'alice@example.com',
-    role: 'admin'
-  }
+    name: 'Test Role',
+    description: 'This is a test role',
+    key: 'test_role',
+    permissions: 'read,write',
+    userId: '8eea9d01-6c73-4933-bb0f-811cb7d4a862',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 })
 ```
 </details>
@@ -729,7 +750,12 @@ const db = new Kysely({
   dialect: new PostgresDialect({ pool })
 })
 
+// Using the same pattern for CustomOptions
 interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
       name?: string
