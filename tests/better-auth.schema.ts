@@ -3,7 +3,6 @@ import type {
   DbSchema,
   FieldAttribute,
   OmitId,
-  UnDbSchema,
   User,
   Verification,
 } from 'unadapter/types'

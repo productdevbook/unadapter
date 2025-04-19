@@ -4,8 +4,6 @@ import type {
   UpdateQueryBuilder,
 } from 'kysely'
 import type {
-  AdapterOptions,
-  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'

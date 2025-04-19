@@ -1,6 +1,4 @@
 import type {
-  AdapterOptions,
-  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'

@@ -2,7 +2,6 @@ import type {
   SQL,
 } from 'drizzle-orm'
 import type {
-  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
