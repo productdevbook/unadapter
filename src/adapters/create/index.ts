@@ -310,7 +310,7 @@ export function createAdapter<
     }
 
     const adapterInstance = adapter({
-      options,
+      options: options as any,
       schema,
       debugLog,
       getFieldName,
@@ -478,7 +478,7 @@ export function createAdapter<
               select,
               model: unsafe_model,
               schema,
-              options,
+              options: options as any,
             })
           }
 

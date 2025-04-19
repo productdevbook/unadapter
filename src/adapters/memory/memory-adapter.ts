@@ -75,7 +75,6 @@ export function memoryAdapter<
           data,
         }) => {
           if (options.advanced?.database?.useNumberId) {
-            // @ts-expect-error - Dynamically adding id property to data object
             data.id = db[model].length + 1
           }
           db[model].push(data)

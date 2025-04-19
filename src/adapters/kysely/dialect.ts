@@ -66,7 +66,7 @@ export async function createKyselyAdapter<T extends Record<string, any>>(config:
 
   let dialect: Dialect | undefined
 
-  const databaseType = getDatabaseType(db)
+  const databaseType = getDatabaseType(db as any)
 
   if ('createDriver' in db) {
     dialect = db
