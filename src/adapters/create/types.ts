@@ -4,7 +4,7 @@ import type {
   FieldAttribute,
   InferModelTypes,
   Prettify,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 
@@ -35,7 +35,7 @@ export type AdapterDebugLogs =
 
 export interface AdapterConfig<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 > {
   /**
    * Use plural table names.
@@ -168,7 +168,7 @@ export interface AdapterConfig<
     /**
      * The schema of the user's instance.
      */
-    schema: UnDbSchema
+    schema: TablesSchema
     /**
      * The options of the user's instance.
      */
@@ -200,7 +200,7 @@ export interface AdapterConfig<
     /**
      * The schema of the user's instance.
      */
-    schema: UnDbSchema
+    schema: TablesSchema
     /**
      * The options of the user's instance.
      */
@@ -233,7 +233,7 @@ export interface AdapterConfig<
 
 export type CreateCustomAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 > = ({
   options,
   schema,
@@ -248,7 +248,7 @@ export type CreateCustomAdapter<
   /**
    * The schema of the user's instance.
    */
-  schema: UnDbSchema
+  schema: TablesSchema
   /**
    * The debug log function.
    *
@@ -304,7 +304,7 @@ export type CreateCustomAdapter<
 
 export interface CustomAdapter<
   _T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
   Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
 
 > {
@@ -396,7 +396,7 @@ export interface CustomAdapter<
     /**
      * The tables from the user's instance schema.
      */
-    tables: UnDbSchema
+    tables: TablesSchema
   }) => Promise<AdapterSchemaCreation>
 
   /**

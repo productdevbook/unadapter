@@ -2,7 +2,7 @@ import type {
   SQL,
 } from 'drizzle-orm'
 import type {
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
@@ -51,7 +51,7 @@ export interface DrizzleAdapterConfig {
 
 export function drizzleAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(
   db: DB,
   config: DrizzleAdapterConfig,

@@ -2,7 +2,7 @@ import type {
   Adapter,
   AdapterOptions,
   FieldAttribute,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type {
@@ -52,7 +52,7 @@ const colors = {
 
 export function createAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >({
   adapter,
   config: cfg,

@@ -1,8 +1,8 @@
-import type { Adapter, AdapterInstance, AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { Adapter, AdapterInstance, AdapterOptions, TablesSchema } from 'unadapter/types'
 
 export function createAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(
   table: (
     options: AdapterOptions<T>,
@@ -23,7 +23,7 @@ export function createAdapter<
 
 export function createTable<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(
   table: (options: AdapterOptions<T>) => Schema,
 ) {

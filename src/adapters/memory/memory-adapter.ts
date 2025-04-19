@@ -1,5 +1,5 @@
 import type {
-  UnDbSchema,
+  TablesSchema,
 } from 'unadapter/types'
 import type {
   AdapterDebugLogs,
@@ -19,7 +19,7 @@ export interface MemoryAdapterConfig {
 
 export function memoryAdapter<
   T extends Record<string, any> = object,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(
   db: MemoryDB,
   config?: MemoryAdapterConfig,

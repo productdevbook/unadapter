@@ -113,7 +113,7 @@ You'll also need to install the specific database driver or ORM you plan to use.
 ### Basic Usage
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
@@ -161,7 +161,7 @@ function getTables(options: AdapterOptions) {
         },
       },
     },
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -228,7 +228,7 @@ await adapter.delete({
 unadapter allows you to define your own database schema. This gives you full control over your data models and their relationships.
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
@@ -323,7 +323,7 @@ function getTables(options: AdapterOptions) {
         }
       }
     }
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -412,7 +412,7 @@ interface FieldAttribute {
 ### Using MongoDB Adapter with Custom Schema
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { MongoClient } from 'mongodb'
 import { mongodbAdapter } from 'unadapter/mongodb'
 
@@ -451,7 +451,7 @@ function getTables(options: AdapterOptions) {
       },
       order: 1
     }
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -480,7 +480,7 @@ const user = await adapter.create({
 ### Using Prisma Adapter with Custom Schema
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { PrismaClient } from '@prisma/client'
 import { prismaAdapter } from 'unadapter/prisma'
 
@@ -548,7 +548,7 @@ function getTables(options: AdapterOptions) {
       },
       order: 2
     }
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -579,7 +579,7 @@ const user = await adapter.create({
 ### Using Drizzle Adapter with Custom Schema
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
 import { drizzleAdapter } from 'unadapter/drizzle'
@@ -650,7 +650,7 @@ function getTables(options: AdapterOptions) {
       },
       order: 2
     }
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -689,7 +689,7 @@ const task = await adapter.create({
 ### Using Kysely Adapter with Custom Schema
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { AdapterOptions, TablesSchema } from 'unadapter/types'
 import { Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
 import { kyselyAdapter } from 'unadapter/kysely'
@@ -778,7 +778,7 @@ function getTables(options: AdapterOptions) {
       },
       order: 2
     }
-  } satisfies UnDbSchema
+  } satisfies TablesSchema
 }
 
 // Initialize the adapter
@@ -820,7 +820,7 @@ const article = await adapter.create({
 You can create your own adapters using the `createAdapter` function:
 
 ```typescript
-import { UnDbSchema } from 'unadapter'
+import { TablesSchema } from 'unadapter'
 import { createAdapter } from 'unadapter/create'
 
 // Define a schema
@@ -834,7 +834,7 @@ const mySchema = {
     },
     order: 1
   }
-} satisfies UnDbSchema
+} satisfies TablesSchema
 
 // Define options
 const options = {

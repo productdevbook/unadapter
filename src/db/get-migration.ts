@@ -6,7 +6,7 @@ import type {
   AdapterOptions,
   FieldAttribute,
   FieldType,
-  UnDbSchema,
+  TablesSchema,
 } from 'unadapter/types'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import { createKyselyAdapter } from '../adapters/kysely/dialect.ts'
@@ -81,7 +81,7 @@ export function matchType(
 
 export async function getMigrations<T extends Record<string, any>>(
   config: AdapterOptions<T>,
-  getTables: (options: AdapterOptions<T>) => UnDbSchema,
+  getTables: (options: AdapterOptions<T>) => TablesSchema,
 ) {
   const betterAuthSchema = getSchema(config, getTables)
   const logger = createLogger(config.logger)

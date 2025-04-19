@@ -5,7 +5,7 @@ import type { FieldAttribute } from './index.ts'
  * This type is exported so users can define their own schema externally
  */
 
-export interface DbSchema {
+export interface DatabaseSchema {
   /**
    * The name of the table in the database
    */
@@ -25,7 +25,7 @@ export interface DbSchema {
   order?: number
 }
 
-export type UnDbSchema = Record<
+export type TablesSchema = Record<
   string,
-  DbSchema
+  DatabaseSchema
 >

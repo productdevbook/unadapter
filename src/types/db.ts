@@ -1,7 +1,7 @@
 import type { ZodSchema } from 'zod'
 import type { LiteralString } from './helper.ts'
 import type { AdapterOptions } from './options.ts'
-import type { UnDbSchema } from './schema.ts'
+import type { TablesSchema } from './schema.ts'
 
 export type FieldType =
   | 'string'
@@ -232,6 +232,6 @@ export type InferFieldsFromOptions<
     : InferFieldsInput<Field>
   : object
 
-export type InferModelTypes<Schema extends UnDbSchema> = {
+export type InferModelTypes<Schema extends TablesSchema> = {
   [K in keyof Schema]: InferFieldsInput<Schema[K]['fields']>
 }

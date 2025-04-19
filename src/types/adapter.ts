@@ -1,6 +1,6 @@
 import type { InferModelTypes } from './db.ts'
 import type { AdapterOptions } from './options.ts'
-import type { UnDbSchema } from './schema.ts'
+import type { TablesSchema } from './schema.ts'
 
 /**
  * Adapter where clause
@@ -27,7 +27,7 @@ export interface Where {
  */
 export interface Adapter<
   T extends Record<string, any> = Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
   Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
 > {
   id: string
@@ -126,7 +126,7 @@ export interface AdapterSchemaCreation {
 
 export interface AdapterInstance<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 > {
   (
     getTables: (options: AdapterOptions<T, Schema>) => Schema,

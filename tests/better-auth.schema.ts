@@ -1,6 +1,6 @@
 import type {
   Account,
-  DbSchema,
+  DatabaseSchema,
   FieldAttribute,
   OmitId,
   User,
@@ -47,7 +47,7 @@ export interface BetterAuthOptions {
   appName?: string
 
   plugins?: {
-    schema?: Omit<DbSchema, 'order'>
+    schema?: Omit<DatabaseSchema, 'order'>
   }[]
   /**
    * Base URL for the Better Auth. This is typically the

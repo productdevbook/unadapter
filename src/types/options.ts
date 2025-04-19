@@ -4,14 +4,14 @@ import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type {
   AdapterInstance,
   LiteralUnion,
-  UnDbSchema,
+  TablesSchema,
 } from '../types/index.ts'
 
 export interface UnOptions {}
 
 export type AdapterOptions<
   T extends Record<string, any> = Record<string, any>,
-  _Schema extends UnDbSchema = UnDbSchema,
+  _Schema extends TablesSchema = TablesSchema,
 > = T & UnOptions & {
   /**
    * Advanced options

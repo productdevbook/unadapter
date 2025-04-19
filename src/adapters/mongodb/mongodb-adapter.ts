@@ -2,7 +2,7 @@ import type { Db } from 'mongodb'
 import type {
   Adapter,
   AdapterOptions,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import { ObjectId } from 'mongodb'
@@ -10,7 +10,7 @@ import { withApplyDefault } from '../utils.ts'
 
 function createTransform<
   T extends Record<string, any> = Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(options: AdapterOptions<T, Schema>, schema: Schema) {
   /**
    * if custom id gen is provided we don't want to override with object id
@@ -235,7 +235,7 @@ select: string[] = [],
 
 export function mongodbAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(db: Db) {
   return (
     getTables: (options: AdapterOptions<T>) => Schema,

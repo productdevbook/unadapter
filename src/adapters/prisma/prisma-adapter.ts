@@ -1,5 +1,5 @@
 import type {
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
@@ -48,7 +48,7 @@ interface PrismaClientInternal {
 
 export function prismaAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
+  Schema extends TablesSchema = TablesSchema,
 >(
   prisma: PrismaClient,
   config: PrismaConfig,
