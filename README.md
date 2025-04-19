@@ -123,6 +123,7 @@ You'll also need to install the specific database driver or ORM you plan to use.
 <summary><b>Basic Usage</b></summary>
 
 ```typescript
+import type { PluginSchema } from 'unadapter/types'
 import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
@@ -231,7 +232,8 @@ const foundUsers = await adapter.findMany({
 <summary><b>Using Custom Schema and Plugins</b></summary>
 
 ```typescript
-import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
@@ -382,7 +384,8 @@ const product = await adapter.create({
 <summary><b>MongoDB Adapter Example</b></summary>
 
 ```typescript
-import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { MongoClient } from 'mongodb'
 import { mongodbAdapter } from 'unadapter/mongodb'
 
@@ -463,7 +466,8 @@ const user = await adapter.create({
 <summary><b>Prisma Adapter Example</b></summary>
 
 ```typescript
-import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { PrismaClient } from '@prisma/client'
 import { prismaAdapter } from 'unadapter/prisma'
 
@@ -583,7 +587,8 @@ const user = await adapter.create({
 <summary><b>Drizzle Adapter Example</b></summary>
 
 ```typescript
-import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
 import { drizzleAdapter } from 'unadapter/drizzle'
@@ -705,7 +710,8 @@ const user = await adapter.create({
 <summary><b>Kysely Adapter Example</b></summary>
 
 ```typescript
-import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
 import { kyselyAdapter } from 'unadapter/kysely'
