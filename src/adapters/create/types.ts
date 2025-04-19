@@ -1,7 +1,8 @@
 import type {
+  AdapterOptions,
   AdapterSchemaCreation,
-  AnyOptions,
   FieldAttribute,
+  InferModelTypes,
   Prettify,
   UnDbSchema,
   Where,
@@ -32,7 +33,10 @@ export type AdapterDebugLogs =
     isRunningAdapterTests: boolean
   }
 
-export interface AdapterConfig {
+export interface AdapterConfig<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+> {
   /**
    * Use plural table names.
    *
@@ -168,7 +172,7 @@ export interface AdapterConfig {
     /**
      * The options of the user's instance.
      */
-    options: AnyOptions
+    options: AdapterOptions<T, Schema>
   }) => any
   /**
    * Custom transform output function.
@@ -200,7 +204,7 @@ export interface AdapterConfig {
     /**
      * The options of the user's instance.
      */
-    options: AnyOptions
+    options: AdapterOptions<T, Schema>
   }) => any
   /**
    * Custom ID generator function.
@@ -227,7 +231,10 @@ export interface AdapterConfig {
   }) => string
 }
 
-export type CreateCustomAdapter<Models extends Record<string, any> = Record<string, any>> = ({
+export type CreateCustomAdapter<
+  T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+> = ({
   options,
   schema,
   debugLog,
@@ -237,7 +244,7 @@ export type CreateCustomAdapter<Models extends Record<string, any> = Record<stri
   getDefaultFieldName,
   getFieldAttributes,
 }: {
-  options: AnyOptions
+  options: AdapterOptions<T, Schema>
   /**
    * The schema of the user's instance.
    */
@@ -293,15 +300,20 @@ export type CreateCustomAdapter<Models extends Record<string, any> = Record<stri
     model,
     field,
   }: { model: string, field: string }) => FieldAttribute
-}) => CustomAdapter<Models>
+}) => CustomAdapter<T, Schema>
 
-export interface CustomAdapter<Models = any> {
+export interface CustomAdapter<
+  _T extends Record<string, any>,
+  Schema extends UnDbSchema = UnDbSchema,
+  Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
+
+> {
   create: <M extends keyof Models>({
     model,
     data,
     select,
   }: {
-    model: M & string
+    model: M & (string | object)
     data: Omit<Models[M], 'id'>
     select?: string[]
   }) => Promise<any> // Return any here since it'll be transformed by the adapter later
@@ -311,7 +323,7 @@ export interface CustomAdapter<Models = any> {
     where,
     update,
   }: {
-    model: M & string
+    model: M & (string | object)
     where: CleanedWhere[]
     update: Partial<Models[M]>
   }) => Promise<Models[M] | null>
@@ -321,7 +333,7 @@ export interface CustomAdapter<Models = any> {
     where,
     update,
   }: {
-    model: M & string
+    model: M & (string | object)
     where: CleanedWhere[]
     update: Partial<Models[M]>
   }) => Promise<number>
@@ -331,7 +343,7 @@ export interface CustomAdapter<Models = any> {
     where,
     select,
   }: {
-    model: M & string
+    model: M & (string | object)
     where: CleanedWhere[]
     select?: string[]
   }) => Promise<Models[M] | null>
@@ -344,7 +356,7 @@ export interface CustomAdapter<Models = any> {
     offset,
     select,
   }: {
-    model: M & string
+    model: M & (string | object)
     where?: CleanedWhere[]
     limit?: number
     sortBy?: { field: string, direction: 'asc' | 'desc' }

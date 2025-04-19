@@ -2,7 +2,6 @@ import type {
   Adapter,
   AdapterOptions,
   FieldAttribute,
-  InferModelTypes,
   UnDbSchema,
   Where,
 } from 'unadapter/types'
@@ -58,7 +57,7 @@ export function createAdapter<
   adapter,
   config: cfg,
 }: {
-  config: AdapterConfig
+  config: AdapterConfig<T, Schema>
   adapter: CreateCustomAdapter<Schema>
 }) {
   return (

@@ -28,23 +28,24 @@ export interface Where {
 export interface Adapter<
   T extends Record<string, any> = Record<string, any>,
   Schema extends UnDbSchema = UnDbSchema,
+  Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
 > {
   id: string
 
-  create: <M extends keyof InferModelTypes<Schema>>(data: {
-    model: keyof InferModelTypes<Schema>
-    data: Omit<InferModelTypes<Schema>[M], 'id'>
+  create: <M extends keyof Models>(data: {
+    model: M & (string | object)
+    data: Omit<Models[M], 'id'>
     select?: string[]
-  }) => Promise<InferModelTypes<Schema>[M]>
+  }) => Promise<Models[M]>
 
-  findOne: <M extends keyof InferModelTypes<Schema>>(data: {
-    model: M & string
+  findOne: <M extends keyof Models>(data: {
+    model: M & (string | object)
     where: Where[]
     select?: string[]
-  }) => Promise<InferModelTypes<Schema>[M] | null>
+  }) => Promise<Models[M] | null>
 
-  findMany: <M extends keyof InferModelTypes<Schema>>(data: {
-    model: M & string
+  findMany: <M extends keyof Models>(data: {
+    model: M & (string | object)
     where?: Where[]
     limit?: number
     sortBy?: {
@@ -53,32 +54,42 @@ export interface Adapter<
     }
     offset?: number
     select?: string[]
-  }) => Promise<InferModelTypes<Schema>[M][]>
+  }) => Promise<Models[M][]>
 
   count: (data: {
-    model: string
     where?: Where[]
+    model: string
   }) => Promise<number>
 
   /**
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
-  update: <M extends keyof InferModelTypes<Schema>>(data: {
-    model: M & string
+  update: <M extends keyof Models>(data: {
+    model: M & (string | object)
     where: Where[]
-    update: Partial<InferModelTypes<Schema>[M]>
-  }) => Promise<InferModelTypes<Schema>[M] | null>
+    update: Partial<Models[M]>
+  }) => Promise<Models[M] | null>
 
-  updateMany: <M extends keyof InferModelTypes<Schema>>(data: {
-    model: M & string
+  updateMany: <M extends keyof Models>(data: {
+    model: M & (string | object)
     where: Where[]
-    update: Partial<InferModelTypes<Schema>[M]>
+    update: Partial<Models[M]>
   }) => Promise<number>
 
-  delete: (data: { model: string, where: Where[] }) => Promise<void>
+  delete: <M extends keyof Models>(
+    data: {
+      model: M & (string | object)
+      where: Where[]
+    }
+  ) => Promise<void>
 
-  deleteMany: (data: { model: string, where: Where[] }) => Promise<number>
+  deleteMany: <M extends keyof Models>(
+    data: {
+      model: M & (string | object)
+      where: Where[]
+    }
+  ) => Promise<number>
   /**
    *
    * @param options
