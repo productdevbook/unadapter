@@ -1,4 +1,4 @@
-import type { Adapter, AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { Adapter, AdapterInstance, AdapterOptions, UnDbSchema } from 'unadapter/types'
 
 export function createAdapter<
   T extends Record<string, any>,
@@ -12,16 +12,12 @@ export function createAdapter<
   if (!options.database) {
     throw new Error('Adapter not provided')
   }
-  let adapter
-  if (options.database instanceof createAdapter && typeof options.database === 'function') {
-    adapter = options.database(
-      table,
-      options,
-    )
-  }
-  else {
-    throw new TypeError('Invalid adapter provided')
-  }
+
+  const adapter = (options.database as AdapterInstance<T>)(
+    table,
+    options,
+  )
+
   return adapter as unknown as Adapter<T, Schema>
 }
 
