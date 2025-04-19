@@ -72,9 +72,7 @@ describe('drizzle Adapter Tests (MySQL)', async () => {
   })
   const adapter = drizzleAdapter(
     db,
-    getAuthTables,
     {
-
       provider: 'mysql',
       schema,
       debugLogs: {
@@ -89,7 +87,7 @@ describe('drizzle Adapter Tests (MySQL)', async () => {
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
-      return adapter(merged)
+      return adapter(getAuthTables, merged)
     },
   })
 })
@@ -114,7 +112,6 @@ describe('drizzle Adapter Number Id Test (MySQL)', async () => {
   })
   const adapter = drizzleAdapter(
     db,
-    getAuthTables,
     {
       provider: 'mysql',
       schema,
@@ -130,7 +127,7 @@ describe('drizzle Adapter Number Id Test (MySQL)', async () => {
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
-      return adapter(merged)
+      return adapter(getAuthTables, merged)
     },
   })
 })

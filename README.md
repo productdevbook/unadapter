@@ -1,35 +1,52 @@
-<div align="center">
+# unadapter 
 
-# unadapter
+**A universal adapter interface for connecting various databases and ORMs with a standardized API.**
+
 
 <img src="https://img.shields.io/badge/Status-Work%20In%20Progress-orange" alt="Work In Progress"/>
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![bundle][bundle-src]][bundle-href]
-[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
 [![License][license-src]][license-href]
-[![JSDocs][jsdocs-src]][jsdocs-href]
-
-### Test Coverage
+[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
 ![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
 ![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
 ![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
 ![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
 
-**A universal adapter interface for connecting various databases and ORMs with a standardized API.**
 
-<hr />
+## 🚀 Features
 
-</div>
+- 🔄 Standardized interface for common database operations (create, read, update, delete)
+- 🛡️ Type-safe operations
+- 🔍 Support for complex queries and transformations
+- 🌐 Database-agnostic application code
+- 🔄 Easy switching between different database providers
+- 🗺️ Custom field mapping
+- 📊 Support for various data types across different database systems
+- 🏗️ Fully customizable schema definition
 
-## 🚧 Ongoing Development
-> **Note:** This project is currently under active development. Features and APIs may change.
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Installation](#-installation)
+- [Available Adapters](#-available-adapters)
+- [Getting Started](#-getting-started)
+- [API Reference](#-api-reference)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+## 🌟 Overview
+
+unadapter provides a consistent interface for database operations, allowing you to switch between different database solutions without changing your application code. This is particularly useful for applications that need database-agnostic operations or might need to switch database providers in the future.
+
+<details>
+<summary><b>🚧 Development Status</b></summary>
 
 This project is based on the adapter architecture from [better-auth](https://github.com/better-auth) and is being developed to provide a standalone, ESM-compatible adapter solution that can be used across various open-source projects.
 
-<details>
-<summary><b>📋 Development Roadmap</b></summary>
+#### Development Roadmap
 
 - [x] Initial adapter architecture
 - [x] Basic adapters implementation
@@ -39,13 +56,16 @@ This project is based on the adapter architecture from [better-auth](https://git
 - [ ] Integration examples
 - [ ] Complete abstraction from better-auth and compatibility with all software systems
 
+#### Test Coverage
+![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
+![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
+![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
+![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
+
+[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
+[![JSDocs][jsdocs-src]][jsdocs-href]
+
 </details>
-
-## 🌟 Overview
-
-unadapter provides a consistent interface for database operations, allowing you to switch between different database solutions without changing your application code. This is particularly useful for applications that need database-agnostic operations or might need to switch database providers in the future.
-
-I've seen the need for this kind of adapter system in several of my own projects and across the open-source ecosystem. In the future, better-auth might utilize unadapter, bringing this unified adapter structure to a wider range of open-source projects with full ESM support.
 
 ## 📦 Installation
 
@@ -97,23 +117,13 @@ You'll also need to install the specific database driver or ORM you plan to use.
   </tr>
 </table>
 
-## ✨ Features
-
-- 🔄 Standardized interface for common database operations (create, read, update, delete)
-- 🛡️ Type-safe operations
-- 🔍 Support for complex queries and transformations
-- 🌐 Database-agnostic application code
-- 🔄 Easy switching between different database providers
-- 🗺️ Custom field mapping
-- 📊 Support for various data types across different database systems
-- 🏗️ Fully customizable schema definition
-
 ## 🚀 Getting Started
 
-### Basic Usage
+<details open>
+<summary><b>Basic Usage</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
@@ -122,8 +132,25 @@ const db = {
   session: []
 }
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      emailVerified?: string
+      image?: string
+      createdAt?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'user',
@@ -131,48 +158,48 @@ function getTables(options: AdapterOptions) {
         name: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || 'name',
           sortable: true,
         },
         email: {
           type: 'string',
           unique: true,
           required: true,
-          fieldName: options.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || 'email',
           sortable: true,
         },
         emailVerified: {
           type: 'boolean',
           defaultValue: () => false,
           required: true,
-          fieldName: options.user?.fields?.emailVerified || 'emailVerified',
+          fieldName: options?.user?.fields?.emailVerified || 'emailVerified',
         },
         createdAt: {
           type: 'date',
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options.user?.fields?.createdAt || 'createdAt',
+          fieldName: options?.user?.fields?.createdAt || 'createdAt',
         },
         updatedAt: {
           type: 'date',
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options.user?.fields?.updatedAt || 'updatedAt',
+          fieldName: options?.user?.fields?.updatedAt || 'updatedAt',
         },
-      },
-    },
-  } satisfies UnDbSchema
-}
+        ...user?.fields,
+        ...options?.user?.fields,
+      }
+    }
+  }
+})
 
-// Initialize the adapter
-const createAdapter = memoryAdapter(
-  db,
-  getTables,
-  {} // Additional adapter options
-)
-
-// Create an adapter instance
-const adapter = createAdapter({})
+const adapter = createAdapter(tables, {
+  database: memoryAdapter(
+    db,
+    {}
+  ),
+  plugins: [] // Optional plugins
+})
 
 // Now you can use the adapter to perform database operations
 const user = await adapter.create({
@@ -187,48 +214,24 @@ const user = await adapter.create({
 })
 
 // Find the user
-const foundUser = await adapter.findOne({
+const foundUsers = await adapter.findMany({
   model: 'user',
   where: [
     {
       field: 'email',
-      value: 'john@example.com'
-    }
-  ]
-})
-
-// Update the user
-const updatedUser = await adapter.update({
-  model: 'user',
-  where: [
-    {
-      field: 'id',
-      value: user.id
-    }
-  ],
-  update: {
-    name: 'John Smith'
-  }
-})
-
-// Delete the user
-await adapter.delete({
-  model: 'user',
-  where: [
-    {
-      field: 'id',
-      value: user.id
+      value: 'john@example.com',
+      operator: 'eq',
     }
   ]
 })
 ```
+</details>
 
-### Using Custom Schema
-
-unadapter allows you to define your own database schema. This gives you full control over your data models and their relationships.
+<details>
+<summary><b>Using Custom Schema and Plugins</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
 // Create an in-memory database for testing
@@ -237,112 +240,127 @@ const db = {
   products: []
 }
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
+  user?: {
+    fields?: {
+      fullName?: string
+      email?: string
+      isActive?: string
+    }
+  }
+  product?: {
+    fields?: {
+      title?: string
+      price?: string
+      ownerId?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, product, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'users', // The actual table/collection name in your database
       fields: {
-        name: {
+        fullName: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'full_name', // The actual column name in your database
-          sortable: true
+          fieldName: options?.user?.fields?.fullName || 'full_name',
+          sortable: true,
         },
         email: {
           type: 'string',
           unique: true,
           required: true,
-          fieldName: options.user?.fields?.email || 'email_address'
-        },
-        role: {
-          type: 'string',
-          required: true,
-          fieldName: options.user?.fields?.role || 'role',
-          defaultValue: () => 'user'
+          fieldName: options?.user?.fields?.email || 'email_address',
         },
         isActive: {
           type: 'boolean',
-          fieldName: options.user?.fields?.isActive || 'is_active',
-          defaultValue: () => true
-        },
-        lastLogin: {
-          type: 'date',
-          required: false,
-          fieldName: options.user?.fields?.lastLogin || 'last_login'
+          fieldName: options?.user?.fields?.isActive || 'is_active',
+          defaultValue: () => true,
         },
         createdAt: {
           type: 'date',
-          fieldName: options.user?.fields?.createdAt || 'created_at',
-          defaultValue: () => new Date()
+          fieldName: 'created_at',
+          defaultValue: () => new Date(),
         },
-        updatedAt: {
-          type: 'date',
-          fieldName: options.user?.fields?.updatedAt || 'updated_at',
-          defaultValue: () => new Date()
-        }
+        ...user?.fields,
+        ...options?.user?.fields,
       }
     },
     product: {
       modelName: 'products',
       fields: {
-        name: {
+        title: {
           type: 'string',
           required: true,
-          fieldName: options.product?.fields?.name || 'name'
+          fieldName: options?.product?.fields?.title || 'title',
         },
         price: {
           type: 'number',
           required: true,
-          fieldName: options.product?.fields?.price || 'price'
+          fieldName: options?.product?.fields?.price || 'price',
         },
-        description: {
-          type: 'string',
-          required: false,
-          fieldName: options.product?.fields?.description || 'description'
-        },
-        userId: {
+        ownerId: {
           type: 'string',
           references: {
             model: 'user',
             field: 'id',
-            onDelete: 'cascade'
+            onDelete: 'cascade',
           },
           required: true,
-          fieldName: options.product?.fields?.userId || 'user_id'
+          fieldName: options?.product?.fields?.ownerId || 'owner_id',
         },
-        createdAt: {
-          type: 'date',
-          defaultValue: () => new Date(),
-          fieldName: options.product?.fields?.createdAt || 'created_at'
+        ...product?.fields,
+        ...options?.product?.fields,
+      }
+    }
+  }
+})
+
+// User profile plugin schema
+const userProfilePlugin = {
+  schema: {
+    user: {
+      modelName: 'user',
+      fields: {
+        bio: {
+          type: 'string',
+          required: false,
+          fieldName: 'bio',
         },
-        updatedAt: {
-          type: 'date',
-          defaultValue: () => new Date(),
-          fieldName: options.product?.fields?.updatedAt || 'updated_at'
+        location: {
+          type: 'string',
+          required: false,
+          fieldName: 'location',
         }
       }
     }
-  } satisfies UnDbSchema
+  }
 }
 
-// Initialize the adapter
-const createAdapter = memoryAdapter(
-  db,
-  getTables,
-  {} // Additional adapter options
-)
-
-// Create an adapter instance
-const adapter = createAdapter({})
+const adapter = createAdapter(tables, {
+  database: memoryAdapter(
+    db,
+    {}
+  ),
+  plugins: [userProfilePlugin],
+})
 
 // Now you can use the adapter with your custom schema
 const user = await adapter.create({
   model: 'user',
   data: {
-    name: 'John Doe',
+    fullName: 'John Doe',
     email: 'john@example.com',
-    role: 'admin'
+    bio: 'Software developer',
+    location: 'New York'
   }
 })
 
@@ -350,69 +368,21 @@ const user = await adapter.create({
 const product = await adapter.create({
   model: 'product',
   data: {
-    name: 'Awesome Product',
+    title: 'Awesome Product',
     price: 99.99,
-    description: 'This is an awesome product',
-    userId: user.id
+    ownerId: user.id
   }
 })
 ```
+</details>
 
-### Field Types and Attributes
+### Database-Specific Adapters
 
-When defining your schema, you can use the following field types and attributes:
-
-```typescript
-interface FieldAttribute {
-  // The type of the field
-  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array'
-
-  // Whether this field is required
-  required?: boolean
-
-  // Whether this field should be unique
-  unique?: boolean
-
-  // The actual column/field name in the database
-  fieldName?: string
-
-  // Whether this field can be sorted
-  sortable?: boolean
-
-  // Default value function
-  defaultValue?: () => any
-
-  // Reference to another model (for foreign keys)
-  references?: {
-    model: string
-    field: string
-    onDelete?: 'cascade' | 'set null' | 'restrict'
-  }
-
-  // Custom transformations
-  transform?: {
-    input?: (value: any) => any
-    output?: (value: any) => any
-  }
-
-  // Custom validators
-  validator?: {
-    input?: any
-    output?: any
-  }
-
-  // Whether this field should be returned in queries
-  returned?: boolean
-
-  // Whether this field can be used in input operations
-  input?: boolean
-}
-```
-
-### Using MongoDB Adapter with Custom Schema
+<details>
+<summary><b>MongoDB Adapter Example</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
 import { MongoClient } from 'mongodb'
 import { mongodbAdapter } from 'unadapter/mongodb'
 
@@ -421,8 +391,19 @@ const client = new MongoClient('mongodb://localhost:27017')
 await client.connect()
 const db = client.db('myDatabase')
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      settings?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'users',
@@ -430,40 +411,40 @@ function getTables(options: AdapterOptions) {
         name: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'name'
+          fieldName: options?.user?.fields?.name || 'name',
         },
         email: {
           type: 'string',
           required: true,
           unique: true,
-          fieldName: options.user?.fields?.email || 'email'
+          fieldName: options?.user?.fields?.email || 'email',
         },
         settings: {
           type: 'json',
           required: false,
-          fieldName: options.user?.fields?.settings || 'settings'
+          fieldName: options?.user?.fields?.settings || 'settings',
         },
         createdAt: {
           type: 'date',
           defaultValue: () => new Date(),
-          fieldName: options.user?.fields?.createdAt || 'createdAt'
-        }
-      },
-      order: 1
-    }
-  } satisfies UnDbSchema
-}
-
-// Initialize the adapter
-const createAdapter = mongodbAdapter(db, getTables)
-
-// Create an adapter instance with options
-const adapter = createAdapter({
-  advanced: {
-    database: {
-      useNumberId: false
+          fieldName: 'createdAt',
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      }
     }
   }
+})
+
+// Initialize the adapter
+const adapter = createAdapter(tables, {
+  database: mongodbAdapter(
+    db,
+    {
+      useNumberId: false
+    }
+  ),
+  plugins: []
 })
 
 // Use the adapter
@@ -476,19 +457,39 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using Prisma Adapter with Custom Schema
+<details>
+<summary><b>Prisma Adapter Example</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
 import { PrismaClient } from '@prisma/client'
 import { prismaAdapter } from 'unadapter/prisma'
 
 // Initialize Prisma client
 const prisma = new PrismaClient()
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      profile?: string
+    }
+  }
+  post?: {
+    fields?: {
+      title?: string
+      content?: string
+      authorId?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, post, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'User', // Match your Prisma model name (case-sensitive)
@@ -496,26 +497,27 @@ function getTables(options: AdapterOptions) {
         name: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'name'
+          fieldName: options?.user?.fields?.name || 'name',
         },
         email: {
           type: 'string',
           required: true,
           unique: true,
-          fieldName: options.user?.fields?.email || 'email'
+          fieldName: options?.user?.fields?.email || 'email',
         },
         profile: {
           type: 'json',
           required: false,
-          fieldName: options.user?.fields?.profile || 'profile'
+          fieldName: options?.user?.fields?.profile || 'profile',
         },
         createdAt: {
           type: 'date',
           defaultValue: () => new Date(),
-          fieldName: options.user?.fields?.createdAt || 'createdAt'
-        }
-      },
-      order: 1
+          fieldName: 'createdAt',
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      }
     },
     post: {
       modelName: 'Post',
@@ -523,47 +525,47 @@ function getTables(options: AdapterOptions) {
         title: {
           type: 'string',
           required: true,
-          fieldName: options.post?.fields?.title || 'title'
+          fieldName: options?.post?.fields?.title || 'title',
         },
         content: {
           type: 'string',
           required: false,
-          fieldName: options.post?.fields?.content || 'content'
+          fieldName: options?.post?.fields?.content || 'content',
         },
         published: {
           type: 'boolean',
           defaultValue: () => false,
-          fieldName: options.post?.fields?.published || 'published'
+          fieldName: 'published',
         },
         authorId: {
           type: 'string',
           references: {
             model: 'user',
             field: 'id',
-            onDelete: 'cascade'
+            onDelete: 'cascade',
           },
           required: true,
-          fieldName: options.post?.fields?.authorId || 'authorId'
-        }
-      },
-      order: 2
+          fieldName: options?.post?.fields?.authorId || 'authorId',
+        },
+        ...post?.fields,
+        ...options?.post?.fields,
+      }
     }
-  } satisfies UnDbSchema
-}
+  }
+})
 
 // Initialize the adapter
-const createAdapter = prismaAdapter(
-  prisma,
-  getTables,
-  {
-    provider: 'postgresql',
-    debugLogs: true,
-    usePlural: false
-  }
-)
-
-// Create an adapter instance with options
-const adapter = createAdapter({})
+const adapter = createAdapter(tables, {
+  database: prismaAdapter(
+    prisma,
+    {
+      provider: 'postgresql',
+      debugLogs: true,
+      usePlural: false
+    }
+  ),
+  plugins: []
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -575,11 +577,13 @@ const user = await adapter.create({
   }
 })
 ```
+</details>
 
-### Using Drizzle Adapter with Custom Schema
+<details>
+<summary><b>Drizzle Adapter Example</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
 import { drizzle } from 'drizzle-orm/mysql2'
 import mysql from 'mysql2/promise'
 import { drizzleAdapter } from 'unadapter/drizzle'
@@ -595,8 +599,26 @@ const pool = mysql.createPool({
 // Initialize Drizzle
 const db = drizzle(pool)
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      role?: string
+    }
+  }
+  task?: {
+    fields?: {
+      title?: string
+      completed?: string
+      userId?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, task, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'users',
@@ -604,26 +626,27 @@ function getTables(options: AdapterOptions) {
         name: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'name'
+          fieldName: options?.user?.fields?.name || 'name',
         },
         email: {
           type: 'string',
           unique: true,
           required: true,
-          fieldName: options.user?.fields?.email || 'email'
+          fieldName: options?.user?.fields?.email || 'email',
         },
         role: {
           type: 'string',
           defaultValue: () => 'user',
-          fieldName: options.user?.fields?.role || 'role'
+          fieldName: options?.user?.fields?.role || 'role',
         },
         createdAt: {
           type: 'date',
           defaultValue: () => new Date(),
-          fieldName: options.user?.fields?.createdAt || 'created_at'
-        }
-      },
-      order: 1
+          fieldName: 'created_at',
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      }
     },
     task: {
       modelName: 'tasks',
@@ -631,40 +654,40 @@ function getTables(options: AdapterOptions) {
         title: {
           type: 'string',
           required: true,
-          fieldName: options.task?.fields?.title || 'title'
+          fieldName: options?.task?.fields?.title || 'title',
         },
         completed: {
           type: 'boolean',
           defaultValue: () => false,
-          fieldName: options.task?.fields?.completed || 'completed'
+          fieldName: options?.task?.fields?.completed || 'completed',
         },
         userId: {
           type: 'string',
           references: {
             model: 'user',
-            field: 'id'
+            field: 'id',
           },
           required: true,
-          fieldName: options.task?.fields?.userId || 'user_id'
-        }
-      },
-      order: 2
+          fieldName: options?.task?.fields?.userId || 'user_id',
+        },
+        ...task?.fields,
+        ...options?.task?.fields,
+      }
     }
-  } satisfies UnDbSchema
-}
+  }
+})
 
 // Initialize the adapter
-const createAdapter = drizzleAdapter(
-  db,
-  getTables,
-  {
-    provider: 'mysql',
-    defaultSchema: 'myapp'
-  }
-)
-
-// Create an adapter instance
-const adapter = createAdapter({})
+const adapter = createAdapter(tables, {
+  database: drizzleAdapter(
+    db,
+    {
+      provider: 'mysql',
+      defaultSchema: 'myapp'
+    }
+  ),
+  plugins: []
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -675,21 +698,14 @@ const user = await adapter.create({
     role: 'admin'
   }
 })
-
-// Create a task for the user
-const task = await adapter.create({
-  model: 'task',
-  data: {
-    title: 'Complete project',
-    userId: user.id
-  }
-})
 ```
+</details>
 
-### Using Kysely Adapter with Custom Schema
+<details>
+<summary><b>Kysely Adapter Example</b></summary>
 
 ```typescript
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas, type PluginSchema } from 'unadapter'
 import { Kysely, PostgresDialect } from 'kysely'
 import pg from 'pg'
 import { kyselyAdapter } from 'unadapter/kysely'
@@ -707,8 +723,27 @@ const db = new Kysely({
   dialect: new PostgresDialect({ pool })
 })
 
-// Define a schema builder function
-function getTables(options: AdapterOptions) {
+interface CustomOptions {
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      active?: string
+      meta?: string
+    }
+  }
+  article?: {
+    fields?: {
+      title?: string
+      content?: string
+      authorId?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, article, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'users',
@@ -716,31 +751,32 @@ function getTables(options: AdapterOptions) {
         name: {
           type: 'string',
           required: true,
-          fieldName: options.user?.fields?.name || 'name'
+          fieldName: options?.user?.fields?.name || 'name',
         },
         email: {
           type: 'string',
           required: true,
           unique: true,
-          fieldName: options.user?.fields?.email || 'email'
+          fieldName: options?.user?.fields?.email || 'email',
         },
         active: {
           type: 'boolean',
           defaultValue: () => true,
-          fieldName: options.user?.fields?.active || 'is_active'
+          fieldName: options?.user?.fields?.active || 'is_active',
         },
         meta: {
           type: 'json',
           required: false,
-          fieldName: options.user?.fields?.meta || 'meta_data'
+          fieldName: options?.user?.fields?.meta || 'meta_data',
         },
         createdAt: {
           type: 'date',
           defaultValue: () => new Date(),
-          fieldName: options.user?.fields?.createdAt || 'created_at'
-        }
-      },
-      order: 1
+          fieldName: 'created_at',
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      }
     },
     article: {
       modelName: 'articles',
@@ -748,50 +784,50 @@ function getTables(options: AdapterOptions) {
         title: {
           type: 'string',
           required: true,
-          fieldName: options.article?.fields?.title || 'title'
+          fieldName: options?.article?.fields?.title || 'title',
         },
         content: {
           type: 'string',
           required: true,
-          fieldName: options.article?.fields?.content || 'content'
+          fieldName: options?.article?.fields?.content || 'content',
         },
         authorId: {
           type: 'string',
           references: {
             model: 'user',
             field: 'id',
-            onDelete: 'cascade'
+            onDelete: 'cascade',
           },
           required: true,
-          fieldName: options.article?.fields?.authorId || 'author_id'
+          fieldName: options?.article?.fields?.authorId || 'author_id',
         },
         tags: {
           type: 'array',
           required: false,
-          fieldName: options.article?.fields?.tags || 'tags'
+          fieldName: 'tags',
         },
         publishedAt: {
           type: 'date',
           required: false,
-          fieldName: options.article?.fields?.publishedAt || 'published_at'
-        }
-      },
-      order: 2
+          fieldName: 'published_at',
+        },
+        ...article?.fields,
+        ...options?.article?.fields,
+      }
     }
-  } satisfies UnDbSchema
-}
+  }
+})
 
 // Initialize the adapter
-const createAdapter = kyselyAdapter(
-  db,
-  getTables,
-  {
-    defaultSchema: 'public'
-  }
-)
-
-// Create an adapter instance
-const adapter = createAdapter({})
+const adapter = createAdapter(tables, {
+  database: kyselyAdapter(
+    db,
+    {
+      defaultSchema: 'public'
+    }
+  ),
+  plugins: []
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -802,148 +838,24 @@ const user = await adapter.create({
     meta: { interests: ['programming', 'reading'], location: 'San Francisco' }
   }
 })
-
-// Create an article by this user
-const article = await adapter.create({
-  model: 'article',
-  data: {
-    title: 'Working with Kysely',
-    content: 'Kysely is a type-safe SQL query builder for TypeScript',
-    authorId: user.id,
-    tags: ['typescript', 'database', 'sql']
-  }
-})
 ```
-
-### Creating Custom Adapters
-
-You can create your own adapters using the `createAdapter` function:
-
-```typescript
-import { UnDbSchema } from 'unadapter'
-import { createAdapter } from 'unadapter/create'
-
-// Define a schema
-const mySchema = {
-  user: {
-    modelName: 'user',
-    fields: {
-      name: { type: 'string', required: true },
-      email: { type: 'string', required: true, unique: true },
-      createdAt: { type: 'date', defaultValue: () => new Date() }
-    },
-    order: 1
-  }
-} satisfies UnDbSchema
-
-// Define options
-const options = {
-  user: {
-    fields: {},
-    additionalFields: {}
-  },
-  advanced: {
-    database: {
-      useNumberId: false
-    }
-  }
-}
-
-const myCustomAdapter = createAdapter({
-  config: {
-    adapterId: 'my-custom',
-    adapterName: 'My Custom Adapter',
-    usePlural: false,
-    supportsJSON: true,
-    supportsDates: true,
-    supportsBooleans: true
-  },
-  adapter: ({ options, schema, getModelName, getFieldName }) => {
-    // Your custom database implementation
-    const db = {
-      user: []
-    }
-
-    // Implement adapter methods
-    return {
-      async create({ model, data }) {
-        // Add ID if not present
-        const record = { id: crypto.randomUUID(), ...data }
-        db[getModelName(model)].push(record)
-        return record
-      },
-
-      async findOne({ model, where, select }) {
-        const modelName = getModelName(model)
-        const records = db[modelName]
-        return records.find((record) => {
-          return where.every((condition) => {
-            const { field, value, operator = 'eq' } = condition
-            const fieldName = getFieldName({ model, field })
-            if (operator === 'eq')
-              return record[fieldName] === value
-            // Implement other operators as needed
-            return false
-          })
-        }) || null
-      },
-
-      async findMany({ model, where, limit, sortBy, offset }) {
-        // Your implementation here
-        return []
-      },
-
-      async update({ model, where, update }) {
-        // Your implementation here
-        return null
-      },
-
-      async updateMany({ model, where, update }) {
-        // Your implementation here
-        return 0
-      },
-
-      async delete({ model, where }) {
-        // Your implementation here
-      },
-
-      async deleteMany({ model, where }) {
-        // Your implementation here
-        return 0
-      },
-
-      async count({ model, where }) {
-        // Your implementation here
-        return 0
-      }
-    }
-  }
-})(options, mySchema)
-```
+</details>
 
 ## 🔍 API Reference
 
-### Adapter Interface
+<details>
+<summary><b>Adapter Interface</b></summary>
 
 All adapters implement the following interface:
 
 ```typescript
 interface Adapter {
-  id: string;
-
   // Create a new record
   create<T>({
     model: string,
     data: Omit<T, 'id'>,
     select?: string[]
   }): Promise<T>;
-
-  // Find a single record
-  findOne<T>({
-    model: string,
-    where: Where[],
-    select?: string[]
-  }): Promise<T | null>;
 
   // Find multiple records
   findMany<T>({
@@ -988,13 +900,12 @@ interface Adapter {
     model: string,
     where?: Where[]
   }): Promise<number>;
-
-  // Additional options
-  options?: Record<string, any>;
 }
 ```
+</details>
 
-### Where Clause Interface
+<details>
+<summary><b>Where Clause Interface</b></summary>
 
 The `Where` interface is used for filtering records:
 
@@ -1006,27 +917,92 @@ interface Where {
   connector?: 'AND' | 'OR'
 }
 ```
+</details>
+
+<details>
+<summary><b>Field Types and Attributes</b></summary>
+
+When defining your schema, you can use the following field types and attributes:
+
+```typescript
+interface FieldAttribute {
+  // The type of the field
+  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array'
+
+  // Whether this field is required
+  required?: boolean
+
+  // Whether this field should be unique
+  unique?: boolean
+
+  // The actual column/field name in the database
+  fieldName?: string
+
+  // Whether this field can be sorted
+  sortable?: boolean
+
+  // Default value function
+  defaultValue?: () => any
+
+  // Reference to another model (for foreign keys)
+  references?: {
+    model: string
+    field: string
+    onDelete?: 'cascade' | 'set null' | 'restrict'
+  }
+
+  // Custom transformations
+  transform?: {
+    input?: (value: any) => any
+    output?: (value: any) => any
+  }
+}
+```
+</details>
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to open issues or submit pull requests to help improve unadapter.
+Contributions are welcome! Feel free to [open issues](https://github.com/productdevbook/unadapter/issues) or [submit pull requests](https://github.com/productdevbook/unadapter/pulls) to help improve unadapter.
+
+<details>
+<summary><b>Development Setup</b></summary>
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/productdevbook/unadapter.git
+   cd unadapter
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Run tests:
+   ```bash
+   pnpm test
+   ```
+
+4. Build the project:
+   ```bash
+   pnpm build
+   ```
+</details>
 
 ## 🙏 Credits
 
 This project draws inspiration and core concepts from:
-
 - [better-auth](https://github.com/better-auth) - The original adapter architecture that inspired this project
 
 ## 📝 License
 
 See the [LICENSE](LICENSE) file for details.
 
-<hr />
-
 <div align="center">
   <p><i>unadapter is a work in progress. Stay tuned for updates!</i></p>
 </div>
 
+<!-- Links -->
 [npm-version-src]: https://img.shields.io/npm/v/unadapter?style=flat&colorA=080f12&colorB=1fa669
 [npm-version-href]: https://npmjs.com/package/unadapter
 [npm-downloads-src]: https://img.shields.io/npm/dm/unadapter?style=flat&colorA=080f12&colorB=1fa669

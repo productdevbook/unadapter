@@ -99,7 +99,6 @@ describe('number ID Adapter tests', async () => {
 
   const mysqlAdapter = kyselyAdapter(
     mysqlKy,
-    getAuthTables,
     {
       type: 'mysql',
       debugLogs: {
@@ -110,14 +109,13 @@ describe('number ID Adapter tests', async () => {
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
       const merged = merge(customOptions, mysqlOptions)
-      return mysqlAdapter(merged)
+      return mysqlAdapter(getAuthTables, merged)
     },
     testPrefix: 'mysql',
   })
 
   const sqliteAdapter = kyselyAdapter(
     sqliteKy,
-    getAuthTables,
     {
       type: 'sqlite',
       debugLogs: {
@@ -128,7 +126,7 @@ describe('number ID Adapter tests', async () => {
 
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
-      return sqliteAdapter(merge(customOptions, sqliteOptions))
+      return sqliteAdapter(getAuthTables, merge(customOptions, sqliteOptions))
     },
     testPrefix: 'sqlite',
   })

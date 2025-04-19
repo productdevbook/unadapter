@@ -2,14 +2,17 @@ import type { Database } from 'better-sqlite3'
 import type { Dialect, Kysely, MysqlPool, PostgresPool } from 'kysely'
 import type { KyselyDatabaseType } from '../adapters/kysely/types.ts'
 import type {
+  AdapterInstance,
   LiteralUnion,
-  Models,
+  TablesSchema,
 } from '../types/index.ts'
-import type { AdapterInstance } from './adapter.ts'
 
 export interface UnOptions {}
 
-export interface AnyOptions extends UnOptions {
+export type AdapterOptions<
+  T extends Record<string, any> = Record<string, any>,
+  _Schema extends TablesSchema = TablesSchema,
+> = T & UnOptions & {
   /**
    * Advanced options
    */
@@ -40,7 +43,7 @@ export interface AnyOptions extends UnOptions {
        * If set to false, the database's auto generated id will be used.
        */
       generateId?: ((options: {
-        model: LiteralUnion<Models, string>
+        model: LiteralUnion<any, string>
         size?: number
       }) => string) | false
     }
@@ -53,7 +56,7 @@ export interface AnyOptions extends UnOptions {
      * @deprecated Please use `database.generateId` instead. This will be potentially removed in future releases.
      */
     generateId?: ((options: {
-      model: LiteralUnion<Models, string>
+      model: LiteralUnion<any, string>
       size?: number
     }) => string) | false
   }
@@ -63,7 +66,7 @@ export interface AnyOptions extends UnOptions {
     | MysqlPool
     | Database
     | Dialect
-    | AdapterInstance
+    | AdapterInstance<T>
     | {
       dialect: Dialect
       type: KyselyDatabaseType
@@ -91,5 +94,3 @@ export interface AnyOptions extends UnOptions {
       casing?: 'snake' | 'camel'
     }
 }
-
-export type AdapterOptions<T extends Record<string, any> = Record<string, any>> = AnyOptions & T

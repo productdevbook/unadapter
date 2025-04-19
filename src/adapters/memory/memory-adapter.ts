@@ -1,7 +1,5 @@
 import type {
-  AdapterOptions,
-  InferModelTypes,
-  UnDbSchema,
+  TablesSchema,
 } from 'unadapter/types'
 import type {
   AdapterDebugLogs,
@@ -20,16 +18,13 @@ export interface MemoryAdapterConfig {
 }
 
 export function memoryAdapter<
-  T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  T extends Record<string, any> = object,
+  Schema extends TablesSchema = TablesSchema,
 >(
   db: MemoryDB,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config?: MemoryAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
-    getTables: options => getTables(options as AdapterOptions<T>),
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'memory',
       adapterName: 'Memory Adapter',
@@ -80,7 +75,6 @@ export function memoryAdapter<
           data,
         }) => {
           if (options.advanced?.database?.useNumberId) {
-            // @ts-expect-error - Dynamically adding id property to data object
             data.id = db[model].length + 1
           }
           db[model].push(data)

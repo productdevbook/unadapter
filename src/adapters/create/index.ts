@@ -2,8 +2,7 @@ import type {
   Adapter,
   AdapterOptions,
   FieldAttribute,
-  InferModelTypes,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type {
@@ -53,18 +52,18 @@ const colors = {
 
 export function createAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  Schema extends TablesSchema = TablesSchema,
 >({
   adapter,
   config: cfg,
-  getTables,
 }: {
-  config: AdapterConfig
-  adapter: CreateCustomAdapter<Models>
-  getTables: (options: AdapterOptions<T>) => Schema
+  config: AdapterConfig<T, Schema>
+  adapter: CreateCustomAdapter<Schema>
 }) {
-  return (options: AdapterOptions<T>): Adapter<Models> => {
+  return (
+    getTables: (options: AdapterOptions<T, Schema>) => Schema,
+    options: AdapterOptions<T, Schema>,
+  ): Adapter<T, Schema> => {
     const config = {
       ...cfg,
       supportsBooleans: cfg.supportsBooleans ?? true,
@@ -311,7 +310,7 @@ export function createAdapter<
     }
 
     const adapterInstance = adapter({
-      options,
+      options: options as any,
       schema,
       debugLog,
       getFieldName,
@@ -479,7 +478,7 @@ export function createAdapter<
               select,
               model: unsafe_model,
               schema,
-              options,
+              options: options as any,
             })
           }
 

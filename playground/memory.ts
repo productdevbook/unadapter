@@ -1,4 +1,5 @@
-import type { AdapterOptions, UnDbSchema } from 'unadapter/types'
+import type { PluginSchema } from 'unadapter/types'
+import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
 import { memoryAdapter } from 'unadapter/memory'
 
 const db = {
@@ -6,7 +7,25 @@ const db = {
   session: [],
 }
 
-export function getTables(options?: AdapterOptions) {
+interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+      emailVerified?: string
+      image?: string
+      createdAt?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
   return {
     user: {
       modelName: 'user',
@@ -41,26 +60,32 @@ export function getTables(options?: AdapterOptions) {
           required: true,
           fieldName: options?.user?.fields?.createdAt || 'createdAt',
         },
-        updatedAt: {
-          type: 'date',
-          defaultValue: () => new Date(),
-          required: true,
-          fieldName: options?.user?.fields?.updatedAt || 'updatedAt',
+        ...user?.fields,
+        ...options?.user?.fields,
+      },
+    },
+  }
+})
+const adapter = createAdapter(tables, {
+  database: memoryAdapter(
+    db,
+    {},
+  ),
+  plugins: [{
+    schema: {
+      user: {
+        modelName: 'user',
+        fields: {
+          header: {
+            type: 'string',
+            required: true,
+            fieldName: 'header',
+          },
         },
       },
     },
-  } satisfies UnDbSchema
-}
-
-// Initialize the adapter
-const createAdapter = memoryAdapter(
-  db,
-  getTables,
-  {},
-)
-
-// Create an adapter instance
-const adapter = createAdapter({})
+  }],
+})
 
 // eslint-disable-next-line antfu/no-top-level-await
 const user = await adapter.create({

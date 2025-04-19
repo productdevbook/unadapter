@@ -62,7 +62,7 @@ describe('drizzle Adapter Tests', async () => {
     await cleanupDatabase(postgres)
   })
   const db = drizzle(pg)
-  const adapter = drizzleAdapter(db, getAuthTables, { provider: 'pg', schema })
+  const adapter = drizzleAdapter(db, { provider: 'pg', schema })
 
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
@@ -71,7 +71,7 @@ describe('drizzle Adapter Tests', async () => {
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
-      return adapter(merged)
+      return adapter(getAuthTables, merged)
     },
   })
 })
@@ -92,7 +92,6 @@ describe('drizzle Adapter Number Id Test', async () => {
   const db = drizzle(pg)
   const adapter = drizzleAdapter(
     db,
-    getAuthTables,
     {
       provider: 'pg',
       schema,
@@ -109,7 +108,7 @@ describe('drizzle Adapter Number Id Test', async () => {
       opts.database = undefined
       const merged = merge(opts, customOptions)
       merged.database = db
-      return adapter(merged)
+      return adapter(getAuthTables, merged)
     },
   })
 })

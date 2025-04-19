@@ -1,13 +1,40 @@
 import type {
   Account,
-  DbSchema,
+  DatabaseSchema,
   FieldAttribute,
   OmitId,
-  SecondaryStorage,
-  UnDbSchema,
   User,
   Verification,
 } from 'unadapter/types'
+import { createTable } from 'unadapter'
+
+interface SecondaryStorage {
+  /**
+   *
+   * @param key - Key to get
+   * @returns - Value of the key
+   */
+  get: (key: string) => Promise<string | null> | string | null
+  set: (
+  /**
+   * Key to store
+   */
+    key: string,
+  /**
+   * Value to store
+   */
+    value: string,
+  /**
+   * Time to live in seconds
+   */
+    ttl?: number,
+  ) => Promise<void | null | string> | void
+  /**
+   *
+   * @param key - Key to delete
+   */
+  delete: (key: string) => Promise<void | null | string> | void
+}
 
 export interface BetterAuthOptions {
   /**
@@ -20,7 +47,7 @@ export interface BetterAuthOptions {
   appName?: string
 
   plugins?: {
-    schema?: Omit<DbSchema, 'order'>
+    schema?: Omit<DatabaseSchema, 'order'>
   }[]
   /**
    * Base URL for the Better Auth. This is typically the
@@ -119,7 +146,7 @@ export interface BetterAuthOptions {
   }
 }
 
-export function getAuthTables(options: BetterAuthOptions): UnDbSchema {
+export const getAuthTables = createTable<BetterAuthOptions>((options) => {
   const pluginSchema = options.plugins?.reduce(
     (acc, plugin) => {
       const schema = plugin.schema
@@ -297,5 +324,5 @@ export function getAuthTables(options: BetterAuthOptions): UnDbSchema {
       order: 4,
     },
     ...pluginTables,
-  } satisfies UnDbSchema
-}
+  }
+})

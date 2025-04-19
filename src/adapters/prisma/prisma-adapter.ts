@@ -1,7 +1,5 @@
 import type {
-  AdapterOptions,
-  InferModelTypes,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
@@ -50,15 +48,12 @@ interface PrismaClientInternal {
 
 export function prismaAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  Schema extends TablesSchema = TablesSchema,
 >(
   prisma: PrismaClient,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config: PrismaConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
-    getTables,
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'prisma',
       adapterName: 'Prisma Adapter',

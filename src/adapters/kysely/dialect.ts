@@ -1,10 +1,10 @@
 import type { Dialect } from 'kysely'
-import type { AnyOptions } from '../../types/index.ts'
+import type { AdapterOptions } from '../../types/index.ts'
 import type { KyselyDatabaseType } from './types.ts'
 import { Kysely, MssqlDialect, MysqlDialect, PostgresDialect, SqliteDialect } from 'kysely'
 
 function getDatabaseType(
-  db: AnyOptions['database'],
+  db: AdapterOptions['database'],
 ): KyselyDatabaseType | null {
   if (!db) {
     return null
@@ -40,7 +40,7 @@ function getDatabaseType(
   return null
 }
 
-export async function createKyselyAdapter(config: AnyOptions) {
+export async function createKyselyAdapter<T extends Record<string, any>>(config: AdapterOptions<T>) {
   const db = config.database
 
   if (!db) {
@@ -66,7 +66,7 @@ export async function createKyselyAdapter(config: AnyOptions) {
 
   let dialect: Dialect | undefined
 
-  const databaseType = getDatabaseType(db)
+  const databaseType = getDatabaseType(db as any)
 
   if ('createDriver' in db) {
     dialect = db

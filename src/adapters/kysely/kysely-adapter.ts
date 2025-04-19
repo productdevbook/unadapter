@@ -4,9 +4,7 @@ import type {
   UpdateQueryBuilder,
 } from 'kysely'
 import type {
-  AdapterOptions,
-  InferModelTypes,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
@@ -34,15 +32,12 @@ interface KyselyAdapterConfig {
 
 export function kyselyAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  Schema extends TablesSchema = TablesSchema,
 >(
   db: Kysely<any>,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config?: KyselyAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
-    getTables,
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'kysely',
       adapterName: 'Kysely Adapter',

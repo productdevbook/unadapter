@@ -2,9 +2,7 @@ import type {
   SQL,
 } from 'drizzle-orm'
 import type {
-  AdapterOptions,
-  InferModelTypes,
-  UnDbSchema,
+  TablesSchema,
   Where,
 } from 'unadapter/types'
 import type { AdapterDebugLogs } from '../create/index.ts'
@@ -53,15 +51,12 @@ export interface DrizzleAdapterConfig {
 
 export function drizzleAdapter<
   T extends Record<string, any>,
-  Schema extends UnDbSchema = UnDbSchema,
-  Models extends Record<string, any> = InferModelTypes<Schema>,
+  Schema extends TablesSchema = TablesSchema,
 >(
   db: DB,
-  getTables: (options: AdapterOptions<T>) => Schema,
   config: DrizzleAdapterConfig,
 ) {
-  return createAdapter<T, Schema, Models>({
-    getTables,
+  return createAdapter<T, Schema>({
     config: {
       adapterId: 'drizzle',
       adapterName: 'Drizzle Adapter',

@@ -1,6 +1,6 @@
 import type {
   FieldAttribute,
-  UnDbSchema,
+  TablesSchema,
 } from 'unadapter/types'
 import type { Account, User } from '../types/index.ts'
 import type { AdapterOptions } from '../types/options.ts'
@@ -176,7 +176,7 @@ export function parseAccountInput(
   return parseInputData(account, { fields: schema })
 }
 
-export function mergeSchema<S extends UnDbSchema>(
+export function mergeSchema<S extends TablesSchema>(
   schema: S,
   newSchema?: {
     [K in keyof S]?: {
