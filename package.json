@@ -88,7 +88,6 @@
     "prisma:normal:push": "prisma db push --schema tests/prisma/normal-tests/schema.prisma --accept-data-loss",
     "prisma:number-id:push": "prisma db push --schema tests/prisma/number-id-tests/schema.prisma --accept-data-loss",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test",
     "bumpp": "bumpp package.json",
     "release": "pnpm build && pnpm bumpp && pnpm publish --no-git-checks --access public"
   },
