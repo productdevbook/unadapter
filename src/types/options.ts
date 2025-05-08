@@ -47,18 +47,6 @@ export type AdapterOptions<
         size?: number
       }) => string) | false
     }
-    /**
-     * Custom generateId function.
-     *
-     * If not provided, random ids will be generated.
-     * If set to false, the database's auto generated id will be used.
-     *
-     * @deprecated Please use `database.generateId` instead. This will be potentially removed in future releases.
-     */
-    generateId?: ((options: {
-      model: LiteralUnion<any, string>
-      size?: number
-    }) => string) | false
   }
 
   database?:

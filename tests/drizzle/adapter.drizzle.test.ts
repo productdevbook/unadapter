@@ -1,3 +1,4 @@
+import type { PostgresPool } from 'kysely'
 import type { AdapterOptions } from 'unadapter/types'
 import type { BetterAuthOptions } from '../better-auth.schema.ts'
 import merge from 'deepmerge'
@@ -15,7 +16,7 @@ const TEST_DB_URL = 'postgres://user:password@localhost:5432/better_auth'
 
 const createTestPool = () => new Pool({ connectionString: TEST_DB_URL })
 
-function createKyselyInstance(pool: Pool) {
+function createKyselyInstance(pool: PostgresPool) {
   return new Kysely({
     dialect: new PostgresDialect({ pool }),
   })
@@ -30,7 +31,7 @@ async function cleanupDatabase(postgres: Kysely<any>, shouldDestroy = true) {
   }
 }
 
-function createTestOptions(pg: Pool, useNumberId = false) {
+function createTestOptions(pg: PostgresPool, useNumberId = false) {
   return ({
     database: pg,
     user: {

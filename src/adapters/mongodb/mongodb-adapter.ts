@@ -15,7 +15,7 @@ function createTransform<
   /**
    * if custom id gen is provided we don't want to override with object id
    */
-  const customIdGen = options.advanced?.database?.generateId || options.advanced?.generateId
+  const customIdGen = options.advanced?.database?.generateId
 
   function serializeID(field: string, value: any, model: string) {
     if (customIdGen) {
@@ -243,7 +243,7 @@ export function mongodbAdapter<
   ): Adapter<T, Schema> => {
     const schema = getTables(options)
     const transform = createTransform(options, schema)
-    const hasCustomId = options.advanced?.generateId
+    const hasCustomId = options.advanced?.database?.generateId
     return {
       id: 'mongodb-adapter',
       async create({
