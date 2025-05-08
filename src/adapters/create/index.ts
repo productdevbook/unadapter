@@ -270,13 +270,7 @@ export function createAdapter<
                 if (config.disableIdGeneration)
                   return undefined
                 const useNumberId = options.advanced?.database?.useNumberId
-                let generateId = options.advanced?.database?.generateId
-                if (options.advanced?.generateId) {
-                  logger.warn(
-                    'Your Better Auth config includes advanced.generateId which is deprecated. Please use advanced.database.generateId instead. This will be removed in future releases.',
-                  )
-                  generateId = options.advanced?.generateId
-                }
+                const generateId = options.advanced?.database?.generateId
                 if (generateId === false || useNumberId)
                   return undefined
                 if (generateId) {
@@ -328,6 +322,7 @@ export function createAdapter<
       const transformedData: Record<string, any> = {}
       const fields = schema[unsafe_model]?.fields
       const newMappedKeys = config.mapKeysTransformInput ?? {}
+
       if (
         !config.disableIdGeneration
         && !options.advanced?.database?.useNumberId
@@ -562,21 +557,6 @@ export function createAdapter<
         const thisTransactionId = transactionId
         const model = getModelName(unsafeModel)
 
-        if ('id' in unsafeData) {
-          logger.warn(
-            `[${config.adapterName}] - You are trying to create a record with an id. This is not allowed as we handle id generation for you. The id will be ignored.`,
-          )
-          // eslint-disable-next-line unicorn/error-message
-          const err = new Error()
-          const stack = err.stack
-            ?.split('\n')
-            .filter((_, i) => i !== 1)
-            .join('\n')
-            .replace('Error:', 'Create method with `id` being called at:')
-          console.log(stack)
-          // @ts-expect-error - Intentionally modifying input data before processing
-          unsafeData.id = undefined
-        }
         debugLog(
           { method: 'create' },
           `${formatTransactionId(thisTransactionId)} ${formatStep(1, 4)}`,
