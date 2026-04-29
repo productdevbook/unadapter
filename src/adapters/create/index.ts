@@ -67,7 +67,10 @@ export function createAdapterFactory<
 }: {
   config: AdapterConfig<T, Schema>
   adapter: CreateCustomAdapter<Schema>
-}) {
+}): (
+  getTables: (options: AdapterOptions<T, Schema>) => Schema,
+  options: AdapterOptions<T, Schema>,
+) => Adapter<T, Schema> {
   return (
     getTables: (options: AdapterOptions<T, Schema>) => Schema,
     options: AdapterOptions<T, Schema>,
@@ -877,4 +880,4 @@ function formatAction(action: string) {
  * backwards compatibility — adapter packages should migrate at their
  * convenience.
  */
-export const createAdapter = createAdapterFactory
+export const createAdapter: typeof createAdapterFactory = createAdapterFactory

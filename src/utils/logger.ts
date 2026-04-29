@@ -95,4 +95,4 @@ export function createLogger(
   ) as Record<LogLevel, (...params: LogHandlerParams) => void>
 }
 
-export const logger = createLogger()
+export const logger: Record<LogLevel, (...params: LogHandlerParams) => void> = createLogger()

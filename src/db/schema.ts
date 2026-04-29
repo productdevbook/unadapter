@@ -1,9 +1,13 @@
 import type { FieldAttribute, TablesSchema } from "../types/index.ts"
 import type { Account, User } from "../types/index.ts"
 import type { AdapterOptions } from "../types/options.ts"
+import type { ZodTypeAny } from "zod"
 import { z } from "zod"
 
-export const accountSchema = z.object({
+// These are runtime validators; the matching TypeScript types live in
+// `src/types/models.ts` written explicitly so `--isolatedDeclarations`
+// can emit our public `.d.mts` without following zod's inference chain.
+export const accountSchema: ZodTypeAny = z.object({
   id: z.string(),
   providerId: z.string(),
   accountId: z.string(),
@@ -11,29 +15,17 @@ export const accountSchema = z.object({
   accessToken: z.string().nullish(),
   refreshToken: z.string().nullish(),
   idToken: z.string().nullish(),
-  /**
-   * Access token expires at
-   */
   accessTokenExpiresAt: z.date().nullish(),
-  /**
-   * Refresh token expires at
-   */
   refreshTokenExpiresAt: z.date().nullish(),
-  /**
-   * The scopes that the user has authorized
-   */
   scope: z.string().nullish(),
-  /**
-   * Password is only stored in the credential provider
-   */
   password: z.string().nullish(),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
 })
 
-export const userSchema = z.object({
+export const userSchema: ZodTypeAny = z.object({
   id: z.string(),
-  email: z.string().transform((val) => val.toLowerCase()),
+  email: z.string().transform((val: string) => val.toLowerCase()),
   emailVerified: z.boolean().default(false),
   name: z.string(),
   image: z.string().nullish(),
@@ -41,7 +33,7 @@ export const userSchema = z.object({
   updatedAt: z.date().default(() => new Date()),
 })
 
-export const verificationSchema = z.object({
+export const verificationSchema: ZodTypeAny = z.object({
   id: z.string(),
   value: z.string(),
   createdAt: z.date().default(() => new Date()),
