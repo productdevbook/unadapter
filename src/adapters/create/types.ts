@@ -382,6 +382,13 @@ export interface CustomAdapter<
   createMigrator?: () => Promise<AdapterMigrator> | AdapterMigrator
 
   /**
+   * Optional transaction handler. The framework supplies a no-op
+   * fallback when an adapter doesn't implement one (the callback runs
+   * with the outer adapter and a warning is logged on first use).
+   */
+  transaction?: <R>(cb: (tx: Record<string, unknown>) => Promise<R>) => Promise<R>
+
+  /**
    * Your adapter's options.
    */
   options?: Record<string, any> | undefined

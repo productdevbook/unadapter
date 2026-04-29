@@ -120,7 +120,22 @@ export function parseInputData<T extends Record<string, any>>(
         continue
       }
       if (fields[key].validator?.input && data[key] !== undefined) {
-        parsedData[key] = fields[key].validator.input.parse(data[key])
+        const result = fields[key].validator.input["~standard"].validate(data[key])
+        if (result instanceof Promise) {
+          throw new TypeError(
+            `[unadapter] async validators are not supported in parseInputData (field "${key}")`,
+          )
+        }
+        if ("issues" in result) {
+          // Standard Schema's `message` is typed as a string but in practice
+          // some libraries (e.g. Valibot, ArkType) may emit issues without a
+          // populated message — fall back to the path so the error stays useful.
+          const message = result.issues
+            .map((i) => i.message ?? i.path?.join(".") ?? "(no message)")
+            .join(", ")
+          throw new Error(`[unadapter] validation failed for "${key}": ${message}`)
+        }
+        parsedData[key] = result.value
         continue
       }
       if (fields[key].transform?.input && data[key] !== undefined) {

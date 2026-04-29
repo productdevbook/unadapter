@@ -4,6 +4,9 @@ import type {
   AdapterOptions,
   ColumnDefinition,
   FieldAttribute,
+  IdGenerationStrategy,
+  IndexDefinition,
+  MigratorOptions,
   TablesSchema,
 } from "../types/index.ts"
 import { createLogger } from "../utils/logger.ts"
@@ -16,35 +19,60 @@ export interface GetMigrationsResult {
   compileMigrations: () => Promise<string>
 }
 
+function resolveIdStrategy<T extends Record<string, any>>(
+  config: AdapterOptions<T>,
+): IdGenerationStrategy {
+  const db = config.advanced?.database
+  if (db?.useNumberId === true) return "number"
+  if (db?.generateId === "uuid") return "uuid"
+  if (db?.generateId === "serial") return "serial"
+  return "string"
+}
+
 function buildColumnDef(
   field: FieldAttribute,
   fieldName: string,
   migrator: AdapterMigrator,
-  useNumberId: boolean,
+  options: MigratorOptions,
 ): ColumnDefinition {
+  // FK targets are already resolved to their on-disk model name by
+  // getSchema(), so we can use `references.model` directly here.
+  const references = field.references
+    ? { table: field.references.model, field: field.references.field }
+    : undefined
+  // date + function defaultValue → server-side CURRENT_TIMESTAMP default.
+  // Anything else stays caller-side (transformInput in createAdapter handles it).
+  const defaultExpr =
+    field.type === "date" && typeof field.defaultValue === "function"
+      ? "CURRENT_TIMESTAMP"
+      : undefined
   return {
-    type: migrator.resolveType(field, fieldName, { useNumberId }),
+    type: migrator.resolveType(field, fieldName, options),
     notNull: field.required !== false,
     unique: field.unique,
-    references: field.references
-      ? { table: field.references.model, field: field.references.field }
-      : undefined,
+    references,
+    bigint: field.bigint,
+    sortable: field.sortable,
+    defaultExpr,
   }
 }
 
-function buildIdColumnDef(useNumberId: boolean, migrator: AdapterMigrator): ColumnDefinition {
+function buildIdColumnDef(options: MigratorOptions, migrator: AdapterMigrator): ColumnDefinition {
+  const isAuto = options.idStrategy === "number" || options.idStrategy === "serial"
+  const isUuid = options.idStrategy === "uuid"
   return {
-    type: migrator.resolveType({ type: "string" } as FieldAttribute, "id", { useNumberId }),
+    type: migrator.resolveType({ type: "string" } as FieldAttribute, "id", options),
     notNull: true,
     primaryKey: true,
-    autoIncrement: useNumberId,
+    autoIncrement: isAuto,
+    defaultExpr: isUuid ? "gen_random_uuid()" : undefined,
   }
 }
 
 /**
  * Adapter-agnostic migration engine. The adapter supplies introspection
- * and DDL via {@link AdapterMigrator}; this engine only does diffing
- * and ordering.
+ * and DDL via {@link AdapterMigrator}; this engine only does diffing,
+ * ordering, and index emission.
  *
  * Resolves the migrator from (in order):
  * 1. `config.database` if it's an `AdapterInstance` whose adapter exposes
@@ -58,7 +86,9 @@ export async function getMigrations<T extends Record<string, any>>(
 ): Promise<GetMigrationsResult> {
   const schema = getSchema(config, getTables)
   const logger = createLogger(config.logger)
-  const useNumberId = config.advanced?.database?.useNumberId === true
+  const idStrategy = resolveIdStrategy(config)
+  const useNumberId = idStrategy === "number"
+  const migratorOptions: MigratorOptions = { useNumberId, idStrategy }
 
   const migrator = await resolveMigrator(config, getTables, logger)
 
@@ -66,6 +96,7 @@ export async function getMigrations<T extends Record<string, any>>(
 
   const toBeCreated: GetMigrationsResult["toBeCreated"] = []
   const toBeAdded: GetMigrationsResult["toBeAdded"] = []
+  const indexesToCreate: IndexDefinition[] = []
 
   for (const [key, value] of Object.entries(schema)) {
     const liveTable = tableMetadata.find((t) => t.name === key)
@@ -77,19 +108,31 @@ export async function getMigrations<T extends Record<string, any>>(
       }
 
       const tIndex = toBeCreated.findIndex((t) => t.table === key)
-      const insertIndex = toBeCreated.findIndex((t) => (t.order || Infinity) > tableData.order)
-
-      if (insertIndex === -1) {
-        if (tIndex === -1) {
-          toBeCreated.push(tableData)
-        } else {
-          toBeCreated[tIndex].fields = {
-            ...toBeCreated[tIndex].fields,
-            ...value.fields,
+      if (tIndex !== -1) {
+        // Same table referenced again (e.g. plugin contributing fields).
+        // Merge fields, and only push indexes for the newly contributed
+        // fields — the existing entry's indexes were already collected
+        // when it was first seen.
+        const existing = toBeCreated[tIndex].fields
+        toBeCreated[tIndex].fields = { ...existing, ...value.fields }
+        for (const [fieldName, field] of Object.entries(value.fields)) {
+          if (field.index && !(fieldName in existing)) {
+            indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
           }
         }
       } else {
-        toBeCreated.splice(insertIndex, 0, tableData)
+        const insertIndex = toBeCreated.findIndex((t) => (t.order || Infinity) > tableData.order)
+        if (insertIndex === -1) {
+          toBeCreated.push(tableData)
+        } else {
+          toBeCreated.splice(insertIndex, 0, tableData)
+        }
+        // Collect indexes for the brand-new table's fields.
+        for (const [fieldName, field] of Object.entries(value.fields)) {
+          if (field.index) {
+            indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
+          }
+        }
       }
       continue
     }
@@ -99,6 +142,9 @@ export async function getMigrations<T extends Record<string, any>>(
       const column = liveTable.columns.find((c) => c.name === fieldName)
       if (!column) {
         toBeAddedFields[fieldName] = field
+        if (field.index) {
+          indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
+        }
         continue
       }
 
@@ -119,20 +165,32 @@ export async function getMigrations<T extends Record<string, any>>(
 
   async function runMigrations(): Promise<void> {
     for (const table of toBeCreated) {
-      const idColumn = buildIdColumnDef(useNumberId, migrator)
+      const idColumn = buildIdColumnDef(migratorOptions, migrator)
       const fields: Record<string, ColumnDefinition> = {}
       for (const [fieldName, field] of Object.entries(table.fields)) {
-        fields[fieldName] = buildColumnDef(field, fieldName, migrator, useNumberId)
+        fields[fieldName] = buildColumnDef(field, fieldName, migrator, migratorOptions)
       }
-      await migrator.createTable(table.table, idColumn, fields)
+      await migrator.createTable(table.table, idColumn, fields, migratorOptions)
     }
     for (const table of toBeAdded) {
       for (const [fieldName, field] of Object.entries(table.fields)) {
         await migrator.addColumn(
           table.table,
           fieldName,
-          buildColumnDef(field, fieldName, migrator, useNumberId),
+          buildColumnDef(field, fieldName, migrator, migratorOptions),
+          migratorOptions,
         )
+      }
+    }
+    if (indexesToCreate.length > 0) {
+      if (!migrator.createIndex) {
+        logger.warn(
+          `[unadapter] migrator does not implement createIndex; ${indexesToCreate.length} index(es) skipped.`,
+        )
+      } else {
+        for (const idx of indexesToCreate) {
+          await migrator.createIndex(idx)
+        }
       }
     }
   }
@@ -145,12 +203,12 @@ export async function getMigrations<T extends Record<string, any>>(
           `[unadapter] migrator does not implement compileCreateTable; cannot compile migrations.`,
         )
       }
-      const idColumn = buildIdColumnDef(useNumberId, migrator)
+      const idColumn = buildIdColumnDef(migratorOptions, migrator)
       const fields: Record<string, ColumnDefinition> = {}
       for (const [fieldName, field] of Object.entries(table.fields)) {
-        fields[fieldName] = buildColumnDef(field, fieldName, migrator, useNumberId)
+        fields[fieldName] = buildColumnDef(field, fieldName, migrator, migratorOptions)
       }
-      statements.push(migrator.compileCreateTable(table.table, idColumn, fields))
+      statements.push(migrator.compileCreateTable(table.table, idColumn, fields, migratorOptions))
     }
     for (const table of toBeAdded) {
       if (!migrator.compileAddColumn) {
@@ -163,9 +221,15 @@ export async function getMigrations<T extends Record<string, any>>(
           migrator.compileAddColumn(
             table.table,
             fieldName,
-            buildColumnDef(field, fieldName, migrator, useNumberId),
+            buildColumnDef(field, fieldName, migrator, migratorOptions),
+            migratorOptions,
           ),
         )
+      }
+    }
+    if (indexesToCreate.length > 0 && migrator.compileCreateIndex) {
+      for (const idx of indexesToCreate) {
+        statements.push(migrator.compileCreateIndex(idx))
       }
     }
     return `${statements.join(";\n\n")};`
