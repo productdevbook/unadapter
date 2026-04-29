@@ -120,6 +120,11 @@ You'll also need to install the specific database driver or ORM you plan to use.
     <td>For Knex SQL query builder</td>
     <td>✅ Ready</td>
   </tr>
+  <tr>
+    <td><b><a href="https://github.com/productdevbook/sumak">Sumak Adapter</a></b></td>
+    <td>For Sumak — type-safe, AST-first SQL query builder</td>
+    <td>✅ Ready</td>
+  </tr>
 </table>
 
 ## 🚀 Getting Started
@@ -959,6 +964,96 @@ await (await getMigrations({ database: knexAdapter(db, { type: "postgres" }), ..
 
 </details>
 
+<details>
+<summary><b>Sumak Adapter Example</b></summary>
+
+```typescript
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { Pool } from "pg"
+import { pgDialect, sumak } from "sumak"
+import { pgDriver } from "sumak/drivers/pg"
+import { sumakAdapter } from "unadapter/sumak"
+
+// Create a sumak instance with an attached driver. Tables can be
+// defined statically here (sumak's typed builders) or left empty when
+// schema is purely runtime-driven via unadapter's TablesSchema.
+const pool = new Pool({ connectionString: "postgres://user:pass@localhost/app" })
+const db = sumak({
+  dialect: pgDialect(),
+  driver: pgDriver(pool),
+  tables: {},
+})
+
+interface CustomOptions {
+  appName?: string
+  plugins?: { schema?: PluginSchema }[]
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  return {
+    user: {
+      modelName: "user",
+      fields: {
+        name: {
+          type: "string",
+          required: true,
+          fieldName: options?.user?.fields?.name || "name",
+        },
+        email: {
+          type: "string",
+          required: true,
+          unique: true,
+          fieldName: options?.user?.fields?.email || "email",
+        },
+        createdAt: {
+          type: "date",
+          defaultValue: () => new Date(),
+          fieldName: "created_at",
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      },
+    },
+  }
+})
+
+const adapter = createAdapter(tables, {
+  database: sumakAdapter(db, {
+    type: "postgres", // "postgres" | "mysql" | "sqlite" | "mssql"
+  }),
+  plugins: [],
+})
+
+const user = await adapter.create({
+  model: "user",
+  data: {
+    name: "Ada Lovelace",
+    email: "ada@example.com",
+  },
+})
+```
+
+The Sumak adapter ships its own migrator (uses `db.schema` DDL builders
+
+- `introspect()`), so you can drive migrations through `getMigrations`:
+
+```typescript
+import { getMigrations } from "unadapter/db"
+
+await (await getMigrations({ database: sumakAdapter(db, { type: "postgres" }), ... }, tables))
+  .runMigrations()
+```
+
+</details>
+
 ## 🛠️ Migrations
 
 `getMigrations()` is adapter-agnostic. Each adapter contributes its own
@@ -969,6 +1064,7 @@ using its native schema API:
 | ------- | -------- | ------------------------------------------------------------------ |
 | Kysely  | ✅       | Backwards-compatible: also accepts a raw Dialect / pool / DB shape |
 | Knex    | ✅       | Uses `knex.schema` + `information_schema` / SQLite `PRAGMA`        |
+| Sumak   | ✅       | Uses `db.schema` (DDL builders) + sumak's `introspect()`           |
 | Drizzle | ❌       | Use `drizzle-kit` for schema management                            |
 | Prisma  | ❌       | Use Prisma Migrate / `prisma db push`                              |
 | MongoDB | n/a      | Schemaless                                                         |
@@ -999,56 +1095,47 @@ All adapters implement the following interface:
 
 ```typescript
 interface Adapter {
+  // Identifies which adapter implementation this is (e.g. "kysely", "knex").
+  id: string
+
   // Create a new record
-  create<T>({
-    model: string,
-    data: Omit<T, 'id'>,
-    select?: string[]
-  }): Promise<T>;
+  create<T>(args: { model: string; data: Omit<T, "id">; select?: string[] }): Promise<T>
+
+  // Find one record
+  findOne<T>(args: { model: string; where: Where[]; select?: string[] }): Promise<T | null>
 
   // Find multiple records
-  findMany<T>({
-    model: string,
-    where?: Where[],
-    limit?: number,
-    sortBy?: {
-      field: string,
-      direction: 'asc' | 'desc'
-    },
+  findMany<T>(args: {
+    model: string
+    where?: Where[]
+    limit?: number
+    sortBy?: { field: string; direction: "asc" | "desc" }
     offset?: number
-  }): Promise<T[]>;
+    select?: string[]
+  }): Promise<T[]>
 
   // Update a record
-  update<T>({
-    model: string,
-    where: Where[],
-    update: Record<string, any>
-  }): Promise<T | null>;
+  update<T>(args: { model: string; where: Where[]; update: Partial<T> }): Promise<T | null>
 
-  // Update multiple records
-  updateMany({
-    model: string,
-    where: Where[],
-    update: Record<string, any>
-  }): Promise<number>;
+  // Update multiple records — returns affected row count
+  updateMany(args: { model: string; where: Where[]; update: Record<string, any> }): Promise<number>
 
   // Delete a record
-  delete({
-    model: string,
-    where: Where[]
-  }): Promise<void>;
+  delete(args: { model: string; where: Where[] }): Promise<void>
 
-  // Delete multiple records
-  deleteMany({
-    model: string,
-    where: Where[]
-  }): Promise<number>;
+  // Delete multiple records — returns affected row count
+  deleteMany(args: { model: string; where: Where[] }): Promise<number>
 
   // Count records
-  count({
-    model: string,
-    where?: Where[]
-  }): Promise<number>;
+  count(args: { model: string; where?: Where[] }): Promise<number>
+
+  // Optional: run a callback inside a database transaction. Adapters
+  // that don't support isolation get a no-op fallback that still
+  // exposes the same surface.
+  transaction?<R>(cb: (tx: Adapter) => Promise<R>): Promise<R>
+
+  // Optional: build an adapter-native migrator (see Migrations).
+  createMigrator?(): Promise<AdapterMigrator> | AdapterMigrator
 }
 ```
 
@@ -1086,38 +1173,159 @@ interface Where {
 When defining your schema, you can use the following field types and attributes:
 
 ```typescript
-interface FieldAttribute {
-  // The type of the field
-  type: "string" | "number" | "boolean" | "date" | "json" | "array"
+type FieldType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "json" // jsonb on Postgres, json on MySQL, text on SQLite
+  | "string[]" // jsonb / text array
+  | "number[]" // jsonb / text array
+  | LiteralString[] // enum-style: e.g. ["pending", "active", "archived"]
 
-  // Whether this field is required
+interface FieldAttribute {
+  type: FieldType
+
+  // Whether this field is required (default: true)
   required?: boolean
 
   // Whether this field should be unique
   unique?: boolean
 
-  // The actual column/field name in the database
-  fieldName?: string
+  // Whether to emit a database-level index (`<table>_<field>_idx`).
+  // Combined with `unique` becomes CREATE UNIQUE INDEX.
+  index?: boolean
 
-  // Whether this field can be sorted
+  // For number fields, store as BIGINT instead of INTEGER.
+  bigint?: boolean
+
+  // Whether this field can be sorted (hints VARCHAR sizing on MySQL/MSSQL).
   sortable?: boolean
 
-  // Default value function
-  defaultValue?: () => any
+  // Whether the field should be returned to the client (used by toZodSchema).
+  returned?: boolean
 
-  // Reference to another model (for foreign keys)
+  // Whether the client may supply this field on input (used by toZodSchema).
+  input?: boolean
+
+  // The actual column/field name in the database.
+  fieldName?: string
+
+  // Default value used by the framework on insert. Plain values stay
+  // caller-side; for `date` columns a function defaultValue maps to a
+  // server-side `CURRENT_TIMESTAMP` default in DDL.
+  defaultValue?: Primitive | (() => Primitive)
+
+  // Reference to another model (for foreign keys).
   references?: {
     model: string
     field: string
-    onDelete?: "cascade" | "set null" | "restrict"
+    onDelete?: "no action" | "restrict" | "cascade" | "set null" | "set default"
   }
 
-  // Custom transformations
+  // Custom transformations applied around adapter input/output.
   transform?: {
-    input?: (value: any) => any
-    output?: (value: any) => any
+    input?: (value: any) => any | Promise<any>
+    output?: (value: any) => any | Promise<any>
+  }
+
+  // Standard Schema-compatible validator (Zod, Valibot, ArkType, …).
+  validator?: {
+    input?: StandardSchemaLike
+    output?: StandardSchemaLike
   }
 }
+```
+
+</details>
+
+<details>
+<summary><b>ID Generation Strategies</b></summary>
+
+`advanced.database.generateId` controls how primary keys are produced:
+
+```typescript
+const adapter = createAdapter(tables, {
+  database: kyselyAdapter(db, { type: "postgres" }),
+  advanced: {
+    database: {
+      // Pick one of:
+      // generateId: () => crypto.randomUUID(),  // function: caller-supplied
+      // generateId: false,                      // let the DB auto-generate
+      // generateId: "uuid",                     // PG: gen_random_uuid()
+      // generateId: "serial",                   // PG: GENERATED BY DEFAULT AS IDENTITY
+      // useNumberId: true,                      // legacy: integer auto-increment
+    },
+  },
+})
+```
+
+| Strategy            | Type               | Default produced by                        |
+| ------------------- | ------------------ | ------------------------------------------ |
+| (default)           | string             | `crypto.randomUUID()` in JS at insert time |
+| function            | string             | The caller's function                      |
+| `false`             | (any)              | Database column default                    |
+| `"uuid"`            | uuid / varchar(36) | PG `gen_random_uuid()` server default      |
+| `"serial"`          | integer            | PG `GENERATED BY DEFAULT AS IDENTITY`      |
+| `useNumberId: true` | integer            | Dialect's auto-increment / serial          |
+
+</details>
+
+<details>
+<summary><b>Helpers (`unadapter/db`)</b></summary>
+
+```typescript
+import {
+  toZodSchema, // Build a Zod schema from a fields record
+  convertToDB, // Map { logicalKey: value } → { fieldName: value }
+  convertFromDB, // Inverse of convertToDB
+  getMigrations, // Run / compile schema migrations
+} from "unadapter/db"
+
+// Schema → Zod (drops `returned: false` server-side, `input: false` client-side)
+const schema = toZodSchema({ fields: tables.user.fields, isClientSide: true })
+schema.parse({ name: "Ada", email: "ada@example.com" })
+
+// fieldName-aware mapping for adapters that bypass createAdapterFactory
+const dbRow = convertToDB(tables.user.fields, { name: "Ada", email: "ada@example.com" })
+const logical = convertFromDB(tables.user.fields, dbRow)
+```
+
+```typescript
+import { createAdapterFactory } from "unadapter/create"
+
+// Canonical name — `createAdapter` (factory form) is a deprecated alias.
+export function myAdapter(db, config) {
+  return createAdapterFactory({
+    config: { adapterId: "my-adapter", supportsJSON: true, supportsDates: true },
+    adapter: ({ getFieldName, schema }) => ({
+      create: async ({ model, data }) => {
+        /* ... */
+      },
+      findOne: async ({ model, where }) => {
+        /* ... */
+      },
+      // ... rest of CustomAdapter contract
+    }),
+  })
+}
+```
+
+</details>
+
+<details>
+<summary><b>Transactions</b></summary>
+
+Adapters that support isolation expose `adapter.transaction(cb)`. Inside
+the callback you receive a transactional adapter with the same surface
+as the outer one. Adapters that can't isolate (memory, mongodb without
+sessions) get a no-op fallback so you can write the same code path:
+
+```typescript
+await adapter.transaction(async (tx) => {
+  const user = await tx.create({ model: "user", data: { name: "Ada" } })
+  await tx.create({ model: "audit", data: { userId: user.id, action: "signup" } })
+})
 ```
 
 </details>

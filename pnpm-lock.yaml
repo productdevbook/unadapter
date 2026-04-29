@@ -75,6 +75,9 @@ importers:
       prisma:
         specifier: ^6.7.0
         version: 6.19.3(typescript@6.0.3)
+      sumak:
+        specifier: ^0.0.14
+        version: 0.0.14
       tarn:
         specifier: ^3.0.2
         version: 3.0.2
@@ -1946,6 +1949,10 @@ packages:
     resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
     engines: {node: '>=0.10.0'}
 
+  sumak@0.0.14:
+    resolution: {integrity: sha512-CAoBjeryJkKpvBb2KYrVeOJ6Zl689DSjXux+GvwPSYbnWAuMrTVj1OF1NmHIRPgxaS+0IIxpmY2FZSc3HLG3YA==}
+    hasBin: true
+
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
@@ -3730,6 +3737,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   strip-json-comments@2.0.1: {}
+
+  sumak@0.0.14: {}
 
   supports-color@7.2.0:
     dependencies:

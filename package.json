@@ -11,6 +11,7 @@
     "kysely",
     "mongodb",
     "prisma",
+    "sumak",
     "unadapter"
   ],
   "homepage": "https://github.com/productdevbook/unadapter#readme",
@@ -59,6 +60,10 @@
     "./prisma": {
       "types": "./dist/adapters/prisma/index.d.mts",
       "import": "./dist/adapters/prisma/index.mjs"
+    },
+    "./sumak": {
+      "types": "./dist/adapters/sumak/index.d.mts",
+      "import": "./dist/adapters/sumak/index.mjs"
     },
     "./create": {
       "types": "./dist/adapters/create/index.d.mts",
@@ -120,6 +125,7 @@
     "oxlint": "^1.62.0",
     "pg": "^8.20.0",
     "prisma": "^6.7.0",
+    "sumak": "^0.0.14",
     "tarn": "^3.0.2",
     "tedious": "^19.2.1",
     "typescript": "^6.0.3",
