@@ -101,7 +101,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^7.8.0",
+    "@prisma/client": "^6.7.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
@@ -119,7 +119,7 @@
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0",
     "pg": "^8.20.0",
-    "prisma": "^7.8.0",
+    "prisma": "^6.7.0",
     "tarn": "^3.0.2",
     "tedious": "^19.2.1",
     "typescript": "^6.0.3",
