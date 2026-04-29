@@ -45,9 +45,7 @@ jobs:
         run: pnpm build
 
       - name: 🐳 Start Docker Containers
-        run: |
-          docker compose up -d
-          sleep 10
+        run: docker compose up -d --wait --wait-timeout 120
 
       - name: 🧪 Test with coverage
         run: pnpm test:coverage
