@@ -203,8 +203,11 @@ export function sumakAdapter<
             }
             return null
           }
-          let q: any = (db as any).update(model).set(values).returningAll()
+          // Sumak's UpdateBuilder requires `.where(...)` before `.returningAll()` —
+          // returningAll() narrows to a returning-builder that doesn't expose where.
+          let q: any = (db as any).update(model).set(values)
           if (cb) q = q.where(cb)
+          q = q.returningAll()
           const rows = await q.many()
           return Array.isArray(rows) && rows.length > 0 ? rows[0] : null
         },
