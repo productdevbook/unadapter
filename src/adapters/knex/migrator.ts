@@ -43,9 +43,12 @@ function resolveType(
   dialect: KnexDatabaseType,
 ): string {
   const useNumberId = options.useNumberId
+  // Knex's `.increments()` emits `int unsigned auto_increment` on mysql,
+  // so any column that references an autoincrement id must also be unsigned
+  // — otherwise mysql rejects the foreign key with a type-mismatch error.
   const idTypeMap: Record<KnexDatabaseType, string> = {
     postgres: useNumberId ? "serial" : "text",
-    mysql: useNumberId ? "integer" : "varchar(36)",
+    mysql: useNumberId ? "int unsigned" : "varchar(36)",
     mssql: useNumberId ? "integer" : "varchar(36)",
     sqlite: useNumberId ? "integer" : "text",
   }
