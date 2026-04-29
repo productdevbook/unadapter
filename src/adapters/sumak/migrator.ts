@@ -129,9 +129,10 @@ function applyColumnDef(builder: any, column: ColumnDefinition, isPrimaryKey: bo
     b = b.references(column.references.table, column.references.field)
   }
   if (column.defaultExpr) {
-    // DDLPrinter only accepts certain expression node shapes — `sql.unsafe()`
-    // produces a raw fragment that DDL printers can render verbatim.
-    b = b.defaultTo(sql.unsafe(column.defaultExpr))
+    // ColumnDefBuilder.defaultTo wants a raw ExpressionNode, not the
+    // wrapped Expression that sql.unsafe() returns. Unwrap `.node`.
+    const expr: any = sql.unsafe(column.defaultExpr)
+    b = b.defaultTo(expr.node ?? expr)
   }
   if (isPrimaryKey) {
     if (column.autoIncrement) b = b.autoIncrement()
