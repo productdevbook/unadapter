@@ -47,9 +47,7 @@ for (const file of walk(ROOT)) {
 }
 
 if (missing.length > 0) {
-  console.error(
-    `\n[verify-build] Found ${missing.length} broken relative import(s) in dist/:\n`,
-  )
+  console.error(`\n[verify-build] Found ${missing.length} broken relative import(s) in dist/:\n`)
   for (const { file, spec, target } of missing) {
     console.error(`  ${file.replace(ROOT, "dist")}`)
     console.error(`    → "${spec}" (resolved: ${target.replace(ROOT, "dist")})`)
