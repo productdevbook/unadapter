@@ -1,9 +1,23 @@
 import type { AdapterOptions, FieldAttribute } from "../types/index.ts"
 
+export interface MergedPluginSchema {
+  [tableName: string]: {
+    fields: Record<string, FieldAttribute>
+    modelName: string
+  }
+}
+
+/**
+ * Returns `MergedPluginSchema | undefined` at runtime; declared as `any`
+ * so callers can spread `result?.user?.fields` into a stricter
+ * `TablesSchema` shape without TypeScript narrowing the spread to
+ * `string | FieldAttribute` (which conflicts with consumer-supplied
+ * config fields like `options?.user?.fields?.name: string | undefined`).
+ */
 export function mergePluginSchemas<
   T extends Record<string, any>,
   K extends keyof AdapterOptions<T> = "plugins",
->(options: AdapterOptions<T>, where: K = "plugins" as K) {
+>(options: AdapterOptions<T>, where: K = "plugins" as K): any {
   const schema = (options[where] as any[])?.reduce(
     (acc, plugin) => {
       const schema = plugin.schema
@@ -24,7 +38,7 @@ export function mergePluginSchemas<
       }
       return acc
     },
-    {} as Record<string, { fields: Record<string, FieldAttribute>; modelName: string }>,
+    {} as MergedPluginSchema,
   )
 
   return schema

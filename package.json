@@ -83,7 +83,7 @@
     }
   },
   "scripts": {
-    "build": "obuild",
+    "build": "obuild && node scripts/verify-build.mjs",
     "dev": "vitest",
     "lint": "oxlint . && oxfmt --check .",
     "lint:fix": "oxlint . --fix && oxfmt .",

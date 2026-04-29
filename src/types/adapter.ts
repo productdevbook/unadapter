@@ -4,7 +4,24 @@ import type { AdapterOptions } from "./options.ts"
 import type { TablesSchema } from "./schema.ts"
 
 /**
- * Adapter where clause
+ * Adapter where clause.
+ *
+ * `connector` declares which bucket the condition belongs to, not how it
+ * pairs with the previous condition. All conditions with `connector: "AND"`
+ * (the default) are AND-ed together; all conditions with `connector: "OR"`
+ * are OR-ed together; the two groups are then AND-ed.
+ *
+ * For input like:
+ * ```
+ *   [{ field: "a" }, { field: "b", connector: "OR" }, { field: "c", connector: "OR" }]
+ * ```
+ * the engine produces `a AND (b OR c)`. For
+ * ```
+ *   [{ field: "a" }, { field: "b", connector: "OR" }, { field: "c" }]
+ * ```
+ * the result is `(a AND c) AND (b)` — note `b` ends up alone in the OR
+ * bucket. If you need a different mix, build it as two consecutive calls
+ * or use the adapter's native query builder.
  */
 export interface Where {
   operator?:
@@ -20,7 +37,7 @@ export interface Where {
     | "ends_with" // eq by default
   value: string | number | boolean | string[] | number[] | Date | null
   field: string
-  connector?: "AND" | "OR" // AND by default
+  connector?: "AND" | "OR" // AND by default — see interface doc
 }
 
 /**

@@ -1,6 +1,3 @@
-import type { z } from "zod"
-import type { accountSchema, userSchema, verificationSchema } from "../db/schema.ts"
-
 export type Models =
   | "user"
   | "account"
@@ -27,7 +24,43 @@ interface RateLimit {
   lastRequest: number
 }
 
-export type User = z.infer<typeof userSchema>
-export type Account = z.infer<typeof accountSchema>
-export type Verification = z.infer<typeof verificationSchema>
+// Surface types written explicitly so they don't depend on zod inference
+// in our public d.ts (`--isolatedDeclarations` can't follow z.infer through
+// the build). The matching Zod schemas are still exported from
+// `unadapter/db` for runtime validation.
+export interface User {
+  id: string
+  email: string
+  emailVerified: boolean
+  name: string
+  image?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Account {
+  id: string
+  providerId: string
+  accountId: string
+  userId: string
+  accessToken?: string | null
+  refreshToken?: string | null
+  idToken?: string | null
+  accessTokenExpiresAt?: Date | null
+  refreshTokenExpiresAt?: Date | null
+  scope?: string | null
+  password?: string | null
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Verification {
+  id: string
+  value: string
+  createdAt: Date
+  updatedAt: Date
+  expiresAt: Date
+  identifier: string
+}
+
 export type { RateLimit }
