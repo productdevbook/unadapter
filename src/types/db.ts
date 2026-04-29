@@ -1,4 +1,3 @@
-import type { ZodSchema } from "zod"
 import type { LiteralString } from "./helper.ts"
 import type { AdapterOptions } from "./options.ts"
 import type { TablesSchema } from "./schema.ts"
@@ -8,10 +7,44 @@ export type FieldType =
   | "number"
   | "boolean"
   | "date"
+  | "json"
   | `${"string" | "number"}[]`
   | Array<LiteralString>
 
-type Primitive = string | number | boolean | Date | null | undefined | string[] | number[]
+type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[]
+
+type Primitive =
+  | string
+  | number
+  | boolean
+  | Date
+  | null
+  | undefined
+  | string[]
+  | number[]
+  | JsonValue
+
+/**
+ * Minimal subset of the Standard Schema spec
+ * (https://github.com/standard-schema/standard-schema) — any validation
+ * library that conforms (Zod, Valibot, ArkType, etc.) is accepted.
+ */
+export interface StandardSchemaLike<Input = unknown, Output = unknown> {
+  "~standard": {
+    version: 1
+    vendor: string
+    validate: (
+      value: unknown,
+    ) =>
+      | { value: Output }
+      | { issues: ReadonlyArray<{ message: string; path?: ReadonlyArray<PropertyKey> }> }
+      | Promise<
+          | { value: Output }
+          | { issues: ReadonlyArray<{ message: string; path?: ReadonlyArray<PropertyKey> }> }
+        >
+    types?: { input: Input; output: Output }
+  }
+}
 
 export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
   /**
@@ -67,11 +100,12 @@ export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
    */
   bigint?: boolean
   /**
-   * A zod schema to validate the value.
+   * A Standard Schema-compatible validator (Zod, Valibot, ArkType, etc.)
+   * to validate the value before it reaches the database.
    */
   validator?: {
-    input?: ZodSchema
-    output?: ZodSchema
+    input?: StandardSchemaLike
+    output?: StandardSchemaLike
   }
   /**
    * The name of the field on the database.
@@ -84,6 +118,12 @@ export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
    * It's useful to mark fields varchar instead of text.
    */
   sortable?: boolean
+  /**
+   * Emit a database-level index on this column. The index name follows
+   * the pattern `<table>_<field>_idx` and uses CREATE UNIQUE INDEX when
+   * `unique` is also set.
+   */
+  index?: boolean
 }
 
 export type FieldAttribute<T extends FieldType = FieldType> = {
@@ -108,13 +148,15 @@ export type InferValueType<T extends FieldType> = T extends "string"
       ? boolean
       : T extends "date"
         ? Date
-        : T extends `${infer T}[]`
-          ? T extends "string"
-            ? string[]
-            : number[]
-          : T extends Array<any>
-            ? T[number]
-            : never
+        : T extends "json"
+          ? JsonValue
+          : T extends `${infer T}[]`
+            ? T extends "string"
+              ? string[]
+              : number[]
+            : T extends Array<any>
+              ? T[number]
+              : never
 
 export type InferFieldsOutput<Field> =
   Field extends Record<infer Key, FieldAttribute>

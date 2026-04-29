@@ -100,6 +100,15 @@ export interface Adapter<
    */
   createMigrator?: () => Promise<AdapterMigrator> | AdapterMigrator
 
+  /**
+   * Run the given callback inside a database transaction, scoping all
+   * adapter operations performed via the supplied transactional adapter
+   * to the same transaction. Adapters that can't isolate (e.g. memory,
+   * mongodb without sessions) may execute the callback as a no-op
+   * fallback against the outer adapter.
+   */
+  transaction?: <R>(cb: (tx: Adapter<T, Schema, Models>) => Promise<R>) => Promise<R>
+
   options?: Record<string, any>
 }
 

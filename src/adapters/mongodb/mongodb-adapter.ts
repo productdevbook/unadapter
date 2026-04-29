@@ -8,9 +8,12 @@ function createTransform<
   Schema extends TablesSchema = TablesSchema,
 >(options: AdapterOptions<T, Schema>, schema: Schema) {
   /**
-   * if custom id gen is provided we don't want to override with object id
+   * if a function-form generateId is provided we don't want to override
+   * with the default ObjectId. The "uuid" / "serial" string forms are
+   * SQL-only — we treat them as "use default ObjectId" here.
    */
-  const customIdGen = options.advanced?.database?.generateId
+  const generateIdOption = options.advanced?.database?.generateId
+  const customIdGen = typeof generateIdOption === "function" ? generateIdOption : undefined
 
   function serializeID(field: string, value: any, model: string) {
     if (customIdGen) {

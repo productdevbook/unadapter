@@ -1,15 +1,16 @@
 import type { AlterTableColumnAlteringBuilder, CreateTableBuilder, Kysely } from "kysely"
-import { sql } from "kysely"
 import type {
   AdapterMigrator,
   AdapterOptions,
   ColumnDefinition,
   FieldAttribute,
   FieldType,
+  IndexDefinition,
   MigratorOptions,
   TableInfo,
 } from "../../types/index.ts"
 import type { KyselyDatabaseType } from "./types.ts"
+import { sql } from "kysely"
 import { createKyselyAdapter } from "./dialect.ts"
 
 const dialectTypeMap: Record<KyselyDatabaseType, Record<string, string[]>> = {
@@ -17,25 +18,29 @@ const dialectTypeMap: Record<KyselyDatabaseType, Record<string, string[]>> = {
     string: ["character varying", "text"],
     number: ["int4", "integer", "bigint", "smallint", "numeric", "real", "double precision"],
     boolean: ["bool", "boolean"],
-    date: ["timestamp", "date"],
+    date: ["timestamp", "timestamp with time zone", "date"],
+    json: ["json", "jsonb"],
   },
   mysql: {
     string: ["varchar", "text"],
     number: ["integer", "int", "bigint", "smallint", "decimal", "float", "double"],
     boolean: ["boolean", "tinyint"],
     date: ["timestamp", "datetime", "date"],
+    json: ["json"],
   },
   sqlite: {
     string: ["TEXT"],
     number: ["INTEGER", "REAL"],
     boolean: ["INTEGER", "BOOLEAN"],
     date: ["DATE", "INTEGER"],
+    json: ["TEXT"],
   },
   mssql: {
     string: ["text", "varchar"],
     number: ["int", "bigint", "smallint", "decimal", "float", "double"],
     boolean: ["bit", "smallint"],
     date: ["datetime", "date"],
+    json: ["varchar", "text"],
   },
 }
 
@@ -45,19 +50,29 @@ function resolveType(
   options: MigratorOptions,
   dialect: KyselyDatabaseType,
 ): string {
-  const useNumberId = options.useNumberId
-  const idTypeMap: Record<KyselyDatabaseType, string> = {
-    postgres: useNumberId ? "serial" : "text",
-    mysql: useNumberId ? "integer" : "varchar(36)",
-    mssql: useNumberId ? "integer" : "varchar(36)",
-    sqlite: useNumberId ? "integer" : "text",
-  }
-
-  if (fieldName === "id" || field.references?.field === "id") {
-    return idTypeMap[dialect]
+  // id / FK to id: type depends on the id generation strategy.
+  const isIdLike = fieldName === "id" || field.references?.field === "id"
+  if (isIdLike) {
+    switch (options.idStrategy) {
+      case "number":
+        return dialect === "postgres" ? "serial" : "integer"
+      case "serial":
+        return dialect === "postgres" ? "integer" : "integer"
+      case "uuid":
+        return dialect === "postgres" ? "uuid" : "varchar(36)"
+      case "string":
+      default:
+        return dialect === "sqlite" || dialect === "postgres" ? "text" : "varchar(36)"
+    }
   }
 
   const type = field.type
+  if (type === "json") {
+    if (dialect === "postgres") return "jsonb"
+    if (dialect === "mysql") return "json"
+    if (dialect === "mssql") return "varchar(8000)"
+    return "text" // sqlite
+  }
   if (dialect === "sqlite" && (type === "string[]" || type === "number[]")) {
     return "text"
   }
@@ -68,44 +83,31 @@ function resolveType(
     return "text"
   }
 
-  const stringTypeMap: Record<KyselyDatabaseType, string> = {
-    sqlite: "text",
-    postgres: "text",
-    mysql: field.unique ? "varchar(255)" : field.references ? "varchar(36)" : "text",
-    mssql:
-      field.unique || field.sortable ? "varchar(255)" : field.references ? "varchar(36)" : "text",
-  }
-  const booleanTypeMap: Record<KyselyDatabaseType, string> = {
-    sqlite: "integer",
-    postgres: "boolean",
-    mysql: "boolean",
-    mssql: "smallint",
-  }
-  const numberTypeMap: Record<KyselyDatabaseType, string> = {
-    sqlite: field.bigint ? "bigint" : "integer",
-    postgres: field.bigint ? "bigint" : "integer",
-    mysql: field.bigint ? "bigint" : "integer",
-    mssql: field.bigint ? "bigint" : "integer",
-  }
-  const dateTypeMap: Record<KyselyDatabaseType, string> = {
-    sqlite: "date",
-    postgres: "timestamp",
-    mysql: "datetime",
-    mssql: "datetime",
-  }
-
   switch (type) {
     case "string":
-      return stringTypeMap[dialect]
+      if (dialect === "mysql") {
+        return field.unique ? "varchar(255)" : field.references ? "varchar(36)" : "text"
+      }
+      if (dialect === "mssql") {
+        return field.unique || field.sortable
+          ? "varchar(255)"
+          : field.references
+            ? "varchar(36)"
+            : "text"
+      }
+      return "text"
     case "boolean":
-      return booleanTypeMap[dialect]
+      if (dialect === "sqlite") return "integer"
+      if (dialect === "mssql") return "smallint"
+      return "boolean"
     case "number":
-      return numberTypeMap[dialect]
+      return field.bigint ? "bigint" : "integer"
     case "date":
-      return dateTypeMap[dialect]
+      if (dialect === "sqlite") return "date"
+      if (dialect === "postgres") return "timestamp"
+      return "datetime"
   }
-
-  return stringTypeMap[dialect]
+  return "text"
 }
 
 function matchType(
@@ -117,29 +119,44 @@ function matchType(
     return columnDataType.toLowerCase().includes("json")
   }
   const types = dialectTypeMap[dialect]
-  const acceptable = (Array.isArray(fieldType) ? types.string : types[fieldType] || []).map((t) =>
-    t.toLowerCase(),
-  )
+  const lookup = (Array.isArray(fieldType) ? types.string : types[fieldType]) || []
+  const acceptable = lookup.map((t) => t.toLowerCase())
   return acceptable.includes(columnDataType.toLowerCase())
 }
 
 function applyColumn<
   T extends {
     notNull: () => any
+    defaultTo: (value: any) => any
     references: (s: string) => any
     unique: () => any
     primaryKey: () => any
     autoIncrement: () => any
+    generatedByDefaultAsIdentity?: () => any
   },
->(col: T, column: ColumnDefinition, isPrimaryKey: boolean, dialect: KyselyDatabaseType): T {
+>(
+  col: T,
+  column: ColumnDefinition,
+  isPrimaryKey: boolean,
+  dialect: KyselyDatabaseType,
+  idStrategy: MigratorOptions["idStrategy"],
+): T {
   let result: any = col
   if (column.notNull) result = result.notNull()
   if (column.references) {
     result = result.references(`${column.references.table}.${column.references.field}`)
   }
   if (column.unique) result = result.unique()
+  if (column.defaultExpr) {
+    result = result.defaultTo(sql.raw(column.defaultExpr))
+  }
   if (isPrimaryKey) {
-    if (column.autoIncrement && dialect !== "postgres") {
+    if (idStrategy === "serial" && dialect === "postgres") {
+      // Use IDENTITY rather than autoIncrement on Postgres.
+      if (typeof result.generatedByDefaultAsIdentity === "function") {
+        result = result.generatedByDefaultAsIdentity()
+      }
+    } else if (column.autoIncrement && dialect !== "postgres") {
       result = result.autoIncrement()
     }
     result = result.primaryKey()
@@ -153,15 +170,16 @@ function buildCreateTableBuilder(
   idColumn: ColumnDefinition,
   fields: Record<string, ColumnDefinition>,
   dialect: KyselyDatabaseType,
+  idStrategy: MigratorOptions["idStrategy"],
 ): CreateTableBuilder<string, string> {
   let builder = db.schema
     .createTable(table)
     .addColumn("id", sql.raw(idColumn.type) as any, (col) =>
-      applyColumn(col, idColumn, true, dialect),
+      applyColumn(col, idColumn, true, dialect, idStrategy),
     )
   for (const [fieldName, column] of Object.entries(fields)) {
     builder = builder.addColumn(fieldName, sql.raw(column.type) as any, (col) =>
-      applyColumn(col, column, false, dialect),
+      applyColumn(col, column, false, dialect, idStrategy),
     )
   }
   return builder
@@ -173,10 +191,33 @@ function buildAddColumnBuilder(
   name: string,
   column: ColumnDefinition,
   dialect: KyselyDatabaseType,
+  idStrategy: MigratorOptions["idStrategy"],
 ): AlterTableColumnAlteringBuilder {
   return db.schema
     .alterTable(table)
-    .addColumn(name, sql.raw(column.type) as any, (col) => applyColumn(col, column, false, dialect))
+    .addColumn(name, sql.raw(column.type) as any, (col) =>
+      applyColumn(col, column, false, dialect, idStrategy),
+    )
+}
+
+function indexName(index: IndexDefinition): string {
+  return `${index.table}_${index.field}_idx`
+}
+
+async function getPostgresSchema(db: Kysely<any>): Promise<string | null> {
+  try {
+    const result = await sql<{ search_path: string }>`SHOW search_path`.execute(db)
+    const row = result.rows[0]
+    if (!row) return null
+    // search_path is a comma-separated list — pick the first non-variable entry.
+    const candidates = row.search_path
+      .split(",")
+      .map((p) => p.trim().replace(/^"|"$/g, ""))
+      .filter((p) => p && !p.startsWith("$"))
+    return candidates[0] ?? null
+  } catch {
+    return null
+  }
 }
 
 export interface KyselyMigratorOptions {
@@ -186,31 +227,59 @@ export interface KyselyMigratorOptions {
 
 export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): AdapterMigrator {
   const { db, dialect } = opts
+  // We capture the strategy on each call rather than at construction time
+  // because the engine passes MigratorOptions per-DDL.
+  let lastStrategy: MigratorOptions["idStrategy"] = "string"
+
   return {
     async introspect(): Promise<TableInfo[]> {
       const tables = await db.introspection.getTables()
-      return tables.map((t) => ({
-        name: t.name,
-        columns: t.columns.map((c) => ({ name: c.name, dataType: c.dataType })),
-      }))
+      // Postgres: filter to the active search_path schema so multi-schema
+      // databases don't conflate tables from other schemas.
+      let filterSchema: string | null = null
+      if (dialect === "postgres") {
+        filterSchema = await getPostgresSchema(db)
+      }
+      return tables
+        .filter((t) => {
+          if (!filterSchema) return true
+          const schemaName = (t as unknown as { schema?: string }).schema
+          return !schemaName || schemaName === filterSchema
+        })
+        .map((t) => ({
+          name: t.name,
+          columns: t.columns.map((c) => ({ name: c.name, dataType: c.dataType })),
+        }))
     },
     async createTable(table, idColumn, fields): Promise<void> {
-      await buildCreateTableBuilder(db, table, idColumn, fields, dialect).execute()
+      await buildCreateTableBuilder(db, table, idColumn, fields, dialect, lastStrategy).execute()
     },
     async addColumn(table, name, column): Promise<void> {
-      await buildAddColumnBuilder(db, table, name, column, dialect).execute()
+      await buildAddColumnBuilder(db, table, name, column, dialect, lastStrategy).execute()
+    },
+    async createIndex(index): Promise<void> {
+      let builder = db.schema.createIndex(indexName(index)).on(index.table).column(index.field)
+      if (index.unique) builder = builder.unique()
+      await builder.execute()
     },
     resolveType(field, fieldName, options): string {
+      lastStrategy = options.idStrategy
       return resolveType(field, fieldName, options, dialect)
     },
     matchType(columnDataType, fieldType): boolean {
       return matchType(columnDataType, fieldType, dialect)
     },
     compileCreateTable(table, idColumn, fields): string {
-      return buildCreateTableBuilder(db, table, idColumn, fields, dialect).compile().sql
+      return buildCreateTableBuilder(db, table, idColumn, fields, dialect, lastStrategy).compile()
+        .sql
     },
     compileAddColumn(table, name, column): string {
-      return buildAddColumnBuilder(db, table, name, column, dialect).compile().sql
+      return buildAddColumnBuilder(db, table, name, column, dialect, lastStrategy).compile().sql
+    },
+    compileCreateIndex(index): string {
+      let builder = db.schema.createIndex(indexName(index)).on(index.table).column(index.field)
+      if (index.unique) builder = builder.unique()
+      return builder.compile().sql
     },
   }
 }

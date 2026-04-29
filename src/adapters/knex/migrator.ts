@@ -15,24 +15,28 @@ const dialectTypeMap: Record<KnexDatabaseType, Record<string, string[]>> = {
     number: ["int4", "integer", "bigint", "smallint", "numeric", "real", "double precision"],
     boolean: ["bool", "boolean"],
     date: ["timestamp", "timestamp with time zone", "date"],
+    json: ["json", "jsonb"],
   },
   mysql: {
     string: ["varchar", "text"],
     number: ["integer", "int", "bigint", "smallint", "decimal", "float", "double"],
     boolean: ["boolean", "tinyint"],
     date: ["timestamp", "datetime", "date"],
+    json: ["json"],
   },
   sqlite: {
     string: ["TEXT"],
     number: ["INTEGER", "REAL"],
     boolean: ["INTEGER", "BOOLEAN"],
     date: ["DATE", "INTEGER"],
+    json: ["TEXT"],
   },
   mssql: {
     string: ["text", "varchar"],
     number: ["int", "bigint", "smallint", "decimal", "float", "double"],
     boolean: ["bit", "smallint"],
     date: ["datetime", "date"],
+    json: ["varchar", "text"],
   },
 }
 
@@ -42,22 +46,33 @@ function resolveType(
   options: MigratorOptions,
   dialect: KnexDatabaseType,
 ): string {
-  const useNumberId = options.useNumberId
-  // Knex's `.increments()` emits `int unsigned auto_increment` on mysql,
-  // so any column that references an autoincrement id must also be unsigned
-  // — otherwise mysql rejects the foreign key with a type-mismatch error.
-  const idTypeMap: Record<KnexDatabaseType, string> = {
-    postgres: useNumberId ? "serial" : "text",
-    mysql: useNumberId ? "int unsigned" : "varchar(36)",
-    mssql: useNumberId ? "integer" : "varchar(36)",
-    sqlite: useNumberId ? "integer" : "text",
-  }
-
-  if (fieldName === "id" || field.references?.field === "id") {
-    return idTypeMap[dialect]
+  const isIdLike = fieldName === "id" || field.references?.field === "id"
+  if (isIdLike) {
+    // Knex's `.increments()` emits `int unsigned auto_increment` on mysql;
+    // FK columns to it must also be unsigned, otherwise mysql rejects the
+    // constraint with a type-mismatch error.
+    switch (options.idStrategy) {
+      case "number":
+        if (dialect === "postgres") return "serial"
+        if (dialect === "mysql") return "int unsigned"
+        return "integer"
+      case "serial":
+        return "integer"
+      case "uuid":
+        return dialect === "postgres" ? "uuid" : "varchar(36)"
+      case "string":
+      default:
+        return dialect === "sqlite" || dialect === "postgres" ? "text" : "varchar(36)"
+    }
   }
 
   const type = field.type
+  if (type === "json") {
+    if (dialect === "postgres") return "jsonb"
+    if (dialect === "mysql") return "json"
+    if (dialect === "mssql") return "varchar(8000)"
+    return "text"
+  }
   if (dialect === "sqlite" && (type === "string[]" || type === "number[]")) {
     return "text"
   }
@@ -111,6 +126,7 @@ function matchType(
 }
 
 function applyColumn(
+  db: Knex,
   builder: Knex.ColumnBuilder,
   column: ColumnDefinition,
   isPrimaryKey: boolean,
@@ -120,6 +136,11 @@ function applyColumn(
     builder.references(column.references.field).inTable(column.references.table)
   }
   if (column.unique) builder.unique()
+  if (column.defaultExpr) {
+    // db.raw() bypasses parameter binding — required for SQL expressions
+    // like CURRENT_TIMESTAMP / gen_random_uuid().
+    builder.defaultTo(db.raw(column.defaultExpr))
+  }
   if (isPrimaryKey) {
     // Knex emits PRIMARY KEY automatically for `.increments()` and respects
     // .primary() for non-incrementing columns.
@@ -130,6 +151,7 @@ function applyColumn(
 }
 
 function defineColumn(
+  db: Knex,
   table: Knex.CreateTableBuilder,
   name: string,
   column: ColumnDefinition,
@@ -143,7 +165,11 @@ function defineColumn(
     return
   }
   const builder = table.specificType(name, column.type)
-  applyColumn(builder, column, isPrimaryKey)
+  applyColumn(db, builder, column, isPrimaryKey)
+}
+
+function indexName(index: { table: string; field: string }): string {
+  return `${index.table}_${index.field}_idx`
 }
 
 export interface KnexMigratorOptions {
@@ -215,17 +241,30 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
 
     async createTable(table, idColumn, fields): Promise<void> {
       await db.schema.createTable(table, (t) => {
-        defineColumn(t, "id", idColumn, true)
+        defineColumn(db, t, "id", idColumn, true)
         for (const [fieldName, column] of Object.entries(fields)) {
-          defineColumn(t, fieldName, column, false)
+          defineColumn(db, t, fieldName, column, false)
         }
       })
     },
 
     async addColumn(table, name, column): Promise<void> {
       await db.schema.alterTable(table, (t) => {
-        defineColumn(t, name, column, false)
+        defineColumn(db, t, name, column, false)
       })
+    },
+
+    async createIndex(index): Promise<void> {
+      const idxName = indexName(index)
+      if (index.unique) {
+        await db.schema.alterTable(index.table, (t) => {
+          t.unique([index.field], { indexName: idxName })
+        })
+      } else {
+        await db.schema.alterTable(index.table, (t) => {
+          t.index([index.field], idxName)
+        })
+      }
     },
 
     resolveType(field, fieldName, options): string {
@@ -239,9 +278,9 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
     compileCreateTable(table, idColumn, fields): string {
       let sql = ""
       const builder = db.schema.createTable(table, (t) => {
-        defineColumn(t, "id", idColumn, true)
+        defineColumn(db, t, "id", idColumn, true)
         for (const [fieldName, column] of Object.entries(fields)) {
-          defineColumn(t, fieldName, column, false)
+          defineColumn(db, t, fieldName, column, false)
         }
       })
       sql = builder.toString()
@@ -250,7 +289,19 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
 
     compileAddColumn(table, name, column): string {
       const builder = db.schema.alterTable(table, (t) => {
-        defineColumn(t, name, column, false)
+        defineColumn(db, t, name, column, false)
+      })
+      return builder.toString()
+    },
+
+    compileCreateIndex(index): string {
+      const idxName = indexName(index)
+      const builder = db.schema.alterTable(index.table, (t) => {
+        if (index.unique) {
+          t.unique([index.field], { indexName: idxName })
+        } else {
+          t.index([index.field], idxName)
+        }
       })
       return builder.toString()
     },

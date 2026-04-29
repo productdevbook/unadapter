@@ -50,7 +50,15 @@ const colors = {
   },
 }
 
-export function createAdapter<
+/**
+ * Build an adapter factory from a config + a custom adapter
+ * implementation. The returned function is what each adapter package
+ * exports (e.g. `kyselyAdapter`, `knexAdapter`) — it produces an
+ * `Adapter` when called with `(getTables, options)`.
+ *
+ * Aliased as the legacy `createAdapter` for backwards compatibility.
+ */
+export function createAdapterFactory<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
 >({
@@ -239,24 +247,29 @@ export function createAdapter<
     }
 
     const idField = ({ customModelName }: { customModelName?: string }) => {
-      const shouldGenerateId =
-        !config.disableIdGeneration && !options.advanced?.database?.useNumberId
+      const generateId = options.advanced?.database?.generateId
+      const useNumberId = options.advanced?.database?.useNumberId
+      // The database produces the id when:
+      //  - useNumberId is true (autoincrement integer)
+      //  - generateId === false (caller delegates to the DB)
+      //  - generateId === "uuid" or "serial" (server-side default)
+      const dbProvidesId =
+        useNumberId === true ||
+        generateId === false ||
+        generateId === "uuid" ||
+        generateId === "serial"
+      const shouldGenerateId = !config.disableIdGeneration && !dbProvidesId
 
       const model = getDefaultModelName(customModelName ?? "id")
       return {
-        type: options.advanced?.database?.useNumberId ? "number" : "string",
+        type: useNumberId ? "number" : "string",
         required: !!shouldGenerateId,
         ...(shouldGenerateId
           ? {
               defaultValue() {
                 if (config.disableIdGeneration) return undefined
-                const useNumberId = options.advanced?.database?.useNumberId
-                const generateId = options.advanced?.database?.generateId
-                if (generateId === false || useNumberId) return undefined
-                if (generateId) {
-                  return generateId({
-                    model,
-                  })
+                if (typeof generateId === "function") {
+                  return generateId({ model })
                 }
                 if (config.customIdGenerator) {
                   return config.customIdGenerator({ model })
@@ -333,7 +346,6 @@ export function createAdapter<
         } else if (
           config.supportsJSON === false &&
           typeof newValue === "object" &&
-          // @ts-expect-error -Future proofing
           fieldAttributes.type === "json"
         ) {
           newValue = JSON.stringify(newValue)
@@ -402,7 +414,6 @@ export function createAdapter<
           } else if (
             config.supportsJSON === false &&
             typeof newValue === "string" &&
-            // @ts-expect-error - Future proofing
             field.type === "json"
           ) {
             newValue = safeJSONParse(newValue)
@@ -497,7 +508,11 @@ export function createAdapter<
       }) as any
     }
 
-    return {
+    // Holds a reference to the adapter we're about to return so the
+    // transaction fallback can hand it back to the caller's callback.
+    let builtAdapter: Adapter<T, Schema>
+
+    const adapterMethods = {
       create: async ({ data: unsafeData, model: unsafeModel, select }) => {
         transactionId++
         const thisTransactionId = transactionId
@@ -789,6 +804,15 @@ export function createAdapter<
           }
         : undefined,
       createMigrator: adapterInstance.createMigrator,
+      transaction: ((cb) => {
+        if (adapterInstance.transaction) {
+          return adapterInstance.transaction(cb as any) as any
+        }
+        // Fallback: re-enter `cb` with `this` (the wrapped adapter). This
+        // gives callers a single API surface even if the adapter has no
+        // native transaction support — they just don't get isolation.
+        return cb(builtAdapter as any)
+      }) as Adapter<T, Schema>["transaction"],
       options: {
         adapterConfig: config,
         ...(adapterInstance.options ?? {}),
@@ -826,7 +850,9 @@ export function createAdapter<
             } satisfies AdapterTestDebugLogs,
           }
         : {}),
-    }
+    } as Adapter<T, Schema>
+    builtAdapter = adapterMethods
+    return builtAdapter
   }
 }
 
@@ -845,3 +871,10 @@ function formatMethod(method: string) {
 function formatAction(action: string) {
   return `${colors.dim}(${action})${colors.reset}`
 }
+
+/**
+ * @deprecated Use `createAdapterFactory` instead. Kept as an alias for
+ * backwards compatibility — adapter packages should migrate at their
+ * convenience.
+ */
+export const createAdapter = createAdapterFactory

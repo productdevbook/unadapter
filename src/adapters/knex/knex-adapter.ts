@@ -141,11 +141,13 @@ export function knexAdapter<
             // fallback.
             const result = await db(model).insert(data)
             const idField = getFieldName({ model, field: "id" })
-            const insertedId =
-              data.id ??
-              (Array.isArray(result) && typeof result[0] === "number" && result[0] > 0
-                ? result[0]
-                : undefined)
+            const dataId = (data as { id?: unknown }).id
+            const insertedId: string | number | undefined =
+              typeof dataId === "string" || typeof dataId === "number"
+                ? dataId
+                : Array.isArray(result) && typeof result[0] === "number" && result[0] > 0
+                  ? result[0]
+                  : undefined
             if (insertedId !== undefined) {
               const row = await db(model).where(idField, insertedId).first()
               if (row) return row
