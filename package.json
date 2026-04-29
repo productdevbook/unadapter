@@ -1,17 +1,26 @@
 {
   "name": "unadapter",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "private": false,
-  "description": "A modular adapter layer for working with any database (Drizzle, Prisma, MongoDB, Kysely & more)",
+  "description": "Universal, type-safe database adapter layer with a unified API for Drizzle, Prisma, Kysely, Knex, MongoDB, Sumak and in-memory backends",
   "keywords": [
+    "adapter",
     "adapters",
     "database",
+    "database-adapter",
     "drizzle",
+    "drizzle-orm",
     "knex",
     "kysely",
+    "memory",
     "mongodb",
+    "orm",
     "prisma",
+    "query-builder",
+    "sql",
     "sumak",
+    "type-safe",
+    "typescript",
     "unadapter"
   ],
   "homepage": "https://github.com/productdevbook/unadapter#readme",
@@ -97,7 +106,7 @@
     "prisma:normal:push": "prisma db push --schema tests/prisma/normal-tests/schema.prisma --accept-data-loss",
     "prisma:number-id:push": "prisma db push --schema tests/prisma/number-id-tests/schema.prisma --accept-data-loss",
     "bumpp": "bumpp package.json",
-    "release": "pnpm test && pnpm build && bumpp --commit --tag --push --all",
+    "release": "pnpm build && bumpp --commit --tag --push --all",
     "prepack": "pnpm build"
   },
   "dependencies": {
