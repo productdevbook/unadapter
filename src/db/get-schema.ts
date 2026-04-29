@@ -3,7 +3,7 @@ import type { AdapterOptions, FieldAttribute, TablesSchema } from "../types/inde
 export function getSchema<T extends Record<string, any>>(
   config: AdapterOptions<T>,
   getTables: (options: AdapterOptions<T>) => TablesSchema,
-) {
+): Record<string, { fields: Record<string, FieldAttribute>; order: number }> {
   const tables = getTables(config as AdapterOptions<T>)
   const schema: Record<
     string,

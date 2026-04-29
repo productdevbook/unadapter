@@ -31,6 +31,7 @@
 - [Installation](#-installation)
 - [Available Adapters](#-available-adapters)
 - [Getting Started](#-getting-started)
+- [Migrations](#-migrations)
 - [API Reference](#-api-reference)
 - [Contributing](#-contributing)
 - [License](#-license)
@@ -112,6 +113,11 @@ You'll also need to install the specific database driver or ORM you plan to use.
   <tr>
     <td><b><a href="https://kysely.dev/">Kysely Adapter</a></b></td>
     <td>For Kysely SQL query builder</td>
+    <td>✅ Ready</td>
+  </tr>
+  <tr>
+    <td><b><a href="https://knexjs.org/">Knex Adapter</a></b></td>
+    <td>For Knex SQL query builder</td>
     <td>✅ Ready</td>
   </tr>
 </table>
@@ -860,6 +866,129 @@ const user = await adapter.create({
 ```
 
 </details>
+
+<details>
+<summary><b>Knex Adapter Example</b></summary>
+
+```typescript
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import knex from "knex"
+import { knexAdapter } from "unadapter/knex"
+
+// Initialize a Knex instance for your dialect
+const db = knex({
+  client: "pg",
+  connection: {
+    host: "localhost",
+    database: "mydatabase",
+    user: "myuser",
+    password: "mypassword",
+  },
+})
+
+interface CustomOptions {
+  appName?: string
+  plugins?: {
+    schema?: PluginSchema
+  }[]
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+
+  return {
+    user: {
+      modelName: "user",
+      fields: {
+        name: {
+          type: "string",
+          required: true,
+          fieldName: options?.user?.fields?.name || "name",
+        },
+        email: {
+          type: "string",
+          required: true,
+          unique: true,
+          fieldName: options?.user?.fields?.email || "email",
+        },
+        createdAt: {
+          type: "date",
+          defaultValue: () => new Date(),
+          fieldName: "created_at",
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      },
+    },
+  }
+})
+
+const adapter = createAdapter(tables, {
+  database: knexAdapter(db, {
+    type: "postgres", // "postgres" | "mysql" | "sqlite" | "mssql"
+  }),
+  plugins: [],
+})
+
+const user = await adapter.create({
+  model: "user",
+  data: {
+    name: "Ada Lovelace",
+    email: "ada@example.com",
+  },
+})
+```
+
+The Knex adapter ships its own migrator (uses `knex.schema` and dialect-specific
+introspection), so you can drive migrations through `getMigrations` without a
+separate Kysely setup:
+
+```typescript
+import { getMigrations } from "unadapter/db"
+
+await (await getMigrations({ database: knexAdapter(db, { type: "postgres" }), ... }, tables))
+  .runMigrations()
+```
+
+</details>
+
+## 🛠️ Migrations
+
+`getMigrations()` is adapter-agnostic. Each adapter contributes its own
+migrator that knows how to introspect the live database and emit DDL
+using its native schema API:
+
+| Adapter | Migrator | Notes                                                              |
+| ------- | -------- | ------------------------------------------------------------------ |
+| Kysely  | ✅       | Backwards-compatible: also accepts a raw Dialect / pool / DB shape |
+| Knex    | ✅       | Uses `knex.schema` + `information_schema` / SQLite `PRAGMA`        |
+| Drizzle | ❌       | Use `drizzle-kit` for schema management                            |
+| Prisma  | ❌       | Use Prisma Migrate / `prisma db push`                              |
+| MongoDB | n/a      | Schemaless                                                         |
+| Memory  | n/a      | No persistence layer                                               |
+
+Adapters that don't ship a migrator throw a clear error if you call
+`runMigrations()`; you're expected to handle their schema with their
+own native tooling.
+
+```typescript
+import { getMigrations } from "unadapter/db"
+import { knexAdapter } from "unadapter/knex"
+
+const { runMigrations, toBeCreated, toBeAdded } = await getMigrations(
+  { database: knexAdapter(db, { type: "postgres" }) },
+  tables,
+)
+
+await runMigrations()
+```
 
 ## 🔍 API Reference
 

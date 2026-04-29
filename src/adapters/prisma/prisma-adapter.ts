@@ -1,4 +1,4 @@
-import type { TablesSchema, Where } from "../../types/index.ts"
+import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import { BetterAuthError } from "../../error/index.ts"
 import { createAdapter } from "../create/index.ts"
@@ -40,7 +40,10 @@ interface PrismaClientInternal {
 export function prismaAdapter<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(prisma: PrismaClient, config: PrismaConfig) {
+>(
+  prisma: PrismaClient,
+  config: PrismaConfig,
+): (getTables: (options: any) => Schema, options: any) => Adapter<T, Schema> {
   return createAdapter<T, Schema>({
     config: {
       adapterId: "prisma",

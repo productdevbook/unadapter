@@ -1,4 +1,5 @@
 import type {
+  AdapterMigrator,
   AdapterOptions,
   AdapterSchemaCreation,
   FieldAttribute,
@@ -371,6 +372,14 @@ export interface CustomAdapter<
      */
     tables: TablesSchema
   }) => Promise<AdapterSchemaCreation>
+
+  /**
+   * Build a migrator that can introspect and emit DDL using the adapter's
+   * native schema API. Adapters that don't support schema migrations can
+   * omit this — the migration engine will report a clear error if the
+   * caller tries to run migrations against them.
+   */
+  createMigrator?: () => Promise<AdapterMigrator> | AdapterMigrator
 
   /**
    * Your adapter's options.

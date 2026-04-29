@@ -93,7 +93,7 @@ export type FieldAttribute<T extends FieldType = FieldType> = {
 export function createFieldAttribute<
   T extends FieldType,
   C extends Omit<FieldAttributeConfig<T>, "type">,
->(type: T, config?: C) {
+>(type: T, config?: C): FieldAttribute<T> {
   return {
     type,
     ...config,

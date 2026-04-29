@@ -7,6 +7,7 @@
     "adapters",
     "database",
     "drizzle",
+    "knex",
     "kysely",
     "mongodb",
     "prisma",
@@ -38,6 +39,10 @@
     "./drizzle": {
       "types": "./dist/adapters/drizzle/index.d.mts",
       "import": "./dist/adapters/drizzle/index.mjs"
+    },
+    "./knex": {
+      "types": "./dist/adapters/knex/index.d.mts",
+      "import": "./dist/adapters/knex/index.mjs"
     },
     "./kysely": {
       "types": "./dist/adapters/kysely/index.d.mts",
@@ -106,6 +111,7 @@
     "bumpp": "^11.0.1",
     "deepmerge": "^4.3.1",
     "drizzle-orm": "^0.45.2",
+    "knex": "^3.2.9",
     "kysely": "^0.28.16",
     "mongodb": "^7.2.0",
     "mysql2": "^3.22.3",

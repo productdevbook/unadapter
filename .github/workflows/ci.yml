@@ -35,6 +35,11 @@ jobs:
       - name: 📦 Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 🧬 Generate Prisma Client
+        run: |
+          pnpm prisma generate --schema tests/prisma/normal-tests/schema.prisma
+          pnpm prisma generate --schema tests/prisma/number-id-tests/schema.prisma
+
       - name: 👀 Lint
         run: pnpm lint
 

@@ -55,7 +55,7 @@ export function parseOutputData<T extends Record<string, any>>(
   schema: {
     fields: Record<string, FieldAttribute>
   },
-) {
+): T {
   const fields = schema.fields
   const parsedData: Record<string, any> = {}
   for (const key in data) {
@@ -72,7 +72,10 @@ export function parseOutputData<T extends Record<string, any>>(
   return parsedData as T
 }
 
-export function getAllFields(options: AdapterOptions, table: string) {
+export function getAllFields(
+  options: AdapterOptions,
+  table: string,
+): Record<string, FieldAttribute> {
   let schema: Record<string, FieldAttribute> = {
     ...(table === "user" ? options.user?.additionalFields : {}),
   }
@@ -87,12 +90,12 @@ export function getAllFields(options: AdapterOptions, table: string) {
   return schema
 }
 
-export function parseUserOutput(options: AdapterOptions, user: User) {
+export function parseUserOutput(options: AdapterOptions, user: User): User {
   const schema = getAllFields(options, "user")
   return parseOutputData(user, { fields: schema })
 }
 
-export function parseAccountOutput(options: AdapterOptions, account: Account) {
+export function parseAccountOutput(options: AdapterOptions, account: Account): Account {
   const schema = getAllFields(options, "account")
   return parseOutputData(account, { fields: schema })
 }
@@ -103,7 +106,7 @@ export function parseInputData<T extends Record<string, any>>(
     fields: Record<string, FieldAttribute>
     action?: "create" | "update"
   },
-) {
+): Partial<T> {
   const action = schema.action || "create"
   const fields = schema.fields
   const parsedData: Record<string, any> = {}
@@ -147,17 +150,23 @@ export function parseUserInput(
   options: AdapterOptions,
   user?: Record<string, any>,
   action?: "create" | "update",
-) {
+): Partial<Record<string, any>> {
   const schema = getAllFields(options, "user")
   return parseInputData(user || {}, { fields: schema, action })
 }
 
-export function parseAdditionalUserInput(options: AdapterOptions, user?: Record<string, any>) {
+export function parseAdditionalUserInput(
+  options: AdapterOptions,
+  user?: Record<string, any>,
+): Partial<Record<string, any>> {
   const schema = getAllFields(options, "user")
   return parseInputData(user || {}, { fields: schema })
 }
 
-export function parseAccountInput(options: AdapterOptions, account: Partial<Account>) {
+export function parseAccountInput(
+  options: AdapterOptions,
+  account: Partial<Account>,
+): Partial<Account> {
   const schema = getAllFields(options, "account")
   return parseInputData(account, { fields: schema })
 }
@@ -172,7 +181,7 @@ export function mergeSchema<S extends TablesSchema>(
       }
     }
   },
-) {
+): S {
   if (!newSchema) {
     return schema
   }

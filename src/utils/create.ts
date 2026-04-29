@@ -3,7 +3,7 @@ import type { Adapter, AdapterInstance, AdapterOptions, TablesSchema } from "../
 export function createAdapter<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(table: (options: AdapterOptions<T>) => Schema, options: AdapterOptions<T>) {
+>(table: (options: AdapterOptions<T>) => Schema, options: AdapterOptions<T>): Adapter<T, Schema> {
   if (!options.database) {
     throw new Error("Adapter not provided")
   }
@@ -16,6 +16,6 @@ export function createAdapter<
 export function createTable<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(table: (options: AdapterOptions<T>) => Schema) {
+>(table: (options: AdapterOptions<T>) => Schema): (options: AdapterOptions<T>) => Schema {
   return table
 }
