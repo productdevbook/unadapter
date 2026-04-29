@@ -162,11 +162,12 @@ export function createSumakMigratorFromSumak(opts: SumakMigratorOptions): Adapte
 
   return {
     async introspect(): Promise<TableInfo[]> {
-      const driver = (db as any)._driver ?? (db as any).driver
+      // `db.driver` is a method that throws when no driver is configured;
+      // `driverOrNull()` returns undefined instead, which is what we want
+      // for the "no live DB to inspect → engine treats every table as new"
+      // path.
+      const driver: any = (db as any).driverOrNull?.()
       if (!driver) {
-        // Without a driver attached we can't introspect — return empty
-        // so the engine treats every schema entry as new (idempotent on
-        // re-runs against an empty database).
         return []
       }
       const schema = await introspect(driver, sumakDialectName)
