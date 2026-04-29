@@ -1,7 +1,7 @@
-import type { Database } from "better-sqlite3";
-import type { Dialect, Kysely, MysqlPool, PostgresPool } from "kysely";
-import type { KyselyDatabaseType } from "../adapters/kysely/types.ts";
-import type { AdapterInstance, LiteralUnion, TablesSchema } from "../types/index.ts";
+import type { Database } from "better-sqlite3"
+import type { Dialect, Kysely, MysqlPool, PostgresPool } from "kysely"
+import type { KyselyDatabaseType } from "../adapters/kysely/types.ts"
+import type { AdapterInstance, LiteralUnion, TablesSchema } from "../types/index.ts"
 
 export interface UnOptions {}
 
@@ -24,7 +24,7 @@ export type AdapterOptions<
          *
          * @default 100
          */
-        defaultFindManyLimit?: number;
+        defaultFindManyLimit?: number
         /**
          * If your database auto increments number ids, set this to `true`.
          *
@@ -32,7 +32,7 @@ export type AdapterOptions<
          *
          * @default false
          */
-        useNumberId?: boolean;
+        useNumberId?: boolean
         /**
          * Custom generateId function.
          *
@@ -41,9 +41,9 @@ export type AdapterOptions<
          */
         generateId?:
           | ((options: { model: LiteralUnion<any, string>; size?: number }) => string)
-          | false;
-      };
-    };
+          | false
+      }
+    }
 
     database?:
       | PostgresPool
@@ -52,29 +52,29 @@ export type AdapterOptions<
       | Dialect
       | AdapterInstance<T>
       | {
-          dialect: Dialect;
-          type: KyselyDatabaseType;
+          dialect: Dialect
+          type: KyselyDatabaseType
           /**
            * casing for table names
            *
            * @default "camel"
            */
-          casing?: "snake" | "camel";
+          casing?: "snake" | "camel"
         }
       | {
           /**
            * Kysely instance
            */
-          db: Kysely<any>;
+          db: Kysely<any>
           /**
            * Database type between postgres, mysql and sqlite
            */
-          type: KyselyDatabaseType;
+          type: KyselyDatabaseType
           /**
            * casing for table names
            *
            * @default "camel"
            */
-          casing?: "snake" | "camel";
-        };
-  };
+          casing?: "snake" | "camel"
+        }
+  }

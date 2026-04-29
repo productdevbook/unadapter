@@ -1,4 +1,4 @@
-import type { AdapterOptions, FieldAttribute } from "../types/index.ts";
+import type { AdapterOptions, FieldAttribute } from "../types/index.ts"
 
 export function mergePluginSchemas<
   T extends Record<string, any>,
@@ -6,8 +6,8 @@ export function mergePluginSchemas<
 >(options: AdapterOptions<T>, where: K = "plugins" as K) {
   const schema = (options[where] as any[])?.reduce(
     (acc, plugin) => {
-      const schema = plugin.schema;
-      if (!schema) return acc;
+      const schema = plugin.schema
+      if (!schema) return acc
       for (const [key, value] of Object.entries(schema)) {
         acc[key] = {
           fields: {
@@ -20,12 +20,12 @@ export function mergePluginSchemas<
             (typeof value === "object" && value !== null && "modelName" in value
               ? String(value.modelName)
               : key) || key,
-        };
+        }
       }
-      return acc;
+      return acc
     },
     {} as Record<string, { fields: Record<string, FieldAttribute>; modelName: string }>,
-  );
+  )
 
-  return schema;
+  return schema
 }

@@ -1,3 +1,3 @@
-import type { TablesSchema } from "./index.ts";
+import type { TablesSchema } from "./index.ts"
 
-export type PluginSchema = Omit<TablesSchema, "order">;
+export type PluginSchema = Omit<TablesSchema, "order">

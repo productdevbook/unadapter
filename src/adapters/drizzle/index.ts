@@ -1,1 +1,1 @@
-export * from "./drizzle-adapter.ts";
+export * from "./drizzle-adapter.ts"

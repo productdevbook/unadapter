@@ -1,19 +1,19 @@
-export type LogLevel = "info" | "success" | "warn" | "error" | "debug";
+export type LogLevel = "info" | "success" | "warn" | "error" | "debug"
 
-export const levels = ["info", "success", "warn", "error", "debug"] as const;
+export const levels = ["info", "success", "warn", "error", "debug"] as const
 
 export function shouldPublishLog(currentLogLevel: LogLevel, logLevel: LogLevel): boolean {
-  return levels.indexOf(logLevel) <= levels.indexOf(currentLogLevel);
+  return levels.indexOf(logLevel) <= levels.indexOf(currentLogLevel)
 }
 
 export interface Logger {
-  disabled?: boolean;
-  level?: Exclude<LogLevel, "success">;
-  log?: (level: Exclude<LogLevel, "success">, message: string, ...args: any[]) => void;
+  disabled?: boolean
+  level?: Exclude<LogLevel, "success">
+  log?: (level: Exclude<LogLevel, "success">, message: string, ...args: any[]) => void
 }
 
 export type LogHandlerParams =
-  Parameters<NonNullable<Logger["log"]>> extends [LogLevel, ...infer Rest] ? Rest : never;
+  Parameters<NonNullable<Logger["log"]>> extends [LogLevel, ...infer Rest] ? Rest : never
 
 const colors = {
   reset: "\x1B[0m",
@@ -43,7 +43,7 @@ const colors = {
     cyan: "\x1B[46m",
     white: "\x1B[47m",
   },
-};
+}
 
 const levelColors: Record<LogLevel, string> = {
   info: colors.fg.blue,
@@ -51,48 +51,48 @@ const levelColors: Record<LogLevel, string> = {
   warn: colors.fg.yellow,
   error: colors.fg.red,
   debug: colors.fg.magenta,
-};
+}
 
 function formatMessage(level: LogLevel, message: string): string {
-  const timestamp = new Date().toISOString();
+  const timestamp = new Date().toISOString()
   return `${colors.dim}${timestamp}${colors.reset} ${
     levelColors[level]
-  }${level.toUpperCase()}${colors.reset} ${colors.bright}[Better Auth]:${colors.reset} ${message}`;
+  }${level.toUpperCase()}${colors.reset} ${colors.bright}[Better Auth]:${colors.reset} ${message}`
 }
 
 export function createLogger(
   options?: Logger,
 ): Record<LogLevel, (...params: LogHandlerParams) => void> {
-  const enabled = options?.disabled !== true;
-  const logLevel = options?.level ?? "error";
+  const enabled = options?.disabled !== true
+  const logLevel = options?.level ?? "error"
 
   const LogFunc = (level: LogLevel, message: string, args: any[] = []): void => {
     if (!enabled || !shouldPublishLog(logLevel, level)) {
-      return;
+      return
     }
 
-    const formattedMessage = formatMessage(level, message);
+    const formattedMessage = formatMessage(level, message)
 
     if (!options || typeof options.log !== "function") {
       if (level === "error") {
-        console.error(formattedMessage, ...args);
+        console.error(formattedMessage, ...args)
       } else if (level === "warn") {
-        console.warn(formattedMessage, ...args);
+        console.warn(formattedMessage, ...args)
       } else {
-        console.log(formattedMessage, ...args);
+        console.log(formattedMessage, ...args)
       }
-      return;
+      return
     }
 
-    options.log(level === "success" ? "info" : level, message, ...args);
-  };
+    options.log(level === "success" ? "info" : level, message, ...args)
+  }
 
   return Object.fromEntries(
     levels.map((level) => [
       level,
       (...[message, ...args]: LogHandlerParams) => LogFunc(level, message, args),
     ]),
-  ) as Record<LogLevel, (...params: LogHandlerParams) => void>;
+  ) as Record<LogLevel, (...params: LogHandlerParams) => void>
 }
 
-export const logger = createLogger();
+export const logger = createLogger()

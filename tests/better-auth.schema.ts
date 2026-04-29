@@ -5,8 +5,8 @@ import type {
   OmitId,
   User,
   Verification,
-} from "../src/types/index.ts";
-import { createTable } from "../src/index.ts";
+} from "../src/types/index.ts"
+import { createTable } from "../src/index.ts"
 
 interface SecondaryStorage {
   /**
@@ -14,7 +14,7 @@ interface SecondaryStorage {
    * @param key - Key to get
    * @returns - Value of the key
    */
-  get: (key: string) => Promise<string | null> | string | null;
+  get: (key: string) => Promise<string | null> | string | null
   set: (
     /**
      * Key to store
@@ -28,12 +28,12 @@ interface SecondaryStorage {
      * Time to live in seconds
      */
     ttl?: number,
-  ) => Promise<void | null | string> | void;
+  ) => Promise<void | null | string> | void
   /**
    *
    * @param key - Key to delete
    */
-  delete: (key: string) => Promise<void | null | string> | void;
+  delete: (key: string) => Promise<void | null | string> | void
 }
 
 export interface BetterAuthOptions {
@@ -44,11 +44,11 @@ export interface BetterAuthOptions {
    *
    * @default "Better Auth"
    */
-  appName?: string;
+  appName?: string
 
   plugins?: {
-    schema?: Omit<DatabaseSchema, "order">;
-  }[];
+    schema?: Omit<DatabaseSchema, "order">
+  }[]
   /**
    * Base URL for the Better Auth. This is typically the
    * root URL where your application server is hosted.
@@ -59,7 +59,7 @@ export interface BetterAuthOptions {
    *
    * If not set it will throw an error.
    */
-  baseURL?: string;
+  baseURL?: string
   /**
    * Base path for the Better Auth. This is typically
    * the path where the
@@ -67,7 +67,7 @@ export interface BetterAuthOptions {
    *
    * @default "/api/auth"
    */
-  basePath?: string;
+  basePath?: string
   /**
    * The secret to use for encryption,
    * signing and hashing.
@@ -91,19 +91,19 @@ export interface BetterAuthOptions {
    * openssl rand -base64 32
    * ```
    */
-  secret?: string;
+  secret?: string
 
   /**
    * Secondary storage configuration
    *
    * This is used to store session and rate limit data.
    */
-  secondaryStorage?: SecondaryStorage;
+  secondaryStorage?: SecondaryStorage
 
   account?: {
-    modelName?: string;
-    fields?: Partial<Record<keyof OmitId<Account>, string>>;
-  };
+    modelName?: string
+    fields?: Partial<Record<keyof OmitId<Account>, string>>
+  }
 
   /**
    * User configuration
@@ -112,7 +112,7 @@ export interface BetterAuthOptions {
     /**
      * The model name for the user. Defaults to "user".
      */
-    modelName?: string;
+    modelName?: string
     /**
      * Map fields
      *
@@ -123,14 +123,14 @@ export interface BetterAuthOptions {
      * }
      * ```
      */
-    fields?: Partial<Record<keyof OmitId<User>, string>>;
+    fields?: Partial<Record<keyof OmitId<User>, string>>
     /**
      * Additional fields for the session
      */
     additionalFields?: {
-      [key: string]: FieldAttribute;
-    };
-  };
+      [key: string]: FieldAttribute
+    }
+  }
   /**
    * Verification configuration
    */
@@ -138,19 +138,19 @@ export interface BetterAuthOptions {
     /**
      * Change the modelName of the verification table
      */
-    modelName?: string;
+    modelName?: string
     /**
      * Map verification fields
      */
-    fields?: Partial<Record<keyof OmitId<Verification>, string>>;
-  };
+    fields?: Partial<Record<keyof OmitId<Verification>, string>>
+  }
 }
 
 export const getAuthTables = createTable<BetterAuthOptions>((options) => {
   const pluginSchema = options.plugins?.reduce(
     (acc, plugin) => {
-      const schema = plugin.schema;
-      if (!schema) return acc;
+      const schema = plugin.schema
+      if (!schema) return acc
       for (const [key, value] of Object.entries(schema)) {
         acc[key] = {
           fields: {
@@ -163,14 +163,14 @@ export const getAuthTables = createTable<BetterAuthOptions>((options) => {
             (typeof value === "object" && value !== null && "modelName" in value
               ? String(value.modelName)
               : key) || key,
-        };
+        }
       }
-      return acc;
+      return acc
     },
     {} as Record<string, { fields: Record<string, FieldAttribute>; modelName: string }>,
-  );
+  )
 
-  const { user, account, ...pluginTables } = pluginSchema || {};
+  const { user, account, ...pluginTables } = pluginSchema || {}
 
   return {
     user: {
@@ -323,5 +323,5 @@ export const getAuthTables = createTable<BetterAuthOptions>((options) => {
       order: 4,
     },
     ...pluginTables,
-  };
-});
+  }
+})

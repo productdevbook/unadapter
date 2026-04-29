@@ -1,30 +1,30 @@
-import type { PluginSchema } from "../src/types/index.ts";
-import { createAdapter, createTable, mergePluginSchemas } from "../src/index.ts";
-import { memoryAdapter } from "../src/adapters/memory/index.ts";
+import type { PluginSchema } from "../src/types/index.ts"
+import { createAdapter, createTable, mergePluginSchemas } from "../src/index.ts"
+import { memoryAdapter } from "../src/adapters/memory/index.ts"
 
 const db = {
   user: [],
   session: [],
-};
+}
 
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      name?: string;
-      email?: string;
-      emailVerified?: string;
-      image?: string;
-      createdAt?: string;
-    };
-  };
+      name?: string
+      email?: string
+      emailVerified?: string
+      image?: string
+      createdAt?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -64,8 +64,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.user?.fields,
       },
     },
-  };
-});
+  }
+})
 const adapter = createAdapter(tables, {
   database: memoryAdapter(db, {}),
   plugins: [
@@ -84,7 +84,7 @@ const adapter = createAdapter(tables, {
       },
     },
   ],
-});
+})
 
 // eslint-disable-next-line antfu/no-top-level-await
 const user = await adapter.create({
@@ -96,7 +96,7 @@ const user = await adapter.create({
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-});
+})
 // eslint-disable-next-line antfu/no-top-level-await
 const _users = await adapter.findMany({
   model: "user",
@@ -107,6 +107,6 @@ const _users = await adapter.findMany({
       operator: "eq",
     },
   ],
-});
+})
 
-console.log("Found users:", user, db);
+console.log("Found users:", user, db)

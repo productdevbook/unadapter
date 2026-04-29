@@ -1,16 +1,16 @@
-import type { FieldAttribute } from "../types/index.ts";
+import type { FieldAttribute } from "../types/index.ts"
 
 export function withApplyDefault(value: any, field: FieldAttribute, action: "create" | "update") {
   if (action === "update") {
-    return value;
+    return value
   }
   if (value === undefined || value === null) {
     if (field.defaultValue) {
       if (typeof field.defaultValue === "function") {
-        return field.defaultValue();
+        return field.defaultValue()
       }
-      return field.defaultValue;
+      return field.defaultValue
     }
   }
-  return value;
+  return value
 }

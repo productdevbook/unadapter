@@ -1,6 +1,6 @@
-import type { InferModelTypes } from "./db.ts";
-import type { AdapterOptions } from "./options.ts";
-import type { TablesSchema } from "./schema.ts";
+import type { InferModelTypes } from "./db.ts"
+import type { AdapterOptions } from "./options.ts"
+import type { TablesSchema } from "./schema.ts"
 
 /**
  * Adapter where clause
@@ -16,10 +16,10 @@ export interface Where {
     | "in"
     | "contains"
     | "starts_with"
-    | "ends_with"; // eq by default
-  value: string | number | boolean | string[] | number[] | Date | null;
-  field: string;
-  connector?: "AND" | "OR"; // AND by default
+    | "ends_with" // eq by default
+  value: string | number | boolean | string[] | number[] | Date | null
+  field: string
+  connector?: "AND" | "OR" // AND by default
 }
 
 /**
@@ -30,59 +30,59 @@ export interface Adapter<
   Schema extends TablesSchema = TablesSchema,
   Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
 > {
-  id: string;
+  id: string
 
   create: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    data: Omit<Models[M], "id">;
-    select?: string[];
-  }) => Promise<Models[M]>;
+    model: M & (string | object)
+    data: Omit<Models[M], "id">
+    select?: string[]
+  }) => Promise<Models[M]>
 
   findOne: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where: Where[];
-    select?: string[];
-  }) => Promise<Models[M] | null>;
+    model: M & (string | object)
+    where: Where[]
+    select?: string[]
+  }) => Promise<Models[M] | null>
 
   findMany: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where?: Where[];
-    limit?: number;
+    model: M & (string | object)
+    where?: Where[]
+    limit?: number
     sortBy?: {
-      field: string;
-      direction: "asc" | "desc";
-    };
-    offset?: number;
-    select?: string[];
-  }) => Promise<Models[M][]>;
+      field: string
+      direction: "asc" | "desc"
+    }
+    offset?: number
+    select?: string[]
+  }) => Promise<Models[M][]>
 
-  count: (data: { where?: Where[]; model: string }) => Promise<number>;
+  count: (data: { where?: Where[]; model: string }) => Promise<number>
 
   /**
    * ⚠︎ Update may not return the updated data
    * if multiple where clauses are provided
    */
   update: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where: Where[];
-    update: Partial<Models[M]>;
-  }) => Promise<Models[M] | null>;
+    model: M & (string | object)
+    where: Where[]
+    update: Partial<Models[M]>
+  }) => Promise<Models[M] | null>
 
   updateMany: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where: Where[];
-    update: Partial<Models[M]>;
-  }) => Promise<number>;
+    model: M & (string | object)
+    where: Where[]
+    update: Partial<Models[M]>
+  }) => Promise<number>
 
   delete: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where: Where[];
-  }) => Promise<void>;
+    model: M & (string | object)
+    where: Where[]
+  }) => Promise<void>
 
   deleteMany: <M extends keyof Models>(data: {
-    model: M & (string | object);
-    where: Where[];
-  }) => Promise<number>;
+    model: M & (string | object)
+    where: Where[]
+  }) => Promise<number>
   /**
    *
    * @param options
@@ -91,30 +91,30 @@ export interface Adapter<
   createSchema?: (
     options: AdapterOptions<T, Schema>,
     file?: string,
-  ) => Promise<AdapterSchemaCreation>;
+  ) => Promise<AdapterSchemaCreation>
 
-  options?: Record<string, any>;
+  options?: Record<string, any>
 }
 
 export interface AdapterSchemaCreation {
   /**
    * Code to be inserted into the file
    */
-  code: string;
+  code: string
   /**
    * Path to the file, including the file name and extension.
    * Relative paths are supported, with the current working directory of the developer's project as the base.
    */
-  path: string;
+  path: string
   /**
    * Append the file if it already exists.
    * Note: This will not apply if `overwrite` is set to true.
    */
-  append?: boolean;
+  append?: boolean
   /**
    * Overwrite the file if it already exists
    */
-  overwrite?: boolean;
+  overwrite?: boolean
 }
 
 export interface AdapterInstance<
@@ -124,5 +124,5 @@ export interface AdapterInstance<
   (
     getTables: (options: AdapterOptions<T, Schema>) => Schema,
     options: AdapterOptions<T, Schema>,
-  ): Adapter<T, Schema>;
+  ): Adapter<T, Schema>
 }

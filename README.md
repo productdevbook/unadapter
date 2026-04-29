@@ -122,35 +122,35 @@ You'll also need to install the specific database driver or ORM you plan to use.
 <summary><b>Basic Usage</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { memoryAdapter } from "unadapter/memory";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { memoryAdapter } from "unadapter/memory"
 
 // Create an in-memory database for testing
 const db = {
   user: [],
   session: [],
-};
+}
 
 // Define a consistent options interface that can be reused
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      name?: string;
-      email?: string;
-      emailVerified?: string;
-      image?: string;
-      createdAt?: string;
-    };
-  };
+      name?: string
+      email?: string
+      emailVerified?: string
+      image?: string
+      createdAt?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -191,13 +191,13 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.user?.fields,
       },
     },
-  };
-});
+  }
+})
 
 const adapter = createAdapter(tables, {
   database: memoryAdapter(db, {}),
   plugins: [], // Optional plugins
-});
+})
 
 // Now you can use the adapter to perform database operations
 const user = await adapter.create({
@@ -209,7 +209,7 @@ const user = await adapter.create({
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-});
+})
 
 // Find the user
 const foundUsers = await adapter.findMany({
@@ -221,7 +221,7 @@ const foundUsers = await adapter.findMany({
       operator: "eq",
     },
   ],
-});
+})
 ```
 
 </details>
@@ -230,40 +230,40 @@ const foundUsers = await adapter.findMany({
 <summary><b>Using Custom Schema and Plugins</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { memoryAdapter } from "unadapter/memory";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { memoryAdapter } from "unadapter/memory"
 
 // Create an in-memory database for testing
 const db = {
   users: [],
   products: [],
-};
+}
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      fullName?: string;
-      email?: string;
-      isActive?: string;
-    };
-  };
+      fullName?: string
+      email?: string
+      isActive?: string
+    }
+  }
   product?: {
     fields?: {
-      title?: string;
-      price?: string;
-      ownerId?: string;
-    };
-  };
+      title?: string
+      price?: string
+      ownerId?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, product, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, product, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -322,8 +322,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.product?.fields,
       },
     },
-  };
-});
+  }
+})
 
 // User profile plugin schema
 const userProfilePlugin = {
@@ -344,12 +344,12 @@ const userProfilePlugin = {
       },
     },
   },
-};
+}
 
 const adapter = createAdapter(tables, {
   database: memoryAdapter(db, {}),
   plugins: [userProfilePlugin],
-});
+})
 
 // Now you can use the adapter with your custom schema
 const user = await adapter.create({
@@ -360,7 +360,7 @@ const user = await adapter.create({
     bio: "Software developer",
     location: "New York",
   },
-});
+})
 
 // Create a product linked to the user
 const product = await adapter.create({
@@ -370,7 +370,7 @@ const product = await adapter.create({
     price: 99.99,
     ownerId: user.id,
   },
-});
+})
 ```
 
 </details>
@@ -381,33 +381,33 @@ const product = await adapter.create({
 <summary><b>MongoDB Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { MongoClient } from "mongodb";
-import { mongodbAdapter } from "unadapter/mongodb";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { MongoClient } from "mongodb"
+import { mongodbAdapter } from "unadapter/mongodb"
 
 // Create a database client
-const client = new MongoClient("mongodb://localhost:27017");
-await client.connect();
-const db = client.db("myDatabase");
+const client = new MongoClient("mongodb://localhost:27017")
+await client.connect()
+const db = client.db("myDatabase")
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      name?: string;
-      email?: string;
-      settings?: string;
-    };
-  };
+      name?: string
+      email?: string
+      settings?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -438,8 +438,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.user?.fields,
       },
     },
-  };
-});
+  }
+})
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
@@ -447,7 +447,7 @@ const adapter = createAdapter(tables, {
     useNumberId: false,
   }),
   plugins: [],
-});
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -457,7 +457,7 @@ const user = await adapter.create({
     email: "jane@example.com",
     settings: { theme: "dark", notifications: true },
   },
-});
+})
 ```
 
 </details>
@@ -466,38 +466,38 @@ const user = await adapter.create({
 <summary><b>Prisma Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { PrismaClient } from "@prisma/client";
-import { prismaAdapter } from "unadapter/prisma";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { PrismaClient } from "@prisma/client"
+import { prismaAdapter } from "unadapter/prisma"
 
 // Initialize Prisma client
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      name?: string;
-      email?: string;
-      profile?: string;
-    };
-  };
+      name?: string
+      email?: string
+      profile?: string
+    }
+  }
   post?: {
     fields?: {
-      title?: string;
-      content?: string;
-      authorId?: string;
-    };
-  };
+      title?: string
+      content?: string
+      authorId?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, post, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, post, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -560,8 +560,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.post?.fields,
       },
     },
-  };
-});
+  }
+})
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
@@ -571,7 +571,7 @@ const adapter = createAdapter(tables, {
     usePlural: false,
   }),
   plugins: [],
-});
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -581,7 +581,7 @@ const user = await adapter.create({
     email: "john.smith@example.com",
     profile: { bio: "Software developer", location: "New York" },
   },
-});
+})
 ```
 
 </details>
@@ -590,13 +590,13 @@ const user = await adapter.create({
 <summary><b>Drizzle Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
-import { drizzleAdapter } from "unadapter/drizzle";
-import "dotenv/config";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { sql } from "drizzle-orm"
+import { drizzle } from "drizzle-orm/node-postgres"
+import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core"
+import { drizzleAdapter } from "unadapter/drizzle"
+import "dotenv/config"
 
 // Define your Drizzle schema
 export const role = pgTable("role", {
@@ -615,27 +615,27 @@ export const role = pgTable("role", {
   createdAt: timestamp("created_at")
     .notNull()
     .default(sql`now()`),
-});
+})
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   role?: {
     fields?: {
-      name?: string;
-      description?: string;
-      key?: string;
-      permissions?: string;
-      userId?: string;
-    };
-  };
+      name?: string
+      description?: string
+      key?: string
+      permissions?: string
+      userId?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, role, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, role, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     role: {
@@ -685,8 +685,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.role?.fields,
       },
     },
-  };
-});
+  }
+})
 
 // Initialize the adapter with the Drizzle schema
 const adapter = createAdapter(tables, {
@@ -698,7 +698,7 @@ const adapter = createAdapter(tables, {
     },
   }),
   plugins: [], // Optional plugins
-});
+})
 
 // Use the adapter
 const role = await adapter.create({
@@ -712,7 +712,7 @@ const role = await adapter.create({
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-});
+})
 ```
 
 </details>
@@ -721,11 +721,11 @@ const role = await adapter.create({
 <summary><b>Kysely Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { Kysely, PostgresDialect } from "kysely";
-import pg from "pg";
-import { kyselyAdapter } from "unadapter/kysely";
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { Kysely, PostgresDialect } from "kysely"
+import pg from "pg"
+import { kyselyAdapter } from "unadapter/kysely"
 
 // Create PostgreSQL connection pool
 const pool = new pg.Pool({
@@ -733,38 +733,38 @@ const pool = new pg.Pool({
   database: "mydatabase",
   user: "myuser",
   password: "mypassword",
-});
+})
 
 // Initialize Kysely with PostgreSQL dialect
 const db = new Kysely({
   dialect: new PostgresDialect({ pool }),
-});
+})
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string;
+  appName?: string
   plugins?: {
-    schema?: PluginSchema;
-  }[];
+    schema?: PluginSchema
+  }[]
   user?: {
     fields?: {
-      name?: string;
-      email?: string;
-      active?: string;
-      meta?: string;
-    };
-  };
+      name?: string
+      email?: string
+      active?: string
+      meta?: string
+    }
+  }
   article?: {
     fields?: {
-      title?: string;
-      content?: string;
-      authorId?: string;
-    };
-  };
+      title?: string
+      content?: string
+      authorId?: string
+    }
+  }
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, article, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
+  const { user, article, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {
@@ -837,8 +837,8 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.article?.fields,
       },
     },
-  };
-});
+  }
+})
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
@@ -846,7 +846,7 @@ const adapter = createAdapter(tables, {
     defaultSchema: "public",
   }),
   plugins: [],
-});
+})
 
 // Use the adapter
 const user = await adapter.create({
@@ -856,7 +856,7 @@ const user = await adapter.create({
     email: "robert@example.com",
     meta: { interests: ["programming", "reading"], location: "San Francisco" },
   },
-});
+})
 ```
 
 </details>
@@ -932,8 +932,8 @@ The `Where` interface is used for filtering records:
 
 ```typescript
 interface Where {
-  field: string;
-  value?: any;
+  field: string
+  value?: any
   operator?:
     | "eq"
     | "ne"
@@ -944,8 +944,8 @@ interface Where {
     | "in"
     | "contains"
     | "starts_with"
-    | "ends_with";
-  connector?: "AND" | "OR";
+    | "ends_with"
+  connector?: "AND" | "OR"
 }
 ```
 
@@ -959,35 +959,35 @@ When defining your schema, you can use the following field types and attributes:
 ```typescript
 interface FieldAttribute {
   // The type of the field
-  type: "string" | "number" | "boolean" | "date" | "json" | "array";
+  type: "string" | "number" | "boolean" | "date" | "json" | "array"
 
   // Whether this field is required
-  required?: boolean;
+  required?: boolean
 
   // Whether this field should be unique
-  unique?: boolean;
+  unique?: boolean
 
   // The actual column/field name in the database
-  fieldName?: string;
+  fieldName?: string
 
   // Whether this field can be sorted
-  sortable?: boolean;
+  sortable?: boolean
 
   // Default value function
-  defaultValue?: () => any;
+  defaultValue?: () => any
 
   // Reference to another model (for foreign keys)
   references?: {
-    model: string;
-    field: string;
-    onDelete?: "cascade" | "set null" | "restrict";
-  };
+    model: string
+    field: string
+    onDelete?: "cascade" | "set null" | "restrict"
+  }
 
   // Custom transformations
   transform?: {
-    input?: (value: any) => any;
-    output?: (value: any) => any;
-  };
+    input?: (value: any) => any
+    output?: (value: any) => any
+  }
 }
 ```
 

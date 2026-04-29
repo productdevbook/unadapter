@@ -1,16 +1,16 @@
-import type { BetterAuthOptions } from "./better-auth.schema.ts";
-import { createAdapter } from "../src/index.ts";
-import { describe } from "vitest";
-import { memoryAdapter } from "../src/adapters/memory/memory-adapter.ts";
-import { getAuthTables } from "./better-auth.schema.ts";
-import { runAdapterTest, runNumberIdAdapterTest } from "./test.ts";
+import type { BetterAuthOptions } from "./better-auth.schema.ts"
+import { createAdapter } from "../src/index.ts"
+import { describe } from "vitest"
+import { memoryAdapter } from "../src/adapters/memory/memory-adapter.ts"
+import { getAuthTables } from "./better-auth.schema.ts"
+import { runAdapterTest, runNumberIdAdapterTest } from "./test.ts"
 
 describe("adapter test", async () => {
   const db = {
     user: [],
     session: [],
     account: [],
-  };
+  }
 
   await runAdapterTest({
     getAdapter: async (customOptions = {}) => {
@@ -26,17 +26,17 @@ describe("adapter test", async () => {
           },
         },
         ...customOptions,
-      });
+      })
     },
-  });
-});
+  })
+})
 
 describe("number Id Adapter Test", async () => {
   const db = {
     user: [],
     session: [],
     account: [],
-  };
+  }
 
   await runNumberIdAdapterTest({
     getAdapter: async (customOptions = {}) => {
@@ -47,7 +47,7 @@ describe("number Id Adapter Test", async () => {
           },
         }),
         ...customOptions,
-      });
+      })
     },
-  });
-});
+  })
+})

@@ -1,7 +1,7 @@
-import type { FieldAttribute, TablesSchema } from "../types/index.ts";
-import type { Account, User } from "../types/index.ts";
-import type { AdapterOptions } from "../types/options.ts";
-import { z } from "zod";
+import type { FieldAttribute, TablesSchema } from "../types/index.ts"
+import type { Account, User } from "../types/index.ts"
+import type { AdapterOptions } from "../types/options.ts"
+import { z } from "zod"
 
 export const accountSchema = z.object({
   id: z.string(),
@@ -29,7 +29,7 @@ export const accountSchema = z.object({
   password: z.string().nullish(),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
-});
+})
 
 export const userSchema = z.object({
   id: z.string(),
@@ -39,7 +39,7 @@ export const userSchema = z.object({
   image: z.string().nullish(),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
-});
+})
 
 export const verificationSchema = z.object({
   id: z.string(),
@@ -48,99 +48,99 @@ export const verificationSchema = z.object({
   updatedAt: z.date().default(() => new Date()),
   expiresAt: z.date(),
   identifier: z.string(),
-});
+})
 
 export function parseOutputData<T extends Record<string, any>>(
   data: T,
   schema: {
-    fields: Record<string, FieldAttribute>;
+    fields: Record<string, FieldAttribute>
   },
 ) {
-  const fields = schema.fields;
-  const parsedData: Record<string, any> = {};
+  const fields = schema.fields
+  const parsedData: Record<string, any> = {}
   for (const key in data) {
-    const field = fields[key];
+    const field = fields[key]
     if (!field) {
-      parsedData[key] = data[key];
-      continue;
+      parsedData[key] = data[key]
+      continue
     }
     if (field.returned === false) {
-      continue;
+      continue
     }
-    parsedData[key] = data[key];
+    parsedData[key] = data[key]
   }
-  return parsedData as T;
+  return parsedData as T
 }
 
 export function getAllFields(options: AdapterOptions, table: string) {
   let schema: Record<string, FieldAttribute> = {
     ...(table === "user" ? options.user?.additionalFields : {}),
-  };
+  }
   for (const plugin of options.plugins || []) {
     if (plugin.schema && plugin.schema[table]) {
       schema = {
         ...schema,
         ...plugin.schema[table].fields,
-      };
+      }
     }
   }
-  return schema;
+  return schema
 }
 
 export function parseUserOutput(options: AdapterOptions, user: User) {
-  const schema = getAllFields(options, "user");
-  return parseOutputData(user, { fields: schema });
+  const schema = getAllFields(options, "user")
+  return parseOutputData(user, { fields: schema })
 }
 
 export function parseAccountOutput(options: AdapterOptions, account: Account) {
-  const schema = getAllFields(options, "account");
-  return parseOutputData(account, { fields: schema });
+  const schema = getAllFields(options, "account")
+  return parseOutputData(account, { fields: schema })
 }
 
 export function parseInputData<T extends Record<string, any>>(
   data: T,
   schema: {
-    fields: Record<string, FieldAttribute>;
-    action?: "create" | "update";
+    fields: Record<string, FieldAttribute>
+    action?: "create" | "update"
   },
 ) {
-  const action = schema.action || "create";
-  const fields = schema.fields;
-  const parsedData: Record<string, any> = {};
+  const action = schema.action || "create"
+  const fields = schema.fields
+  const parsedData: Record<string, any> = {}
   for (const key in fields) {
     if (key in data) {
       if (fields[key].input === false) {
         if (fields[key].defaultValue) {
-          parsedData[key] = fields[key].defaultValue;
-          continue;
+          parsedData[key] = fields[key].defaultValue
+          continue
         }
-        continue;
+        continue
       }
       if (fields[key].validator?.input && data[key] !== undefined) {
-        parsedData[key] = fields[key].validator.input.parse(data[key]);
-        continue;
+        parsedData[key] = fields[key].validator.input.parse(data[key])
+        continue
       }
       if (fields[key].transform?.input && data[key] !== undefined) {
-        parsedData[key] = fields[key].transform?.input(data[key]);
-        continue;
+        parsedData[key] = fields[key].transform?.input(data[key])
+        continue
       }
-      parsedData[key] = data[key];
-      continue;
+      parsedData[key] = data[key]
+      continue
     }
 
     if (fields[key].defaultValue && action === "create") {
-      parsedData[key] = fields[key].defaultValue;
-      continue;
+      parsedData[key] = fields[key].defaultValue
+      continue
     }
 
     if (fields[key].required && action === "create") {
       // throw new APIError('BAD_REQUEST', {
       //   message: `${key} is required`,
       // })
-      throw new Error(`Field "${key}" is required but not provided in the input data.`);
+      throw new Error(`Field "${key}" is required but not provided in the input data.`)
     }
   }
-  return parsedData as Partial<T>;
+  return parsedData as Partial<T>
 }
 
 export function parseUserInput(
@@ -148,46 +148,46 @@ export function parseUserInput(
   user?: Record<string, any>,
   action?: "create" | "update",
 ) {
-  const schema = getAllFields(options, "user");
-  return parseInputData(user || {}, { fields: schema, action });
+  const schema = getAllFields(options, "user")
+  return parseInputData(user || {}, { fields: schema, action })
 }
 
 export function parseAdditionalUserInput(options: AdapterOptions, user?: Record<string, any>) {
-  const schema = getAllFields(options, "user");
-  return parseInputData(user || {}, { fields: schema });
+  const schema = getAllFields(options, "user")
+  return parseInputData(user || {}, { fields: schema })
 }
 
 export function parseAccountInput(options: AdapterOptions, account: Partial<Account>) {
-  const schema = getAllFields(options, "account");
-  return parseInputData(account, { fields: schema });
+  const schema = getAllFields(options, "account")
+  return parseInputData(account, { fields: schema })
 }
 
 export function mergeSchema<S extends TablesSchema>(
   schema: S,
   newSchema?: {
     [K in keyof S]?: {
-      modelName?: string;
+      modelName?: string
       fields?: {
-        [P: string]: string;
-      };
-    };
+        [P: string]: string
+      }
+    }
   },
 ) {
   if (!newSchema) {
-    return schema;
+    return schema
   }
   for (const table in newSchema) {
-    const newModelName = newSchema[table]?.modelName;
+    const newModelName = newSchema[table]?.modelName
     if (newModelName) {
-      schema[table].modelName = newModelName;
+      schema[table].modelName = newModelName
     }
     for (const field in schema[table].fields) {
-      const newField = newSchema[table]?.fields?.[field];
+      const newField = newSchema[table]?.fields?.[field]
       if (!newField) {
-        continue;
+        continue
       }
-      schema[table].fields[field].fieldName = newField;
+      schema[table].fields[field].fieldName = newField
     }
   }
-  return schema;
+  return schema
 }

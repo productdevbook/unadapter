@@ -1,17 +1,17 @@
 // @ts-nocheck
-import type { Adapter, AdapterOptions, User } from "../src/types/index.ts";
-import { beforeAll, describe, expect, test } from "vitest";
+import type { Adapter, AdapterOptions, User } from "../src/types/index.ts"
+import { beforeAll, describe, expect, test } from "vitest"
 
 interface AdapterTestOptions<T extends Record<string, any>> {
-  getAdapter: (customOptions?: Omit<AdapterOptions<T>, "database">) => Promise<Adapter>;
-  disableTests?: Partial<Record<keyof typeof adapterTests, boolean>>;
-  testPrefix?: string;
+  getAdapter: (customOptions?: Omit<AdapterOptions<T>, "database">) => Promise<Adapter>
+  disableTests?: Partial<Record<keyof typeof adapterTests, boolean>>
+  testPrefix?: string
 }
 
 interface NumberIdAdapterTestOptions<T extends Record<string, any> = Record<string, any>> {
-  getAdapter: (customOptions?: Omit<AdapterOptions<T>, "database">) => Promise<Adapter>;
-  disableTests?: Partial<Record<keyof typeof numberIdAdapterTests, boolean>>;
-  testPrefix?: string;
+  getAdapter: (customOptions?: Omit<AdapterOptions<T>, "database">) => Promise<Adapter>
+  disableTests?: Partial<Record<keyof typeof numberIdAdapterTests, boolean>>
+  testPrefix?: string
 }
 
 const adapterTests = {
@@ -38,83 +38,83 @@ const adapterTests = {
   SHOULD_SEARCH_USERS_WITH_STARTS_WITH: "should search users with startsWith",
   SHOULD_SEARCH_USERS_WITH_ENDS_WITH: "should search users with endsWith",
   SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: "should prefer generateId if provided",
-} as const;
+} as const
 
-const { ...numberIdAdapterTestsCopy } = adapterTests;
+const { ...numberIdAdapterTestsCopy } = adapterTests
 
 const numberIdAdapterTests = {
   ...numberIdAdapterTestsCopy,
   SHOULD_RETURN_A_NUMBER_ID_AS_A_RESULT: "Should return a number id as a result",
   SHOULD_INCREMENT_THE_ID_BY_1: "Should increment the id by 1",
-} as const;
+} as const
 
 async function adapterTest<T extends Record<string, any> = Record<string, any>>(
   { getAdapter, disableTests: disabledTests, testPrefix }: AdapterTestOptions<T>,
   internalOptions?: {
-    predefinedOptions: Omit<T, "database">;
+    predefinedOptions: Omit<T, "database">
   },
 ) {
-  const adapter = async () => await getAdapter(internalOptions?.predefinedOptions);
+  const adapter = async () => await getAdapter(internalOptions?.predefinedOptions)
 
   async function resetDebugLogs() {
     // @ts-expect-error - Adapter debug logs are only available in test mode
-    (await adapter())?.adapterTestDebugLogs?.resetDebugLogs();
+    ;(await adapter())?.adapterTestDebugLogs?.resetDebugLogs()
   }
 
   async function printDebugLogs() {
     // @ts-expect-error - Adapter debug logs are only available in test mode
-    (await adapter())?.adapterTestDebugLogs?.printDebugLogs();
+    ;(await adapter())?.adapterTestDebugLogs?.printDebugLogs()
   }
 
   // @ts-expect-error - Intentionally omitting id for test data
   const user: {
-    name: string;
-    email: string;
-    emailVerified: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    id: string;
+    name: string
+    email: string
+    emailVerified: boolean
+    createdAt: Date
+    updatedAt: Date
+    id: string
   } = {
     name: "user",
     email: "user@email.com",
     emailVerified: true,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  }
 
   test.skipIf(disabledTests?.CREATE_MODEL)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.CREATE_MODEL}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).create({
         model: "user",
         data: user,
-      });
-      user.id = res.id;
+      })
+      user.id = res.id
       expect({
         name: res.name,
         email: res.email,
       }).toEqual({
         name: user.name,
         email: user.email,
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID)(
     `${testPrefix ? `${testPrefix} - ` : ""}${
       adapterTests.CREATE_MODEL_SHOULD_ALWAYS_RETURN_AN_ID
     }`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).create({
@@ -123,20 +123,20 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           name: "test-name-without-id",
           email: "test-email-without-id@email.com",
         },
-      });
-      expect(res).toHaveProperty("id");
+      })
+      expect(res).toHaveProperty("id")
       // @ts-ignore
-      expect(typeof res?.id).toEqual("string");
+      expect(typeof res?.id).toEqual("string")
     },
-  );
+  )
 
   test.skipIf(disabledTests?.FIND_MODEL)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.FIND_MODEL}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findOne<User>({
@@ -147,24 +147,24 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: user.id,
           },
         ],
-      });
+      })
       expect({
         name: res?.name,
         email: res?.email,
       }).toEqual({
         name: user.name,
         email: user.email,
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.FIND_MODEL_WITHOUT_ID)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.FIND_MODEL_WITHOUT_ID}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findOne<User>({
@@ -175,25 +175,25 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: user.email,
           },
         ],
-      });
+      })
       expect({
         name: res?.name,
         email: res?.email,
       }).toEqual({
         name: user.name,
         email: user.email,
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.FIND_MODEL_WITH_MODIFIED_FIELD_NAME)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.FIND_MODEL_WITH_MODIFIED_FIELD_NAME}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
-      const email = "test-email-with-modified-field@email.com";
+        printDebugLogs()
+      })
+      const email = "test-email-with-modified-field@email.com"
       const adapter = await getAdapter(
         Object.assign(
           {
@@ -205,7 +205,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           },
           internalOptions?.predefinedOptions,
         ),
-      );
+      )
       const user = await adapter.create({
         model: "user",
         data: {
@@ -215,8 +215,8 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      });
-      expect(user.email).toEqual(email);
+      })
+      expect(user.email).toEqual(email)
       const res = await adapter.findOne<User>({
         model: "user",
         where: [
@@ -225,19 +225,19 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: email,
           },
         ],
-      });
-      expect(res).not.toBeNull();
-      expect(res?.email).toEqual(email);
+      })
+      expect(res).not.toBeNull()
+      expect(res?.email).toEqual(email)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.FIND_MODEL_WITH_SELECT)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.FIND_MODEL_WITH_SELECT}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findOne({
@@ -249,19 +249,19 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           },
         ],
         select: ["email"],
-      });
-      expect(res).toEqual({ email: user.email });
+      })
+      expect(res).toEqual({ email: user.email })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.UPDATE_MODEL)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.UPDATE_MODEL}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
-      const newEmail = "updated@email.com";
+        printDebugLogs()
+      })
+      const newEmail = "updated@email.com"
 
       const res = await (
         await adapter()
@@ -276,37 +276,37 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
         update: {
           email: newEmail,
         },
-      });
+      })
       expect(res).toMatchObject({
         email: newEmail,
         name: user.name,
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
         model: "user",
-      });
-      expect(res.length).toBe(3);
+      })
+      expect(res.length).toBe(3)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_WHERE)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_WHERE}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const user = await (
         await adapter()
       ).create<User>({
@@ -318,7 +318,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      });
+      })
       const res = await (
         await adapter()
       ).findMany({
@@ -329,18 +329,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: user.id,
           },
         ],
-      });
-      expect(res.length).toBe(1);
+      })
+      expect(res.length).toBe(1)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_OPERATORS)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_OPERATORS}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const newUser = await (
         await adapter()
       ).create<User>({
@@ -352,7 +352,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      });
+      })
       const res = await (
         await adapter()
       ).findMany({
@@ -364,18 +364,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: [user.id, newUser.id],
           },
         ],
-      });
-      expect(res.length).toBe(2);
+      })
+      expect(res.length).toBe(2)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_SORT_BY)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_SORT_BY}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       await (
         await adapter()
       ).create({
@@ -387,7 +387,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      });
+      })
       const res = await (
         await adapter()
       ).findMany<User>({
@@ -396,8 +396,8 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           field: "name",
           direction: "asc",
         },
-      });
-      expect(res[0].name).toBe("a");
+      })
+      expect(res[0].name).toBe("a")
 
       const res2 = await (
         await adapter()
@@ -407,53 +407,53 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           field: "name",
           direction: "desc",
         },
-      });
+      })
 
-      expect(res2[res2.length - 1].name).toBe("a");
+      expect(res2[res2.length - 1].name).toBe("a")
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_LIMIT)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_LIMIT}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
         model: "user",
         limit: 1,
-      });
-      expect(res.length).toBe(1);
+      })
+      expect(res.length).toBe(1)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_OFFSET)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_OFFSET}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
         model: "user",
         offset: 2,
-      });
-      expect(res.length).toBe(4);
+      })
+      expect(res.length).toBe(4)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_UPDATE_WITH_MULTIPLE_WHERE)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_UPDATE_WITH_MULTIPLE_WHERE}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       await (
         await adapter()
       ).updateMany({
@@ -471,7 +471,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
         update: {
           email: "updated@email.com",
         },
-      });
+      })
       const updatedUser = await (
         await adapter()
       ).findOne<User>({
@@ -482,21 +482,21 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "updated@email.com",
           },
         ],
-      });
+      })
       expect(updatedUser).toMatchObject({
         name: user.name,
         email: "updated@email.com",
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.DELETE_MODEL)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.DELETE_MODEL}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       await (
         await adapter()
       ).delete({
@@ -507,7 +507,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: user.id,
           },
         ],
-      });
+      })
       const findRes = await (
         await adapter()
       ).findOne({
@@ -518,18 +518,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: user.id,
           },
         ],
-      });
-      expect(findRes).toBeNull();
+      })
+      expect(findRes).toBeNull()
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_DELETE_MANY)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_DELETE_MANY}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       for (const i of ["to-be-delete-1", "to-be-delete-2", "to-be-delete-3"]) {
         await (
           await adapter()
@@ -542,7 +542,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             createdAt: new Date(),
             updatedAt: new Date(),
           },
-        });
+        })
       }
       const findResFirst = await (
         await adapter()
@@ -554,8 +554,8 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "to-be-deleted",
           },
         ],
-      });
-      expect(findResFirst.length).toBe(3);
+      })
+      expect(findResFirst.length).toBe(3)
       await (
         await adapter()
       ).deleteMany({
@@ -566,7 +566,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "to-be-deleted",
           },
         ],
-      });
+      })
       const findRes = await (
         await adapter()
       ).findMany({
@@ -577,20 +577,20 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "to-be-deleted",
           },
         ],
-      });
-      expect(findRes.length).toBe(0);
+      })
+      expect(findRes.length).toBe(0)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND)(
     `${testPrefix ? `${testPrefix} - ` : ""}${
       adapterTests.SHOULD_NOT_THROW_ON_DELETE_RECORD_NOT_FOUND
     }`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       await (
         await adapter()
       ).delete({
@@ -601,17 +601,17 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "100000",
           },
         ],
-      });
+      })
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_NOT_THROW_ON_RECORD_NOT_FOUND}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findOne({
@@ -622,20 +622,20 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "100000",
           },
         ],
-      });
-      expect(res).toBeNull();
+      })
+      expect(res).toBeNull()
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR)(
     `${testPrefix ? `${testPrefix} - ` : ""}${
       adapterTests.SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR
     }`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
@@ -647,18 +647,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "user2",
           },
         ],
-      });
-      expect(res.length).toBe(1);
+      })
+      expect(res.length).toBe(1)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_SEARCH_USERS_WITH_STARTS_WITH)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_SEARCH_USERS_WITH_STARTS_WITH}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
@@ -670,18 +670,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "us",
           },
         ],
-      });
-      expect(res.length).toBe(2);
+      })
+      expect(res.length).toBe(2)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_SEARCH_USERS_WITH_ENDS_WITH)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_SEARCH_USERS_WITH_ENDS_WITH}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const res = await (
         await adapter()
       ).findMany({
@@ -693,18 +693,18 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
             value: "er2",
           },
         ],
-      });
-      expect(res.length).toBe(1);
+      })
+      expect(res.length).toBe(1)
     },
-  );
+  )
 
   test.skipIf(disabledTests?.SHOULD_PREFER_GENERATE_ID_IF_PROVIDED)(
     `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_PREFER_GENERATE_ID_IF_PROVIDED}`,
     async ({ onTestFailed }) => {
-      resetDebugLogs();
+      resetDebugLogs()
       onTestFailed(() => {
-        printDebugLogs();
-      });
+        printDebugLogs()
+      })
       const customAdapter = await getAdapter(
         Object.assign(
           {
@@ -716,7 +716,7 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           } satisfies AdapterOptions,
           internalOptions?.predefinedOptions,
         ),
-      );
+      )
 
       const res = await customAdapter.create({
         model: "user",
@@ -727,19 +727,19 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      });
+      })
 
-      expect(res.id).toBe("mocked-id");
+      expect(res.id).toBe("mocked-id")
     },
-  );
+  )
 }
 
 export async function runAdapterTest<T extends Record<string, any>>(opts: AdapterTestOptions<T>) {
-  return adapterTest<T>(opts);
+  return adapterTest<T>(opts)
 }
 
 export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
-  const cleanup: { modelName: string; id: string }[] = [];
+  const cleanup: { modelName: string; id: string }[] = []
   const adapter = async () =>
     await opts.getAdapter({
       advanced: {
@@ -747,28 +747,28 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
           useNumberId: true,
         },
       },
-    });
+    })
   describe("Should run number id specific tests", async () => {
-    let idNumber = -1;
+    let idNumber = -1
 
     async function resetDebugLogs() {
       // @ts-expect-error - Adapter debug logs are only available in test mode
-      (await adapter())?.adapterTestDebugLogs?.resetDebugLogs();
+      ;(await adapter())?.adapterTestDebugLogs?.resetDebugLogs()
     }
 
     async function printDebugLogs() {
       // @ts-expect-error - Adapter debug logs are only available in test mode
-      (await adapter())?.adapterTestDebugLogs?.printDebugLogs();
+      ;(await adapter())?.adapterTestDebugLogs?.printDebugLogs()
     }
     test.skipIf(opts.disableTests?.SHOULD_RETURN_A_NUMBER_ID_AS_A_RESULT)(
       `${opts.testPrefix ? `${opts.testPrefix} - ` : ""}${
         numberIdAdapterTests.SHOULD_RETURN_A_NUMBER_ID_AS_A_RESULT
       }`,
       async ({ onTestFailed }) => {
-        resetDebugLogs();
+        resetDebugLogs()
         onTestFailed(() => {
-          printDebugLogs();
-        });
+          printDebugLogs()
+        })
         const res = await (
           await adapter()
         ).create({
@@ -777,23 +777,23 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
             name: "user",
             email: "user@email.com",
           },
-        });
-        cleanup.push({ modelName: "user", id: res.id });
-        expect(typeof res.id).toBe("string"); // we forcefully return all `id`s as strings. this is intentional.
-        expect(Number.parseInt(res.id)).toBeGreaterThan(0);
-        idNumber = Number.parseInt(res.id);
+        })
+        cleanup.push({ modelName: "user", id: res.id })
+        expect(typeof res.id).toBe("string") // we forcefully return all `id`s as strings. this is intentional.
+        expect(Number.parseInt(res.id)).toBeGreaterThan(0)
+        idNumber = Number.parseInt(res.id)
       },
-    );
+    )
     test.skipIf(opts.disableTests?.SHOULD_INCREMENT_THE_ID_BY_1)(
       `${opts.testPrefix ? `${opts.testPrefix} - ` : ""}${
         numberIdAdapterTests.SHOULD_INCREMENT_THE_ID_BY_1
       }`,
       async ({ onTestFailed }) => {
-        resetDebugLogs();
+        resetDebugLogs()
         onTestFailed(() => {
-          console.log(`ID number from last create: ${idNumber}`);
-          printDebugLogs();
-        });
+          console.log(`ID number from last create: ${idNumber}`)
+          printDebugLogs()
+        })
         const res = await (
           await adapter()
         ).create({
@@ -802,12 +802,12 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
             name: "user2",
             email: "user2@email.com",
           },
-        });
-        cleanup.push({ modelName: "user", id: res.id });
-        expect(Number.parseInt(res.id)).toBe(idNumber + 1);
+        })
+        cleanup.push({ modelName: "user", id: res.id })
+        expect(Number.parseInt(res.id)).toBe(idNumber + 1)
       },
-    );
-  });
+    )
+  })
 
   describe("Should run normal adapter tests with number id enabled", async () => {
     beforeAll(async () => {
@@ -817,9 +817,9 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
         ).delete({
           model: modelName,
           where: [{ field: "id", value: id }],
-        });
+        })
       }
-    });
+    })
     await adapterTest(
       {
         ...opts,
@@ -837,6 +837,6 @@ export async function runNumberIdAdapterTest(opts: NumberIdAdapterTestOptions) {
           },
         },
       },
-    );
-  });
+    )
+  })
 }

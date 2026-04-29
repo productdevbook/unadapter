@@ -1,7 +1,7 @@
-import type { ZodSchema } from "zod";
-import type { LiteralString } from "./helper.ts";
-import type { AdapterOptions } from "./options.ts";
-import type { TablesSchema } from "./schema.ts";
+import type { ZodSchema } from "zod"
+import type { LiteralString } from "./helper.ts"
+import type { AdapterOptions } from "./options.ts"
+import type { TablesSchema } from "./schema.ts"
 
 export type FieldType =
   | "string"
@@ -9,40 +9,40 @@ export type FieldType =
   | "boolean"
   | "date"
   | `${"string" | "number"}[]`
-  | Array<LiteralString>;
+  | Array<LiteralString>
 
-type Primitive = string | number | boolean | Date | null | undefined | string[] | number[];
+type Primitive = string | number | boolean | Date | null | undefined | string[] | number[]
 
 export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
   /**
    * If the field should be required on a new record.
    * @default true
    */
-  required?: boolean;
+  required?: boolean
   /**
    * If the value should be returned on a response body.
    * @default true
    */
-  returned?: boolean;
+  returned?: boolean
   /**
    * If a value should be provided when creating a new record.
    * @default true
    */
-  input?: boolean;
+  input?: boolean
   /**
    * Default value for the field
    *
    * Note: This will not create a default value on the database level. It will only
    * be used when creating a new record.
    */
-  defaultValue?: Primitive | (() => Primitive);
+  defaultValue?: Primitive | (() => Primitive)
   /**
    * transform the value before storing it.
    */
   transform?: {
-    input?: (value: Primitive) => Primitive | Promise<Primitive>;
-    output?: (value: Primitive) => Primitive | Promise<Primitive>;
-  };
+    input?: (value: Primitive) => Primitive | Promise<Primitive>
+    output?: (value: Primitive) => Primitive | Promise<Primitive>
+  }
   /**
    * Reference to another model.
    */
@@ -50,45 +50,45 @@ export interface FieldAttributeConfig<_T extends FieldType = FieldType> {
     /**
      * The model to reference.
      */
-    model: string;
+    model: string
     /**
      * The field on the referenced model.
      */
-    field: string;
+    field: string
     /**
      * The action to perform when the reference is deleted.
      * @default "cascade"
      */
-    onDelete?: "no action" | "restrict" | "cascade" | "set null" | "set default";
-  };
-  unique?: boolean;
+    onDelete?: "no action" | "restrict" | "cascade" | "set null" | "set default"
+  }
+  unique?: boolean
   /**
    * If the field should be a bigint on the database instead of integer.
    */
-  bigint?: boolean;
+  bigint?: boolean
   /**
    * A zod schema to validate the value.
    */
   validator?: {
-    input?: ZodSchema;
-    output?: ZodSchema;
-  };
+    input?: ZodSchema
+    output?: ZodSchema
+  }
   /**
    * The name of the field on the database.
    */
-  fieldName?: string;
+  fieldName?: string
   /**
    * If the field should be sortable.
    *
    * applicable only for `text` type.
    * It's useful to mark fields varchar instead of text.
    */
-  sortable?: boolean;
+  sortable?: boolean
 }
 
 export type FieldAttribute<T extends FieldType = FieldType> = {
-  type: T;
-} & FieldAttributeConfig<T>;
+  type: T
+} & FieldAttributeConfig<T>
 
 export function createFieldAttribute<
   T extends FieldType,
@@ -97,7 +97,7 @@ export function createFieldAttribute<
   return {
     type,
     ...config,
-  } satisfies FieldAttribute<T>;
+  } satisfies FieldAttribute<T>
 }
 
 export type InferValueType<T extends FieldType> = T extends "string"
@@ -114,7 +114,7 @@ export type InferValueType<T extends FieldType> = T extends "string"
             : number[]
           : T extends Array<any>
             ? T[number]
-            : never;
+            : never
 
 export type InferFieldsOutput<Field> =
   Field extends Record<infer Key, FieldAttribute>
@@ -123,13 +123,13 @@ export type InferFieldsOutput<Field> =
           ? Field[key]["defaultValue"] extends boolean | string | number | Date
             ? key
             : never
-          : key]: InferFieldOutput<Field[key]>;
+          : key]: InferFieldOutput<Field[key]>
       } & {
         [key in Key as Field[key]["returned"] extends false ? never : key]?: InferFieldOutput<
           Field[key]
-        > | null;
+        > | null
       }
-    : object;
+    : object
 
 export type InferFieldsInput<Field> =
   Field extends Record<infer Key, FieldAttribute>
@@ -140,14 +140,14 @@ export type InferFieldsInput<Field> =
             ? never
             : Field[key]["input"] extends false
               ? never
-              : key]: InferFieldInput<Field[key]>;
+              : key]: InferFieldInput<Field[key]>
       } & {
         [key in Key as Field[key]["input"] extends false ? never : key]?:
           | InferFieldInput<Field[key]>
           | undefined
-          | null;
+          | null
       }
-    : object;
+    : object
 
 /**
  * For client will add "?" on optional fields
@@ -161,7 +161,7 @@ export type InferFieldsInputClient<Field> =
             ? never
             : Field[key]["input"] extends false
               ? never
-              : key]: InferFieldInput<Field[key]>;
+              : key]: InferFieldInput<Field[key]>
       } & {
         [key in Key as Field[key]["input"] extends false
           ? never
@@ -169,19 +169,19 @@ export type InferFieldsInputClient<Field> =
             ? key
             : Field[key]["defaultValue"] extends string | number | boolean | Date
               ? key
-              : never]?: InferFieldInput<Field[key]> | undefined | null;
+              : never]?: InferFieldInput<Field[key]> | undefined | null
       }
-    : object;
+    : object
 
 type InferFieldOutput<T extends FieldAttribute> = T["returned"] extends false
   ? never
   : T["required"] extends false
     ? InferValueType<T["type"]> | undefined | null
-    : InferValueType<T["type"]>;
+    : InferValueType<T["type"]>
 
-type InferFieldInput<T extends FieldAttribute> = InferValueType<T["type"]>;
+type InferFieldInput<T extends FieldAttribute> = InferValueType<T["type"]>
 
-export type PluginFieldAttribute = Omit<FieldAttribute, "transform" | "defaultValue" | "hashValue">;
+export type PluginFieldAttribute = Omit<FieldAttribute, "transform" | "defaultValue" | "hashValue">
 
 export type InferFieldsFromPlugins<
   Options extends AdapterOptions,
@@ -192,28 +192,28 @@ export type InferFieldsFromPlugins<
     ? T extends {
         schema: {
           [key in Key]: {
-            fields: infer Field;
-          };
-        };
+            fields: infer Field
+          }
+        }
       }
       ? Format extends "output"
         ? InferFieldsOutput<Field>
         : InferFieldsInput<Field>
       : object
-    : object;
+    : object
 
 export type InferFieldsFromOptions<
   Options extends AdapterOptions,
   Key extends keyof Options,
   Format extends "output" | "input" = "output",
 > = Options[Key] extends {
-  additionalFields: infer Field;
+  additionalFields: infer Field
 }
   ? Format extends "output"
     ? InferFieldsOutput<Field>
     : InferFieldsInput<Field>
-  : object;
+  : object
 
 export type InferModelTypes<Schema extends TablesSchema> = {
-  [K in keyof Schema]: InferFieldsInput<Schema[K]["fields"]>;
-};
+  [K in keyof Schema]: InferFieldsInput<Schema[K]["fields"]>
+}

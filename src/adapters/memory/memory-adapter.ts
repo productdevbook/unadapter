@@ -1,13 +1,13 @@
-import type { TablesSchema } from "../../types/index.ts";
-import type { AdapterDebugLogs, CleanedWhere } from "../create/index.ts";
-import { createAdapter } from "../create/index.ts";
+import type { TablesSchema } from "../../types/index.ts"
+import type { AdapterDebugLogs, CleanedWhere } from "../create/index.ts"
+import { createAdapter } from "../create/index.ts"
 
 export interface MemoryDB {
-  [key: string]: any[];
+  [key: string]: any[]
 }
 
 export interface MemoryAdapterConfig {
-  debugLogs?: AdapterDebugLogs;
+  debugLogs?: AdapterDebugLogs
 }
 
 export function memoryAdapter<
@@ -26,110 +26,110 @@ export function memoryAdapter<
           props.field === "id" &&
           props.action === "create"
         ) {
-          return db[props.model].length + 1;
+          return db[props.model].length + 1
         }
-        return props.data;
+        return props.data
       },
     },
     adapter: ({ getFieldName, options }) => {
       function convertWhereClause(where: CleanedWhere[], table: any[]) {
         return table.filter((record) => {
           return where.every((clause) => {
-            const { field, value, operator } = clause;
+            const { field, value, operator } = clause
 
             if (operator === "in") {
               if (!Array.isArray(value)) {
-                throw new TypeError("Value must be an array");
+                throw new TypeError("Value must be an array")
               }
               // @ts-expect-error - Record may have any structure
-              return value.includes(record[field]);
+              return value.includes(record[field])
             } else if (operator === "contains") {
-              return record[field].includes(value);
+              return record[field].includes(value)
             } else if (operator === "starts_with") {
-              return record[field].startsWith(value);
+              return record[field].startsWith(value)
             } else if (operator === "ends_with") {
-              return record[field].endsWith(value);
+              return record[field].endsWith(value)
             } else {
-              return record[field] === value;
+              return record[field] === value
             }
-          });
-        });
+          })
+        })
       }
       return {
         create: async ({ model, data }) => {
           if (options.advanced?.database?.useNumberId) {
-            data.id = db[model].length + 1;
+            data.id = db[model].length + 1
           }
-          db[model].push(data);
-          return data;
+          db[model].push(data)
+          return data
         },
         findOne: async ({ model, where }) => {
-          const table = db[model];
-          const res = convertWhereClause(where, table);
-          const record = res[0] || null;
-          return record;
+          const table = db[model]
+          const res = convertWhereClause(where, table)
+          const record = res[0] || null
+          return record
         },
         findMany: async ({ model, where, sortBy, limit, offset }) => {
-          let table = db[model];
+          let table = db[model]
           if (where) {
-            table = convertWhereClause(where, table);
+            table = convertWhereClause(where, table)
           }
           if (sortBy) {
             table = table.sort((a, b) => {
-              const field = getFieldName({ model, field: sortBy.field });
+              const field = getFieldName({ model, field: sortBy.field })
               if (sortBy.direction === "asc") {
-                return a[field] > b[field] ? 1 : -1;
+                return a[field] > b[field] ? 1 : -1
               } else {
-                return a[field] < b[field] ? 1 : -1;
+                return a[field] < b[field] ? 1 : -1
               }
-            });
+            })
           }
           if (offset !== undefined) {
-            table = table.slice(offset);
+            table = table.slice(offset)
           }
           if (limit !== undefined) {
-            table = table.slice(0, limit);
+            table = table.slice(0, limit)
           }
-          return table;
+          return table
         },
         count: async ({ model }) => {
-          return db[model].length;
+          return db[model].length
         },
         update: async ({ model, where, update }) => {
-          const table = db[model];
-          const res = convertWhereClause(where, table);
+          const table = db[model]
+          const res = convertWhereClause(where, table)
           res.forEach((record) => {
-            Object.assign(record, update);
-          });
-          return res[0] || null;
+            Object.assign(record, update)
+          })
+          return res[0] || null
         },
         delete: async ({ model, where }) => {
-          const table = db[model];
-          const res = convertWhereClause(where, table);
-          db[model] = table.filter((record) => !res.includes(record));
+          const table = db[model]
+          const res = convertWhereClause(where, table)
+          db[model] = table.filter((record) => !res.includes(record))
         },
         deleteMany: async ({ model, where }) => {
-          const table = db[model];
-          const res = convertWhereClause(where, table);
-          let count = 0;
+          const table = db[model]
+          const res = convertWhereClause(where, table)
+          let count = 0
           db[model] = table.filter((record) => {
             if (res.includes(record)) {
-              count++;
-              return false;
+              count++
+              return false
             }
-            return !res.includes(record);
-          });
-          return count;
+            return !res.includes(record)
+          })
+          return count
         },
         updateMany({ model, where, update }) {
-          const table = db[model];
-          const res = convertWhereClause(where, table);
+          const table = db[model]
+          const res = convertWhereClause(where, table)
           res.forEach((record) => {
-            Object.assign(record, update);
-          });
-          return res[0] || null;
+            Object.assign(record, update)
+          })
+          return res[0] || null
         },
-      };
+      }
     },
-  });
+  })
 }

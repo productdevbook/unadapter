@@ -1,4 +1,4 @@
-import { boolean, datetime, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
+import { boolean, datetime, mysqlTable, text, varchar } from "drizzle-orm/mysql-core"
 
 export const user = mysqlTable("user", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -9,7 +9,7 @@ export const user = mysqlTable("user", {
   image: text("image"),
   createdAt: datetime("createdAt", { mode: "date" }).notNull(), // Use `date` mode
   updatedAt: datetime("updatedAt", { mode: "date" }).notNull(), // Use `date` mode
-});
+})
 
 export const account = mysqlTable("account", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -27,7 +27,7 @@ export const account = mysqlTable("account", {
   refreshTokenExpiresAt: datetime("refreshTokenExpiresAt", { mode: "date" }),
   scope: text("scope"),
   password: text("password"),
-});
+})
 
 export const verification = mysqlTable("verification", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -36,4 +36,4 @@ export const verification = mysqlTable("verification", {
   expiresAt: datetime("expiresAt", { mode: "date" }).notNull(), // Use `date` mode
   createdAt: datetime("createdAt", { mode: "date" }).notNull(), // Use `date` mode
   updatedAt: datetime("updatedAt", { mode: "date" }).notNull(), // Use `date` mode
-});
+})

@@ -1,31 +1,31 @@
-import type { BetterAuthOptions } from "./better-auth.schema.ts";
+import type { BetterAuthOptions } from "./better-auth.schema.ts"
 
-import { MongoClient } from "mongodb";
-import { beforeAll, describe } from "vitest";
-import { mongodbAdapter } from "../src/adapters/mongodb/index.ts";
-import { getAuthTables } from "./better-auth.schema.ts";
-import { runAdapterTest } from "./test.ts";
+import { MongoClient } from "mongodb"
+import { beforeAll, describe } from "vitest"
+import { mongodbAdapter } from "../src/adapters/mongodb/index.ts"
+import { getAuthTables } from "./better-auth.schema.ts"
+import { runAdapterTest } from "./test.ts"
 
 describe("adapter test", async () => {
   const dbClient = async (connectionString: string, dbName: string) => {
-    const client = new MongoClient(connectionString);
-    await client.connect();
-    const db = client.db(dbName);
-    return db;
-  };
+    const client = new MongoClient(connectionString)
+    await client.connect()
+    const db = client.db(dbName)
+    return db
+  }
 
-  const user = "user";
-  const db = await dbClient("mongodb://127.0.0.1:27017", "better-auth");
+  const user = "user"
+  const db = await dbClient("mongodb://127.0.0.1:27017", "better-auth")
   async function clearDb() {
-    await db.collection(user).deleteMany({});
-    await db.collection("session").deleteMany({});
+    await db.collection(user).deleteMany({})
+    await db.collection("session").deleteMany({})
   }
 
   beforeAll(async () => {
-    await clearDb();
-  });
+    await clearDb()
+  })
 
-  const adapter = mongodbAdapter<BetterAuthOptions>(db);
+  const adapter = mongodbAdapter<BetterAuthOptions>(db)
   await runAdapterTest<BetterAuthOptions>({
     getAdapter: async (customOptions = {}) => {
       return adapter(getAuthTables, {
@@ -41,10 +41,10 @@ describe("adapter test", async () => {
           },
         },
         ...customOptions,
-      });
+      })
     },
     disableTests: {
       SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: true,
     },
-  });
-});
+  })
+})

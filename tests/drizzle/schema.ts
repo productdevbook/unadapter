@@ -9,7 +9,7 @@ For information on how to use the drizzle-adapter, please refer to the documenta
 https://www.better-auth.com/docs/adapters/drizzle
 
 */
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -20,7 +20,7 @@ export const user = pgTable("user", {
   image: text("image"),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),
-});
+})
 
 export const account = pgTable("account", {
   id: text("id").primaryKey(),
@@ -38,7 +38,7 @@ export const account = pgTable("account", {
   refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
   scope: text("scope"),
   password: text("password"),
-});
+})
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
@@ -47,4 +47,4 @@ export const verification = pgTable("verification", {
   expiresAt: timestamp("expiresAt").notNull(),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),
-});
+})
