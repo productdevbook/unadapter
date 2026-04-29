@@ -1,5 +1,5 @@
 import type { SQL } from "drizzle-orm";
-import type { TablesSchema, Where } from "unadapter/types";
+import type { TablesSchema, Where } from "../../types/index.ts";
 import type { AdapterDebugLogs } from "../create/index.ts";
 import { and, asc, count, desc, eq, inArray, like, lt, lte, or, sql } from "drizzle-orm";
 import { BetterAuthError } from "../../error/index.ts";

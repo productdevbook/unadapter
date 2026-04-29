@@ -1,4 +1,4 @@
-import type { TablesSchema } from "unadapter/types";
+import type { TablesSchema } from "../../types/index.ts";
 import type { AdapterDebugLogs, CleanedWhere } from "../create/index.ts";
 import { createAdapter } from "../create/index.ts";
 

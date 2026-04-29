@@ -1,4 +1,4 @@
-import type { AdapterOptions, FieldAttribute } from "unadapter/types";
+import type { AdapterOptions, FieldAttribute } from "../types/index.ts";
 
 export function mergePluginSchemas<
   T extends Record<string, any>,

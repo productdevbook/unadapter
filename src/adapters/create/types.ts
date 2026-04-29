@@ -6,7 +6,7 @@ import type {
   Prettify,
   TablesSchema,
   Where,
-} from "unadapter/types";
+} from "../../types/index.ts";
 
 export type AdapterDebugLogs =
   | boolean

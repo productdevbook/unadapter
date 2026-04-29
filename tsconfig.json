@@ -13,19 +13,7 @@
     "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "noEmit": true,
-    "types": ["node", "vitest/globals"],
-    "paths": {
-      "unadapter": ["./src/index.ts"],
-      "unadapter/drizzle": ["./src/adapters/drizzle/index.ts"],
-      "unadapter/kysely": ["./src/adapters/kysely/index.ts"],
-      "unadapter/memory": ["./src/adapters/memory/index.ts"],
-      "unadapter/mongodb": ["./src/adapters/mongodb/index.ts"],
-      "unadapter/prisma": ["./src/adapters/prisma/index.ts"],
-      "unadapter/create": ["./src/adapters/create/index.ts"],
-      "unadapter/types": ["./src/types/index.ts"],
-      "unadapter/db": ["./src/db/index.ts"],
-      "unadapter/utils": ["./src/utils/index.ts"]
-    }
+    "types": ["node", "vitest/globals"]
   },
   "include": ["src", "tests", "playground"],
   "exclude": ["node_modules", "dist"]

@@ -1,4 +1,4 @@
-import type { FieldAttribute } from "unadapter/types";
+import type { FieldAttribute } from "../types/index.ts";
 
 export function withApplyDefault(value: any, field: FieldAttribute, action: "create" | "update") {
   if (action === "update") {

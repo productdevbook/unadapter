@@ -1,5 +1,5 @@
 import type { PostgresPool } from "kysely";
-import type { AdapterOptions } from "unadapter/types";
+import type { AdapterOptions } from "../../src/types/index.ts";
 import type { BetterAuthOptions } from "../better-auth.schema.ts";
 import merge from "deepmerge";
 import { drizzle } from "drizzle-orm/node-postgres";

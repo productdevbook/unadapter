@@ -1,5 +1,5 @@
 import type { AlterTableColumnAlteringBuilder, CreateTableBuilder } from "kysely";
-import type { AdapterOptions, FieldAttribute, FieldType, TablesSchema } from "unadapter/types";
+import type { AdapterOptions, FieldAttribute, FieldType, TablesSchema } from "../types/index.ts";
 import type { KyselyDatabaseType } from "../adapters/kysely/types.ts";
 import { createKyselyAdapter } from "../adapters/kysely/dialect.ts";
 import { createLogger } from "../utils/logger.ts";

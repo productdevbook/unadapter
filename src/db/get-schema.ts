@@ -1,4 +1,4 @@
-import type { AdapterOptions, FieldAttribute, TablesSchema } from "unadapter/types";
+import type { AdapterOptions, FieldAttribute, TablesSchema } from "../types/index.ts";
 
 export function getSchema<T extends Record<string, any>>(
   config: AdapterOptions<T>,

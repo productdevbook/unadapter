@@ -1,5 +1,5 @@
 import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from "kysely";
-import type { TablesSchema, Where } from "unadapter/types";
+import type { TablesSchema, Where } from "../../types/index.ts";
 import type { AdapterDebugLogs } from "../create/index.ts";
 import type { KyselyDatabaseType } from "./types.ts";
 import { createAdapter } from "../create/index.ts";

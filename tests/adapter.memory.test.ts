@@ -1,5 +1,5 @@
 import type { BetterAuthOptions } from "./better-auth.schema.ts";
-import { createAdapter } from "unadapter";
+import { createAdapter } from "../src/index.ts";
 import { describe } from "vitest";
 import { memoryAdapter } from "../src/adapters/memory/memory-adapter.ts";
 import { getAuthTables } from "./better-auth.schema.ts";

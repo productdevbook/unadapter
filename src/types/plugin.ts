@@ -1,3 +1,3 @@
-import type { TablesSchema } from "unadapter/types";
+import type { TablesSchema } from "./index.ts";
 
 export type PluginSchema = Omit<TablesSchema, "order">;

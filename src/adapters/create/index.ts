@@ -1,4 +1,10 @@
-import type { Adapter, AdapterOptions, FieldAttribute, TablesSchema, Where } from "unadapter/types";
+import type {
+  Adapter,
+  AdapterOptions,
+  FieldAttribute,
+  TablesSchema,
+  Where,
+} from "../../types/index.ts";
 import type {
   AdapterConfig,
   AdapterTestDebugLogs,

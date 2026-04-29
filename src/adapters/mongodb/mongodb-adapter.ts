@@ -1,5 +1,5 @@
 import type { Db } from "mongodb";
-import type { Adapter, AdapterOptions, TablesSchema, Where } from "unadapter/types";
+import type { Adapter, AdapterOptions, TablesSchema, Where } from "../../types/index.ts";
 import { ObjectId } from "mongodb";
 import { withApplyDefault } from "../utils.ts";
 

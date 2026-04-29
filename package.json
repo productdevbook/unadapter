@@ -13,7 +13,9 @@
     "unadapter"
   ],
   "homepage": "https://github.com/productdevbook/unadapter#readme",
-  "bugs": "https://github.com/productdevbook/unadapter/issues",
+  "bugs": {
+    "url": "https://github.com/productdevbook/unadapter/issues"
+  },
   "license": "MIT",
   "author": "productdevbook <hi@productdevbook.com>",
   "repository": {
@@ -115,11 +117,7 @@
     "tarn": "^3.0.2",
     "tedious": "^18.6.1",
     "typescript": "^6.0.2",
-    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^4.1.2"
-  },
-  "resolutions": {
-    "unadapter": "link:."
   },
   "engines": {
     "node": ">=20.11.1"

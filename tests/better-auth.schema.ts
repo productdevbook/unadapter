@@ -5,8 +5,8 @@ import type {
   OmitId,
   User,
   Verification,
-} from "unadapter/types";
-import { createTable } from "unadapter";
+} from "../src/types/index.ts";
+import { createTable } from "../src/index.ts";
 
 interface SecondaryStorage {
   /**

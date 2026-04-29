@@ -1,6 +1,6 @@
-import type { PluginSchema } from "unadapter/types";
-import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
-import { memoryAdapter } from "unadapter/memory";
+import type { PluginSchema } from "../src/types/index.ts";
+import { createAdapter, createTable, mergePluginSchemas } from "../src/index.ts";
+import { memoryAdapter } from "../src/adapters/memory/index.ts";
 
 const db = {
   user: [],

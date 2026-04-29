@@ -1,4 +1,4 @@
-import type { FieldAttribute, TablesSchema } from "unadapter/types";
+import type { FieldAttribute, TablesSchema } from "../types/index.ts";
 import type { Account, User } from "../types/index.ts";
 import type { AdapterOptions } from "../types/options.ts";
 import { z } from "zod";

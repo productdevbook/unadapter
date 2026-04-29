@@ -1,4 +1,4 @@
-import type { Adapter, AdapterInstance, AdapterOptions, TablesSchema } from "unadapter/types";
+import type { Adapter, AdapterInstance, AdapterOptions, TablesSchema } from "../types/index.ts";
 
 export function createAdapter<
   T extends Record<string, any>,
