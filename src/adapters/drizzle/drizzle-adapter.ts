@@ -1,5 +1,5 @@
 import type { SQL } from "drizzle-orm"
-import type { TablesSchema, Where } from "../../types/index.ts"
+import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import { and, asc, count, desc, eq, inArray, like, lt, lte, or, sql } from "drizzle-orm"
 import { BetterAuthError } from "../../error/index.ts"
@@ -35,7 +35,10 @@ export interface DrizzleAdapterConfig {
 export function drizzleAdapter<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(db: DB, config: DrizzleAdapterConfig) {
+>(
+  db: DB,
+  config: DrizzleAdapterConfig,
+): (getTables: (options: any) => Schema, options: any) => Adapter<T, Schema> {
   return createAdapter<T, Schema>({
     config: {
       adapterId: "drizzle",

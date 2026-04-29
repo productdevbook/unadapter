@@ -788,6 +788,7 @@ export function createAdapter<
             return adapterInstance.createSchema!({ file, tables })
           }
         : undefined,
+      createMigrator: adapterInstance.createMigrator,
       options: {
         adapterConfig: config,
         ...(adapterInstance.options ?? {}),

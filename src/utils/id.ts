@@ -1,3 +1,3 @@
-export function generateId(_size?: number) {
+export function generateId(_size?: number): string {
   return crypto.randomUUID()
 }

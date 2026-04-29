@@ -40,7 +40,7 @@ function getDatabaseType(db: AdapterOptions["database"]): KyselyDatabaseType | n
 
 export async function createKyselyAdapter<T extends Record<string, any>>(
   config: AdapterOptions<T>,
-) {
+): Promise<{ kysely: Kysely<any> | null; databaseType: KyselyDatabaseType | null }> {
   const db = config.database
 
   if (!db) {

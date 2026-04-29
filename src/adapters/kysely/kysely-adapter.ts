@@ -1,8 +1,9 @@
 import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from "kysely"
-import type { TablesSchema, Where } from "../../types/index.ts"
+import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import type { KyselyDatabaseType } from "./types.ts"
 import { createAdapter } from "../create/index.ts"
+import { createKyselyMigratorFromKysely } from "./migrator.ts"
 
 interface KyselyAdapterConfig {
   /**
@@ -26,7 +27,10 @@ interface KyselyAdapterConfig {
 export function kyselyAdapter<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(db: Kysely<any>, config?: KyselyAdapterConfig) {
+>(
+  db: Kysely<any>,
+  config?: KyselyAdapterConfig,
+): (getTables: (options: any) => Schema, options: any) => Adapter<T, Schema> {
   return createAdapter<T, Schema>({
     config: {
       adapterId: "kysely",
@@ -311,6 +315,11 @@ export function kyselyAdapter<
           }
           return (await query.execute()).length
         },
+        createMigrator: () =>
+          createKyselyMigratorFromKysely({
+            db,
+            dialect: config?.type ?? "sqlite",
+          }),
         options: config,
       }
     },

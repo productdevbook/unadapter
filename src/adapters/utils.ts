@@ -1,6 +1,10 @@
 import type { FieldAttribute } from "../types/index.ts"
 
-export function withApplyDefault(value: any, field: FieldAttribute, action: "create" | "update") {
+export function withApplyDefault(
+  value: any,
+  field: FieldAttribute,
+  action: "create" | "update",
+): any {
   if (action === "update") {
     return value
   }

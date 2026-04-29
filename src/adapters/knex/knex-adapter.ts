@@ -1,8 +1,9 @@
 import type { Knex } from "knex"
-import type { TablesSchema, Where } from "../../types/index.ts"
+import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import type { KnexDatabaseType } from "./types.ts"
 import { createAdapter } from "../create/index.ts"
+import { createKnexMigratorFromKnex } from "./migrator.ts"
 
 interface KnexAdapterConfig {
   /**
@@ -26,7 +27,10 @@ interface KnexAdapterConfig {
 export function knexAdapter<
   T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
->(db: Knex, config?: KnexAdapterConfig) {
+>(
+  db: Knex,
+  config?: KnexAdapterConfig,
+): (getTables: (options: any) => Schema, options: any) => Adapter<T, Schema> {
   return createAdapter<T, Schema>({
     config: {
       adapterId: "knex",
@@ -210,6 +214,11 @@ export function knexAdapter<
           const res = (await query) as unknown as number
           return typeof res === "number" ? res : 0
         },
+        createMigrator: () =>
+          createKnexMigratorFromKnex({
+            db,
+            dialect: config?.type ?? "sqlite",
+          }),
         options: config,
       }
     },

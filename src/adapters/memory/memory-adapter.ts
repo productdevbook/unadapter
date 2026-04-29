@@ -1,4 +1,4 @@
-import type { TablesSchema } from "../../types/index.ts"
+import type { Adapter, TablesSchema } from "../../types/index.ts"
 import type { AdapterDebugLogs, CleanedWhere } from "../create/index.ts"
 import { createAdapter } from "../create/index.ts"
 
@@ -13,7 +13,10 @@ export interface MemoryAdapterConfig {
 export function memoryAdapter<
   T extends Record<string, any> = object,
   Schema extends TablesSchema = TablesSchema,
->(db: MemoryDB, config?: MemoryAdapterConfig) {
+>(
+  db: MemoryDB,
+  config?: MemoryAdapterConfig,
+): (getTables: (options: any) => Schema, options: any) => Adapter<T, Schema> {
   return createAdapter<T, Schema>({
     config: {
       adapterId: "memory",

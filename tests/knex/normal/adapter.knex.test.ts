@@ -3,21 +3,17 @@ import type { AdapterOptions } from "../../../src/types/index.ts"
 import type { BetterAuthOptions } from "../../better-auth.schema.ts"
 import fsPromises from "node:fs/promises"
 import path from "node:path"
-import Database from "better-sqlite3"
 import merge from "deepmerge"
 import knexFactory from "knex"
-import { Kysely, MysqlDialect, SqliteDialect } from "kysely"
-import { createPool } from "mysql2/promise"
 import { afterAll, beforeAll, describe } from "vitest"
 import { knexAdapter } from "../../../src/adapters/knex/index.ts"
 import { getMigrations } from "../../../src/db/get-migration.ts"
 import { getAuthTables } from "../../better-auth.schema.ts"
 import { runAdapterTest } from "../../test.ts"
+import { isolatedMysqlDb } from "../../utils/mysql.ts"
 
 const sqliteFile = path.join(__dirname, "test.db")
-const MYSQL_DB = "better_auth_knex"
-// Connect to the server (no database) to be able to (re)create our isolated test DB.
-const mysqlAdmin = createPool("mysql://user:password@localhost:3306")
+const mysqlIso = isolatedMysqlDb("knex_normal")
 
 const sqliteKnex = knexFactory({
   client: "better-sqlite3",
@@ -26,7 +22,7 @@ const sqliteKnex = knexFactory({
 })
 const mysqlKnex = knexFactory({
   client: "mysql2",
-  connection: `mysql://user:password@localhost:3306/${MYSQL_DB}`,
+  connection: mysqlIso.url,
 })
 
 export function opts({
@@ -60,36 +56,28 @@ export function opts({
 describe("knex adapter test", async () => {
   beforeAll(async () => {
     console.log(`Now running normal Knex adapter test...`)
-    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
-    await mysqlAdmin.query(`CREATE DATABASE ${MYSQL_DB}`)
-    // Bootstrap schemas using temporary Kysely connections — the existing
-    // migrator only supports Kysely. Use dedicated mysql pools here so
-    // destroying Kysely doesn't tear down the pool we hand to Knex.
-    const migrationMysqlPool = createPool(`mysql://user:password@localhost:3306/${MYSQL_DB}`)
-    const sqliteDb = new Database(sqliteFile)
-    const sqliteKy = new Kysely({ dialect: new SqliteDialect({ database: sqliteDb }) })
-    const mysqlKy = new Kysely({ dialect: new MysqlDialect(migrationMysqlPool) })
+    await mysqlIso.setup()
 
-    const sqliteOptionsBoot = opts({
-      database: { db: sqliteKy, type: "sqlite" },
+    const sqliteAdapterFactory = knexAdapter(sqliteKnex, { type: "sqlite" })
+    const mysqlAdapterFactory = knexAdapter(mysqlKnex, { type: "mysql" })
+
+    const sqliteOptions = opts({
+      database: sqliteAdapterFactory as any,
       isNumberIdTest: false,
     })
-    const mysqlOptionsBoot = opts({
-      database: { db: mysqlKy, type: "mysql" },
+    const mysqlOptions = opts({
+      database: mysqlAdapterFactory as any,
       isNumberIdTest: false,
     })
-    await (await getMigrations(mysqlOptionsBoot, getAuthTables)).runMigrations()
-    await (await getMigrations(sqliteOptionsBoot, getAuthTables)).runMigrations()
-    await sqliteKy.destroy()
-    await mysqlKy.destroy()
-    sqliteDb.close()
+
+    await (await getMigrations(sqliteOptions, getAuthTables)).runMigrations()
+    await (await getMigrations(mysqlOptions, getAuthTables)).runMigrations()
   })
 
   afterAll(async () => {
     await sqliteKnex.destroy()
     await mysqlKnex.destroy()
-    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
-    await mysqlAdmin.end()
+    await mysqlIso.teardown()
     await fsPromises.unlink(sqliteFile)
   })
 

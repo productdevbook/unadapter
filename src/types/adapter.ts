@@ -1,4 +1,5 @@
 import type { InferModelTypes } from "./db.ts"
+import type { AdapterMigrator } from "./migrator.ts"
 import type { AdapterOptions } from "./options.ts"
 import type { TablesSchema } from "./schema.ts"
 
@@ -92,6 +93,12 @@ export interface Adapter<
     options: AdapterOptions<T, Schema>,
     file?: string,
   ) => Promise<AdapterSchemaCreation>
+
+  /**
+   * Build an adapter-native migrator. Adapters that don't support
+   * schema migrations (e.g. mongodb, prisma, drizzle, memory) omit this.
+   */
+  createMigrator?: () => Promise<AdapterMigrator> | AdapterMigrator
 
   options?: Record<string, any>
 }
