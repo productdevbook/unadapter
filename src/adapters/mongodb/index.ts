@@ -1,1 +1,1 @@
-export * from './mongodb-adapter.ts'
+export * from "./mongodb-adapter.ts";

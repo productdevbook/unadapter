@@ -1,1 +1,1 @@
-export * from './prisma-adapter.ts'
+export * from "./prisma-adapter.ts";

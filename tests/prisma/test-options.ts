@@ -1,18 +1,18 @@
-import type { AdapterInstance, AdapterOptions } from '../../src/types/index.ts'
-import type { BetterAuthOptions } from '../better-auth.schema.ts'
+import type { AdapterInstance, AdapterOptions } from "../../src/types/index.ts";
+import type { BetterAuthOptions } from "../better-auth.schema.ts";
 
 export function createTestOptions(
   adapter: AdapterInstance<BetterAuthOptions>,
   useNumberId = false,
 ) {
-  return ({
+  return {
     database: adapter,
     user: {
-      fields: { email: 'email_address' },
+      fields: { email: "email_address" },
       additionalFields: {
         test: {
-          type: 'string',
-          defaultValue: 'test',
+          type: "string",
+          defaultValue: "test",
         },
       },
     },
@@ -21,5 +21,5 @@ export function createTestOptions(
         useNumberId,
       },
     },
-  }) satisfies AdapterOptions<BetterAuthOptions>
+  } satisfies AdapterOptions<BetterAuthOptions>;
 }

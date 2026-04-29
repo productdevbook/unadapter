@@ -1,37 +1,31 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ESNext"],
-    "rootDir": ".",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "paths": {
-      "unadapter": [
-        "./src/index.ts"
-      ],
-      "unadapter/providers/*": [
-        "./src/providers/*/index.ts"
-      ],
-      "unadapter/types": [
-        "./src/types/index.ts"
-      ],
-      "unadapter/utils": [
-        "./src/utils/index.ts"
-      ]
-    },
-    "resolveJsonModule": true,
-    "types": ["node", "vitest/globals"],
-    "allowImportingTsExtensions": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "strict": true,
-    "declaration": true,
-    "noEmit": true,
-    "outDir": "dist",
-    "esModuleInterop": true,
-    // "isolatedDeclarations": true,
-    // "isolatedModules": true,
+    "skipLibCheck": true,
     "verbatimModuleSyntax": true,
-    "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "unadapter": ["./src/index.ts"],
+      "unadapter/drizzle": ["./src/adapters/drizzle/index.ts"],
+      "unadapter/kysely": ["./src/adapters/kysely/index.ts"],
+      "unadapter/memory": ["./src/adapters/memory/index.ts"],
+      "unadapter/mongodb": ["./src/adapters/mongodb/index.ts"],
+      "unadapter/prisma": ["./src/adapters/prisma/index.ts"],
+      "unadapter/create": ["./src/adapters/create/index.ts"],
+      "unadapter/types": ["./src/types/index.ts"],
+      "unadapter/db": ["./src/db/index.ts"],
+      "unadapter/utils": ["./src/utils/index.ts"]
+    }
   },
   "include": ["src", "tests", "playground"],
   "exclude": ["node_modules", "dist"]

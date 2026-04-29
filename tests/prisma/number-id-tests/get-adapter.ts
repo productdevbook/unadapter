@@ -1,26 +1,22 @@
-import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from '../../../src/adapters/prisma/index.ts'
+import { PrismaClient } from "@prisma/client";
+import { prismaAdapter } from "../../../src/adapters/prisma/index.ts";
 
 export function getAdapter() {
-  const db = new PrismaClient()
+  const db = new PrismaClient();
 
   async function clearDb() {
-    await db.user.deleteMany()
+    await db.user.deleteMany();
     try {
-      await db.$executeRaw`DELETE FROM sqlite_sequence WHERE name = 'User'`
-    }
-    catch {}
+      await db.$executeRaw`DELETE FROM sqlite_sequence WHERE name = 'User'`;
+    } catch {}
   }
 
-  const adapter = prismaAdapter(
-    db,
-    {
-      provider: 'sqlite',
-      debugLogs: {
-        isRunningAdapterTests: true,
-      },
+  const adapter = prismaAdapter(db, {
+    provider: "sqlite",
+    debugLogs: {
+      isRunningAdapterTests: true,
     },
-  )
+  });
 
-  return { adapter, clearDb }
+  return { adapter, clearDb };
 }

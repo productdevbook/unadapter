@@ -6,32 +6,32 @@ import type {
   Prettify,
   TablesSchema,
   Where,
-} from 'unadapter/types'
+} from "unadapter/types";
 
 export type AdapterDebugLogs =
   | boolean
   | {
-    /**
-     * Useful when you want to log only certain conditions.
-     */
-    logCondition?: (() => boolean) | undefined
-    create?: boolean
-    update?: boolean
-    updateMany?: boolean
-    findOne?: boolean
-    findMany?: boolean
-    delete?: boolean
-    deleteMany?: boolean
-    count?: boolean
-  }
+      /**
+       * Useful when you want to log only certain conditions.
+       */
+      logCondition?: (() => boolean) | undefined;
+      create?: boolean;
+      update?: boolean;
+      updateMany?: boolean;
+      findOne?: boolean;
+      findMany?: boolean;
+      delete?: boolean;
+      deleteMany?: boolean;
+      count?: boolean;
+    }
   | {
-    /**
-     * Only used for adapter tests to show debug logs if a test fails.
-     *
-     * @deprecated Not actually deprecated. Doing this for IDEs to show this option at the very bottom and stop end-users from using this.
-     */
-    isRunningAdapterTests: boolean
-  }
+      /**
+       * Only used for adapter tests to show debug logs if a test fails.
+       *
+       * @deprecated Not actually deprecated. Doing this for IDEs to show this option at the very bottom and stop end-users from using this.
+       */
+      isRunningAdapterTests: boolean;
+    };
 
 export interface AdapterConfig<
   T extends Record<string, any>,
@@ -44,13 +44,13 @@ export interface AdapterConfig<
    *
    * @default false
    */
-  usePlural?: boolean
+  usePlural?: boolean;
   /**
    * Enable debug logs.
    *
    * @default false
    */
-  debugLogs?: AdapterDebugLogs
+  debugLogs?: AdapterDebugLogs;
   /**
    * Name of the adapter.
    *
@@ -58,17 +58,17 @@ export interface AdapterConfig<
    *
    * @default `adapterId`
    */
-  adapterName?: string
+  adapterName?: string;
   /**
    * Adapter id
    */
-  adapterId: string
+  adapterId: string;
   /**
    * If the database supports numeric ids, set this to `true`.
    *
    * @default true
    */
-  supportsNumericIds?: boolean
+  supportsNumericIds?: boolean;
   /**
    * If the database doesn't support JSON columns, set this to `false`.
    *
@@ -76,7 +76,7 @@ export interface AdapterConfig<
    *
    * @default false
    */
-  supportsJSON?: boolean
+  supportsJSON?: boolean;
   /**
    * If the database doesn't support dates, set this to `false`.
    *
@@ -84,7 +84,7 @@ export interface AdapterConfig<
    *
    * @default true
    */
-  supportsDates?: boolean
+  supportsDates?: boolean;
   /**
    * If the database doesn't support booleans, set this to `false`.
    *
@@ -92,7 +92,7 @@ export interface AdapterConfig<
    *
    * @default true
    */
-  supportsBooleans?: boolean
+  supportsBooleans?: boolean;
   /**
    * Disable id generation for the `create` method.
    *
@@ -100,7 +100,7 @@ export interface AdapterConfig<
    *
    * @default false
    */
-  disableIdGeneration?: boolean
+  disableIdGeneration?: boolean;
   /**
    * Map the keys of the input data.
    *
@@ -121,7 +121,7 @@ export interface AdapterConfig<
    * }
    * ```
    */
-  mapKeysTransformInput?: Record<string, string>
+  mapKeysTransformInput?: Record<string, string>;
   /**
    * Map the keys of the output data.
    *
@@ -141,71 +141,71 @@ export interface AdapterConfig<
    * }
    * ```
    */
-  mapKeysTransformOutput?: Record<string, string>
+  mapKeysTransformOutput?: Record<string, string>;
   /**
    * Custom transform input function.
    *
    * This function is used to transform the input data before it is saved to the database.
    */
   customTransformInput?: (props: {
-    data: any
+    data: any;
     /**
      * The fields of the model.
      */
-    fieldAttributes: FieldAttribute
+    fieldAttributes: FieldAttribute;
     /**
      * The field to transform.
      */
-    field: string
+    field: string;
     /**
      * The action which was called from the adapter.
      */
-    action: 'create' | 'update'
+    action: "create" | "update";
     /**
      * The model name.
      */
-    model: string
+    model: string;
     /**
      * The schema of the user's instance.
      */
-    schema: TablesSchema
+    schema: TablesSchema;
     /**
      * The options of the user's instance.
      */
-    options: AdapterOptions<T, Schema>
-  }) => any
+    options: AdapterOptions<T, Schema>;
+  }) => any;
   /**
    * Custom transform output function.
    *
    * This function is used to transform the output data before it is returned to the user.
    */
   customTransformOutput?: (props: {
-    data: any
+    data: any;
     /**
      * The fields of the model.
      */
-    fieldAttributes: FieldAttribute
+    fieldAttributes: FieldAttribute;
     /**
      * The field to transform.
      */
-    field: string
+    field: string;
     /**
      * The fields to select.
      */
-    select: string[]
+    select: string[];
     /**
      * The model name.
      */
-    model: string
+    model: string;
     /**
      * The schema of the user's instance.
      */
-    schema: TablesSchema
+    schema: TablesSchema;
     /**
      * The options of the user's instance.
      */
-    options: AdapterOptions<T, Schema>
-  }) => any
+    options: AdapterOptions<T, Schema>;
+  }) => any;
   /**
    * Custom ID generator function.
    *
@@ -226,9 +226,7 @@ export interface AdapterConfig<
    * }
    * ```
    */
-  customIdGenerator?: (props: {
-    model: string
-  }) => string
+  customIdGenerator?: (props: { model: string }) => string;
 }
 
 export type CreateCustomAdapter<
@@ -244,25 +242,25 @@ export type CreateCustomAdapter<
   getDefaultFieldName,
   getFieldAttributes,
 }: {
-  options: AdapterOptions<T, Schema>
+  options: AdapterOptions<T, Schema>;
   /**
    * The schema of the user's instance.
    */
-  schema: TablesSchema
+  schema: TablesSchema;
   /**
    * The debug log function.
    *
    * If the config has defined `debugLogs` as `false`, no logs will be shown.
    */
-  debugLog: (...args: any[]) => void
+  debugLog: (...args: any[]) => void;
   /**
    * Get the model name which is expected to be saved in the database based on the user's schema.
    */
-  getModelName: (model: string) => string
+  getModelName: (model: string) => string;
   /**
    * Get the field name which is expected to be saved in the database based on the user's schema.
    */
-  getFieldName: ({ model, field }: { model: string, field: string }) => string
+  getFieldName: ({ model, field }: { model: string; field: string }) => string;
   /**
    * This function helps us get the default model name from the schema defined by devs.
    * Often times, the user will be using the `modelName` which could had been customized by the users.
@@ -275,7 +273,7 @@ export type CreateCustomAdapter<
    * 3. Using this function helps us get the actual model name based on the user's defined custom modelName.
    * 4. Thus allowing us to use `schema[model]`.
    */
-  getDefaultModelName: (model: string) => string
+  getDefaultModelName: (model: string) => string;
   /**
    * This function helps us get the default field name from the schema defined by devs.
    * Often times, the user will be using the `fieldName` which could had been customized by the users.
@@ -287,66 +285,59 @@ export type CreateCustomAdapter<
    * 2. When using a custom fieldName, doing something like `schema[model].fields[field]` will not work.
    *
    */
-  getDefaultFieldName: ({
-    model,
-    field,
-  }: { model: string, field: string }) => string
+  getDefaultFieldName: ({ model, field }: { model: string; field: string }) => string;
   /**
    * Get the field attributes for a given model and field.
    *
    * Note: any model name or field name is allowed, whether default to schema or not.
    */
-  getFieldAttributes: ({
-    model,
-    field,
-  }: { model: string, field: string }) => FieldAttribute
-}) => CustomAdapter<T, Schema>
+  getFieldAttributes: ({ model, field }: { model: string; field: string }) => FieldAttribute;
+}) => CustomAdapter<T, Schema>;
 
 export interface CustomAdapter<
   _T extends Record<string, any>,
   Schema extends TablesSchema = TablesSchema,
   Models extends InferModelTypes<Schema> = InferModelTypes<Schema>,
-
 > {
   create: <M extends keyof Models>({
     model,
     data,
     select,
   }: {
-    model: M & (string | object)
-    data: Omit<Models[M], 'id'>
-    select?: string[]
-  }) => Promise<any> // Return any here since it'll be transformed by the adapter later
+    model: M & (string | object);
+    data: Omit<Models[M], "id">;
+    select?: string[];
+  }) => Promise<any>; // Return any here since it'll be transformed by the adapter later
 
   update: <M extends keyof Models>({
     model,
     where,
     update,
   }: {
-    model: M & (string | object)
-    where: CleanedWhere[]
-    update: Partial<Models[M]>
-  }) => Promise<Models[M] | null>
+    model: M & (string | object);
+    where: CleanedWhere[];
+    update: Partial<Models[M]>;
+  }) => Promise<Models[M] | null>;
 
   updateMany: <M extends keyof Models>({
     model,
     where,
     update,
   }: {
-    model: M & (string | object)
-    where: CleanedWhere[]
-    update: Partial<Models[M]>
-  }) => Promise<number>
+    model: M & (string | object);
+    where: CleanedWhere[];
+    update: Partial<Models[M]>;
+  }) => Promise<number>;
 
   findOne: <M extends keyof Models>({
     model,
     where,
     select,
   }: {
-    model: M & (string | object)
-    where: CleanedWhere[]
-    select?: string[]
-  }) => Promise<Models[M] | null>
+    model: M & (string | object);
+    where: CleanedWhere[];
+    select?: string[];
+  }) => Promise<Models[M] | null>;
 
   findMany: <M extends keyof Models>({
     model,
@@ -356,58 +347,40 @@ export interface CustomAdapter<
     offset,
     select,
   }: {
-    model: M & (string | object)
-    where?: CleanedWhere[]
-    limit?: number
-    sortBy?: { field: string, direction: 'asc' | 'desc' }
-    offset?: number
-    select?: string[]
-  }) => Promise<Models[M][]>
+    model: M & (string | object);
+    where?: CleanedWhere[];
+    limit?: number;
+    sortBy?: { field: string; direction: "asc" | "desc" };
+    offset?: number;
+    select?: string[];
+  }) => Promise<Models[M][]>;
 
-  delete: ({
-    model,
-    where,
-  }: {
-    model: string
-    where: CleanedWhere[]
-  }) => Promise<void>
+  delete: ({ model, where }: { model: string; where: CleanedWhere[] }) => Promise<void>;
 
-  deleteMany: ({
-    model,
-    where,
-  }: {
-    model: string
-    where: CleanedWhere[]
-  }) => Promise<number>
+  deleteMany: ({ model, where }: { model: string; where: CleanedWhere[] }) => Promise<number>;
 
-  count: ({
-    model,
-    where,
-  }: {
-    model: string
-    where?: CleanedWhere[]
-  }) => Promise<number>
+  count: ({ model, where }: { model: string; where?: CleanedWhere[] }) => Promise<number>;
 
   createSchema?: (props: {
     /**
      * The file the user may have passed in to the `generate` command as the expected schema file output path.
      */
-    file?: string
+    file?: string;
     /**
      * The tables from the user's instance schema.
      */
-    tables: TablesSchema
-  }) => Promise<AdapterSchemaCreation>
+    tables: TablesSchema;
+  }) => Promise<AdapterSchemaCreation>;
 
   /**
    * Your adapter's options.
    */
-  options?: Record<string, any> | undefined
+  options?: Record<string, any> | undefined;
 }
 
-export type CleanedWhere = Prettify<Required<Where>>
+export type CleanedWhere = Prettify<Required<Where>>;
 
 export interface AdapterTestDebugLogs {
-  resetDebugLogs: () => void
-  printDebugLogs: () => void
+  resetDebugLogs: () => void;
+  printDebugLogs: () => void;
 }

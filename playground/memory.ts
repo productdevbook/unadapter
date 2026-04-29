@@ -1,113 +1,112 @@
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { memoryAdapter } from 'unadapter/memory'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { memoryAdapter } from "unadapter/memory";
 
 const db = {
   user: [],
   session: [],
-}
+};
 
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      name?: string
-      email?: string
-      emailVerified?: string
-      image?: string
-      createdAt?: string
-    }
-  }
+      name?: string;
+      email?: string;
+      emailVerified?: string;
+      image?: string;
+      createdAt?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'user',
+      modelName: "user",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || "name",
           sortable: true,
         },
         email: {
-          type: 'string',
+          type: "string",
           unique: true,
           required: true,
-          fieldName: options?.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || "email",
           sortable: true,
         },
         emailVerified: {
-          type: 'boolean',
+          type: "boolean",
           defaultValue: () => false,
           required: true,
-          fieldName: options?.user?.fields?.emailVerified || 'emailVerified',
+          fieldName: options?.user?.fields?.emailVerified || "emailVerified",
         },
         image: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options?.user?.fields?.image || 'image',
+          fieldName: options?.user?.fields?.image || "image",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options?.user?.fields?.createdAt || 'createdAt',
+          fieldName: options?.user?.fields?.createdAt || "createdAt",
         },
         ...user?.fields,
         ...options?.user?.fields,
       },
     },
-  }
-})
+  };
+});
 const adapter = createAdapter(tables, {
-  database: memoryAdapter(
-    db,
-    {},
-  ),
-  plugins: [{
-    schema: {
-      user: {
-        modelName: 'user',
-        fields: {
-          header: {
-            type: 'string',
-            required: true,
-            fieldName: 'header',
+  database: memoryAdapter(db, {}),
+  plugins: [
+    {
+      schema: {
+        user: {
+          modelName: "user",
+          fields: {
+            header: {
+              type: "string",
+              required: true,
+              fieldName: "header",
+            },
           },
         },
       },
     },
-  }],
-})
+  ],
+});
 
 // eslint-disable-next-line antfu/no-top-level-await
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: "John Doe",
+    email: "john@example.com",
     emailVerified: true,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-})
+});
 // eslint-disable-next-line antfu/no-top-level-await
 const _users = await adapter.findMany({
-  model: 'user',
+  model: "user",
   where: [
     {
-      field: 'email',
-      value: 'john@example.com',
-      operator: 'eq',
+      field: "email",
+      value: "john@example.com",
+      operator: "eq",
     },
   ],
-})
+});
 
-console.log('Found users:', user, db)
+console.log("Found users:", user, db);

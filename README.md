@@ -1,7 +1,6 @@
-# unadapter 
+# unadapter
 
 **A universal adapter interface for connecting various databases and ORMs with a standardized API.**
-
 
 <img src="https://img.shields.io/badge/Status-Work%20In%20Progress-orange" alt="Work In Progress"/>
 
@@ -14,7 +13,6 @@
 ![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
 ![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
 ![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
-
 
 ## 🚀 Features
 
@@ -57,6 +55,7 @@ This project is based on the adapter architecture from [better-auth](https://git
 - [ ] Complete abstraction from better-auth and compatibility with all software systems
 
 #### Test Coverage
+
 ![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
 ![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
 ![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
@@ -123,261 +122,257 @@ You'll also need to install the specific database driver or ORM you plan to use.
 <summary><b>Basic Usage</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { memoryAdapter } from 'unadapter/memory'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { memoryAdapter } from "unadapter/memory";
 
 // Create an in-memory database for testing
 const db = {
   user: [],
-  session: []
-}
+  session: [],
+};
 
 // Define a consistent options interface that can be reused
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      name?: string
-      email?: string
-      emailVerified?: string
-      image?: string
-      createdAt?: string
-    }
-  }
+      name?: string;
+      email?: string;
+      emailVerified?: string;
+      image?: string;
+      createdAt?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'user',
+      modelName: "user",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || "name",
           sortable: true,
         },
         email: {
-          type: 'string',
+          type: "string",
           unique: true,
           required: true,
-          fieldName: options?.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || "email",
           sortable: true,
         },
         emailVerified: {
-          type: 'boolean',
+          type: "boolean",
           defaultValue: () => false,
           required: true,
-          fieldName: options?.user?.fields?.emailVerified || 'emailVerified',
+          fieldName: options?.user?.fields?.emailVerified || "emailVerified",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options?.user?.fields?.createdAt || 'createdAt',
+          fieldName: options?.user?.fields?.createdAt || "createdAt",
         },
         updatedAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options?.user?.fields?.updatedAt || 'updatedAt',
+          fieldName: options?.user?.fields?.updatedAt || "updatedAt",
         },
         ...user?.fields,
         ...options?.user?.fields,
-      }
-    }
-  }
-})
+      },
+    },
+  };
+});
 
 const adapter = createAdapter(tables, {
-  database: memoryAdapter(
-    db,
-    {}
-  ),
-  plugins: [] // Optional plugins
-})
+  database: memoryAdapter(db, {}),
+  plugins: [], // Optional plugins
+});
 
 // Now you can use the adapter to perform database operations
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    name: 'John Doe',
-    email: 'john@example.com',
+    name: "John Doe",
+    email: "john@example.com",
     emailVerified: true,
     createdAt: new Date(),
-    updatedAt: new Date()
-  }
-})
+    updatedAt: new Date(),
+  },
+});
 
 // Find the user
 const foundUsers = await adapter.findMany({
-  model: 'user',
+  model: "user",
   where: [
     {
-      field: 'email',
-      value: 'john@example.com',
-      operator: 'eq',
-    }
-  ]
-})
+      field: "email",
+      value: "john@example.com",
+      operator: "eq",
+    },
+  ],
+});
 ```
+
 </details>
 
 <details>
 <summary><b>Using Custom Schema and Plugins</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { memoryAdapter } from 'unadapter/memory'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { memoryAdapter } from "unadapter/memory";
 
 // Create an in-memory database for testing
 const db = {
   users: [],
-  products: []
-}
+  products: [],
+};
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      fullName?: string
-      email?: string
-      isActive?: string
-    }
-  }
+      fullName?: string;
+      email?: string;
+      isActive?: string;
+    };
+  };
   product?: {
     fields?: {
-      title?: string
-      price?: string
-      ownerId?: string
-    }
-  }
+      title?: string;
+      price?: string;
+      ownerId?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, product, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, product, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'users', // The actual table/collection name in your database
+      modelName: "users", // The actual table/collection name in your database
       fields: {
         fullName: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.fullName || 'full_name',
+          fieldName: options?.user?.fields?.fullName || "full_name",
           sortable: true,
         },
         email: {
-          type: 'string',
+          type: "string",
           unique: true,
           required: true,
-          fieldName: options?.user?.fields?.email || 'email_address',
+          fieldName: options?.user?.fields?.email || "email_address",
         },
         isActive: {
-          type: 'boolean',
-          fieldName: options?.user?.fields?.isActive || 'is_active',
+          type: "boolean",
+          fieldName: options?.user?.fields?.isActive || "is_active",
           defaultValue: () => true,
         },
         createdAt: {
-          type: 'date',
-          fieldName: 'created_at',
+          type: "date",
+          fieldName: "created_at",
           defaultValue: () => new Date(),
         },
         ...user?.fields,
         ...options?.user?.fields,
-      }
+      },
     },
     product: {
-      modelName: 'products',
+      modelName: "products",
       fields: {
         title: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.product?.fields?.title || 'title',
+          fieldName: options?.product?.fields?.title || "title",
         },
         price: {
-          type: 'number',
+          type: "number",
           required: true,
-          fieldName: options?.product?.fields?.price || 'price',
+          fieldName: options?.product?.fields?.price || "price",
         },
         ownerId: {
-          type: 'string',
+          type: "string",
           references: {
-            model: 'user',
-            field: 'id',
-            onDelete: 'cascade',
+            model: "user",
+            field: "id",
+            onDelete: "cascade",
           },
           required: true,
-          fieldName: options?.product?.fields?.ownerId || 'owner_id',
+          fieldName: options?.product?.fields?.ownerId || "owner_id",
         },
         ...product?.fields,
         ...options?.product?.fields,
-      }
-    }
-  }
-})
+      },
+    },
+  };
+});
 
 // User profile plugin schema
 const userProfilePlugin = {
   schema: {
     user: {
-      modelName: 'user',
+      modelName: "user",
       fields: {
         bio: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: 'bio',
+          fieldName: "bio",
         },
         location: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: 'location',
-        }
-      }
-    }
-  }
-}
+          fieldName: "location",
+        },
+      },
+    },
+  },
+};
 
 const adapter = createAdapter(tables, {
-  database: memoryAdapter(
-    db,
-    {}
-  ),
+  database: memoryAdapter(db, {}),
   plugins: [userProfilePlugin],
-})
+});
 
 // Now you can use the adapter with your custom schema
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    fullName: 'John Doe',
-    email: 'john@example.com',
-    bio: 'Software developer',
-    location: 'New York'
-  }
-})
+    fullName: "John Doe",
+    email: "john@example.com",
+    bio: "Software developer",
+    location: "New York",
+  },
+});
 
 // Create a product linked to the user
 const product = await adapter.create({
-  model: 'product',
+  model: "product",
   data: {
-    title: 'Awesome Product',
+    title: "Awesome Product",
     price: 99.99,
-    ownerId: user.id
-  }
-})
+    ownerId: user.id,
+  },
+});
 ```
+
 </details>
 
 ### Database-Specific Adapters
@@ -386,306 +381,303 @@ const product = await adapter.create({
 <summary><b>MongoDB Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { MongoClient } from 'mongodb'
-import { mongodbAdapter } from 'unadapter/mongodb'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { MongoClient } from "mongodb";
+import { mongodbAdapter } from "unadapter/mongodb";
 
 // Create a database client
-const client = new MongoClient('mongodb://localhost:27017')
-await client.connect()
-const db = client.db('myDatabase')
+const client = new MongoClient("mongodb://localhost:27017");
+await client.connect();
+const db = client.db("myDatabase");
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      name?: string
-      email?: string
-      settings?: string
-    }
-  }
+      name?: string;
+      email?: string;
+      settings?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'users',
+      modelName: "users",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || "name",
         },
         email: {
-          type: 'string',
+          type: "string",
           required: true,
           unique: true,
-          fieldName: options?.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || "email",
         },
         settings: {
-          type: 'json',
+          type: "json",
           required: false,
-          fieldName: options?.user?.fields?.settings || 'settings',
+          fieldName: options?.user?.fields?.settings || "settings",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
-          fieldName: 'createdAt',
+          fieldName: "createdAt",
         },
         ...user?.fields,
         ...options?.user?.fields,
-      }
-    }
-  }
-})
+      },
+    },
+  };
+});
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
-  database: mongodbAdapter(
-    db,
-    {
-      useNumberId: false
-    }
-  ),
-  plugins: []
-})
+  database: mongodbAdapter(db, {
+    useNumberId: false,
+  }),
+  plugins: [],
+});
 
 // Use the adapter
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    name: 'Jane Doe',
-    email: 'jane@example.com',
-    settings: { theme: 'dark', notifications: true }
-  }
-})
+    name: "Jane Doe",
+    email: "jane@example.com",
+    settings: { theme: "dark", notifications: true },
+  },
+});
 ```
+
 </details>
 
 <details>
 <summary><b>Prisma Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { PrismaClient } from '@prisma/client'
-import { prismaAdapter } from 'unadapter/prisma'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { PrismaClient } from "@prisma/client";
+import { prismaAdapter } from "unadapter/prisma";
 
 // Initialize Prisma client
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      name?: string
-      email?: string
-      profile?: string
-    }
-  }
+      name?: string;
+      email?: string;
+      profile?: string;
+    };
+  };
   post?: {
     fields?: {
-      title?: string
-      content?: string
-      authorId?: string
-    }
-  }
+      title?: string;
+      content?: string;
+      authorId?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, post, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, post, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'User', // Match your Prisma model name (case-sensitive)
+      modelName: "User", // Match your Prisma model name (case-sensitive)
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || "name",
         },
         email: {
-          type: 'string',
+          type: "string",
           required: true,
           unique: true,
-          fieldName: options?.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || "email",
         },
         profile: {
-          type: 'json',
+          type: "json",
           required: false,
-          fieldName: options?.user?.fields?.profile || 'profile',
+          fieldName: options?.user?.fields?.profile || "profile",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
-          fieldName: 'createdAt',
+          fieldName: "createdAt",
         },
         ...user?.fields,
         ...options?.user?.fields,
-      }
+      },
     },
     post: {
-      modelName: 'Post',
+      modelName: "Post",
       fields: {
         title: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.post?.fields?.title || 'title',
+          fieldName: options?.post?.fields?.title || "title",
         },
         content: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options?.post?.fields?.content || 'content',
+          fieldName: options?.post?.fields?.content || "content",
         },
         published: {
-          type: 'boolean',
+          type: "boolean",
           defaultValue: () => false,
-          fieldName: 'published',
+          fieldName: "published",
         },
         authorId: {
-          type: 'string',
+          type: "string",
           references: {
-            model: 'user',
-            field: 'id',
-            onDelete: 'cascade',
+            model: "user",
+            field: "id",
+            onDelete: "cascade",
           },
           required: true,
-          fieldName: options?.post?.fields?.authorId || 'authorId',
+          fieldName: options?.post?.fields?.authorId || "authorId",
         },
         ...post?.fields,
         ...options?.post?.fields,
-      }
-    }
-  }
-})
+      },
+    },
+  };
+});
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
-  database: prismaAdapter(
-    prisma,
-    {
-      provider: 'postgresql',
-      debugLogs: true,
-      usePlural: false
-    }
-  ),
-  plugins: []
-})
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+    debugLogs: true,
+    usePlural: false,
+  }),
+  plugins: [],
+});
 
 // Use the adapter
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    profile: { bio: 'Software developer', location: 'New York' }
-  }
-})
+    name: "John Smith",
+    email: "john.smith@example.com",
+    profile: { bio: "Software developer", location: "New York" },
+  },
+});
 ```
+
 </details>
 
 <details>
 <summary><b>Drizzle Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { sql } from 'drizzle-orm'
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core'
-import { drizzleAdapter } from 'unadapter/drizzle'
-import 'dotenv/config'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { drizzleAdapter } from "unadapter/drizzle";
+import "dotenv/config";
 
 // Define your Drizzle schema
-export const role = pgTable(
-  'role',
-  {
-    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-    name: varchar('name', { length: 255 }).notNull(),
-    key: varchar('key', { length: 255 }).notNull().unique(),
-    type: varchar('type', { length: 255 }).notNull().default('user'),
-    description: varchar('description', { length: 500 }).notNull(),
-    userId: uuid('user_id').notNull(),
-    permissions: text('permissions')
-      .notNull()
-      .default('0'),
-    updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
-    createdAt: timestamp('created_at').notNull().default(sql`now()`),
-  },
-)
+export const role = pgTable("role", {
+  id: uuid("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 255 }).notNull(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  type: varchar("type", { length: 255 }).notNull().default("user"),
+  description: varchar("description", { length: 500 }).notNull(),
+  userId: uuid("user_id").notNull(),
+  permissions: text("permissions").notNull().default("0"),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .default(sql`now()`),
+  createdAt: timestamp("created_at")
+    .notNull()
+    .default(sql`now()`),
+});
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   role?: {
     fields?: {
-      name?: string
-      description?: string
-      key?: string
-      permissions?: string
-      userId?: string
-    }
-  }
+      name?: string;
+      description?: string;
+      key?: string;
+      permissions?: string;
+      userId?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, role, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, role, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     role: {
-      modelName: 'role',
+      modelName: "role",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.role?.fields?.name || 'name',
+          fieldName: options?.role?.fields?.name || "name",
         },
         description: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.role?.fields?.description || 'description',
+          fieldName: options?.role?.fields?.description || "description",
         },
         key: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.role?.fields?.key || 'key',
+          fieldName: options?.role?.fields?.key || "key",
         },
         permissions: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.role?.fields?.permissions || 'permissions',
+          fieldName: options?.role?.fields?.permissions || "permissions",
         },
         userId: {
-          type: 'string',
+          type: "string",
           required: true,
           references: {
-            model: 'user',
-            field: 'id',
-            onDelete: 'cascade',
+            model: "user",
+            field: "id",
+            onDelete: "cascade",
           },
-          fieldName: options?.role?.fields?.userId || 'user_id',
+          fieldName: options?.role?.fields?.userId || "user_id",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           required: true,
           defaultValue: new Date(),
         },
         updatedAt: {
-          type: 'date',
+          type: "date",
           required: true,
           defaultValue: new Date(),
         },
@@ -693,184 +685,180 @@ const tables = createTable<CustomOptions>((options) => {
         ...options?.role?.fields,
       },
     },
-  }
-})
+  };
+});
 
 // Initialize the adapter with the Drizzle schema
 const adapter = createAdapter(tables, {
-  database: drizzleAdapter(
-    drizzle(process.env.DATABASE_URL!),
-    {
-      provider: 'pg',
-      debugLogs: true,
-      schema: {
-        role,
-      },
+  database: drizzleAdapter(drizzle(process.env.DATABASE_URL!), {
+    provider: "pg",
+    debugLogs: true,
+    schema: {
+      role,
     },
-  ),
+  }),
   plugins: [], // Optional plugins
-})
+});
 
 // Use the adapter
 const role = await adapter.create({
-  model: 'role',
+  model: "role",
   data: {
-    name: 'Test Role',
-    description: 'This is a test role',
-    key: 'test_role',
-    permissions: 'read,write',
-    userId: '8eea9d01-6c73-4933-bb0f-811cb7d4a862',
+    name: "Test Role",
+    description: "This is a test role",
+    key: "test_role",
+    permissions: "read,write",
+    userId: "8eea9d01-6c73-4933-bb0f-811cb7d4a862",
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-})
+});
 ```
+
 </details>
 
 <details>
 <summary><b>Kysely Adapter Example</b></summary>
 
 ```typescript
-import type { PluginSchema } from 'unadapter/types'
-import { createAdapter, createTable, mergePluginSchemas } from 'unadapter'
-import { Kysely, PostgresDialect } from 'kysely'
-import pg from 'pg'
-import { kyselyAdapter } from 'unadapter/kysely'
+import type { PluginSchema } from "unadapter/types";
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter";
+import { Kysely, PostgresDialect } from "kysely";
+import pg from "pg";
+import { kyselyAdapter } from "unadapter/kysely";
 
 // Create PostgreSQL connection pool
 const pool = new pg.Pool({
-  host: 'localhost',
-  database: 'mydatabase',
-  user: 'myuser',
-  password: 'mypassword'
-})
+  host: "localhost",
+  database: "mydatabase",
+  user: "myuser",
+  password: "mypassword",
+});
 
 // Initialize Kysely with PostgreSQL dialect
 const db = new Kysely({
-  dialect: new PostgresDialect({ pool })
-})
+  dialect: new PostgresDialect({ pool }),
+});
 
 // Using the same pattern for CustomOptions
 interface CustomOptions {
-  appName?: string
+  appName?: string;
   plugins?: {
-    schema?: PluginSchema
-  }[]
+    schema?: PluginSchema;
+  }[];
   user?: {
     fields?: {
-      name?: string
-      email?: string
-      active?: string
-      meta?: string
-    }
-  }
+      name?: string;
+      email?: string;
+      active?: string;
+      meta?: string;
+    };
+  };
   article?: {
     fields?: {
-      title?: string
-      content?: string
-      authorId?: string
-    }
-  }
+      title?: string;
+      content?: string;
+      authorId?: string;
+    };
+  };
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, article, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const { user, article, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {};
 
   return {
     user: {
-      modelName: 'users',
+      modelName: "users",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.user?.fields?.name || 'name',
+          fieldName: options?.user?.fields?.name || "name",
         },
         email: {
-          type: 'string',
+          type: "string",
           required: true,
           unique: true,
-          fieldName: options?.user?.fields?.email || 'email',
+          fieldName: options?.user?.fields?.email || "email",
         },
         active: {
-          type: 'boolean',
+          type: "boolean",
           defaultValue: () => true,
-          fieldName: options?.user?.fields?.active || 'is_active',
+          fieldName: options?.user?.fields?.active || "is_active",
         },
         meta: {
-          type: 'json',
+          type: "json",
           required: false,
-          fieldName: options?.user?.fields?.meta || 'meta_data',
+          fieldName: options?.user?.fields?.meta || "meta_data",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
-          fieldName: 'created_at',
+          fieldName: "created_at",
         },
         ...user?.fields,
         ...options?.user?.fields,
-      }
+      },
     },
     article: {
-      modelName: 'articles',
+      modelName: "articles",
       fields: {
         title: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.article?.fields?.title || 'title',
+          fieldName: options?.article?.fields?.title || "title",
         },
         content: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options?.article?.fields?.content || 'content',
+          fieldName: options?.article?.fields?.content || "content",
         },
         authorId: {
-          type: 'string',
+          type: "string",
           references: {
-            model: 'user',
-            field: 'id',
-            onDelete: 'cascade',
+            model: "user",
+            field: "id",
+            onDelete: "cascade",
           },
           required: true,
-          fieldName: options?.article?.fields?.authorId || 'author_id',
+          fieldName: options?.article?.fields?.authorId || "author_id",
         },
         tags: {
-          type: 'array',
+          type: "array",
           required: false,
-          fieldName: 'tags',
+          fieldName: "tags",
         },
         publishedAt: {
-          type: 'date',
+          type: "date",
           required: false,
-          fieldName: 'published_at',
+          fieldName: "published_at",
         },
         ...article?.fields,
         ...options?.article?.fields,
-      }
-    }
-  }
-})
+      },
+    },
+  };
+});
 
 // Initialize the adapter
 const adapter = createAdapter(tables, {
-  database: kyselyAdapter(
-    db,
-    {
-      defaultSchema: 'public'
-    }
-  ),
-  plugins: []
-})
+  database: kyselyAdapter(db, {
+    defaultSchema: "public",
+  }),
+  plugins: [],
+});
 
 // Use the adapter
 const user = await adapter.create({
-  model: 'user',
+  model: "user",
   data: {
-    name: 'Robert Chen',
-    email: 'robert@example.com',
-    meta: { interests: ['programming', 'reading'], location: 'San Francisco' }
-  }
-})
+    name: "Robert Chen",
+    email: "robert@example.com",
+    meta: { interests: ["programming", "reading"], location: "San Francisco" },
+  },
+});
 ```
+
 </details>
 
 ## 🔍 API Reference
@@ -934,6 +922,7 @@ interface Adapter {
   }): Promise<number>;
 }
 ```
+
 </details>
 
 <details>
@@ -943,12 +932,23 @@ The `Where` interface is used for filtering records:
 
 ```typescript
 interface Where {
-  field: string
-  value?: any
-  operator?: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'contains' | 'starts_with' | 'ends_with'
-  connector?: 'AND' | 'OR'
+  field: string;
+  value?: any;
+  operator?:
+    | "eq"
+    | "ne"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte"
+    | "in"
+    | "contains"
+    | "starts_with"
+    | "ends_with";
+  connector?: "AND" | "OR";
 }
 ```
+
 </details>
 
 <details>
@@ -959,37 +959,38 @@ When defining your schema, you can use the following field types and attributes:
 ```typescript
 interface FieldAttribute {
   // The type of the field
-  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'array'
+  type: "string" | "number" | "boolean" | "date" | "json" | "array";
 
   // Whether this field is required
-  required?: boolean
+  required?: boolean;
 
   // Whether this field should be unique
-  unique?: boolean
+  unique?: boolean;
 
   // The actual column/field name in the database
-  fieldName?: string
+  fieldName?: string;
 
   // Whether this field can be sorted
-  sortable?: boolean
+  sortable?: boolean;
 
   // Default value function
-  defaultValue?: () => any
+  defaultValue?: () => any;
 
   // Reference to another model (for foreign keys)
   references?: {
-    model: string
-    field: string
-    onDelete?: 'cascade' | 'set null' | 'restrict'
-  }
+    model: string;
+    field: string;
+    onDelete?: "cascade" | "set null" | "restrict";
+  };
 
   // Custom transformations
   transform?: {
-    input?: (value: any) => any
-    output?: (value: any) => any
-  }
+    input?: (value: any) => any;
+    output?: (value: any) => any;
+  };
 }
 ```
+
 </details>
 
 ## 🤝 Contributing
@@ -1000,17 +1001,20 @@ Contributions are welcome! Feel free to [open issues](https://github.com/product
 <summary><b>Development Setup</b></summary>
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/productdevbook/unadapter.git
    cd unadapter
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Run tests:
+
    ```bash
    pnpm test
    ```
@@ -1019,11 +1023,12 @@ Contributions are welcome! Feel free to [open issues](https://github.com/product
    ```bash
    pnpm build
    ```
-</details>
+   </details>
 
 ## 🙏 Credits
 
 This project draws inspiration and core concepts from:
+
 - [better-auth](https://github.com/better-auth) - The original adapter architecture that inspired this project
 
 ## 📝 License
@@ -1035,6 +1040,7 @@ See the [LICENSE](LICENSE) file for details.
 </div>
 
 <!-- Links -->
+
 [npm-version-src]: https://img.shields.io/npm/v/unadapter?style=flat&colorA=080f12&colorB=1fa669
 [npm-version-href]: https://npmjs.com/package/unadapter
 [npm-downloads-src]: https://img.shields.io/npm/dm/unadapter?style=flat&colorA=080f12&colorB=1fa669

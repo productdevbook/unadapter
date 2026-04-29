@@ -1,14 +1,14 @@
-import type { Primitive } from 'zod'
+import type { Primitive } from "zod";
 
-export type LiteralString = '' | (string & Record<never, never>)
-export type LiteralNumber = 0 | (number & Record<never, never>)
+export type LiteralString = "" | (string & Record<never, never>);
+export type LiteralNumber = 0 | (number & Record<never, never>);
 
-export type OmitId<T extends { id: unknown }> = Omit<T, 'id'>
+export type OmitId<T extends { id: unknown }> = Omit<T, "id">;
 
-export type Prettify<T> = Omit<T, never>
+export type Prettify<T> = Omit<T, never>;
 export type PreserveJSDoc<T> = {
   [K in keyof T]: T[K];
-} & {}
+} & {};
 export type PrettifyDeep<T> = {
   [K in keyof T]: T[K] extends (...args: any[]) => any
     ? T[K]
@@ -19,39 +19,36 @@ export type PrettifyDeep<T> = {
           ? T[K]
           : PrettifyDeep<T[K]>
       : T[K];
-} & {}
+} & {};
 export type LiteralUnion<LiteralType, BaseType extends Primitive> =
   | LiteralType
-  | (BaseType & Record<never, never>)
+  | (BaseType & Record<never, never>);
 
-export type UnionToIntersection<U> = (
-  U extends any
-    ? (k: U) => void
-    : never
-) extends (k: infer I) => void
+export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+  k: infer I,
+) => void
   ? I
-  : never
+  : never;
 
 export type RequiredKeysOf<BaseType extends object> = Exclude<
   {
-    [Key in keyof BaseType]: BaseType extends Record<Key, BaseType[Key]>
-      ? Key
-      : never;
+    [Key in keyof BaseType]: BaseType extends Record<Key, BaseType[Key]> ? Key : never;
   }[keyof BaseType],
   undefined
->
+>;
 
-export type HasRequiredKeys<BaseType extends object> = RequiredKeysOf<BaseType> extends never ? false : true
-export type WithoutEmpty<T> = T extends T ? (object extends T ? never : T) : never
+export type HasRequiredKeys<BaseType extends object> =
+  RequiredKeysOf<BaseType> extends never ? false : true;
+export type WithoutEmpty<T> = T extends T ? (object extends T ? never : T) : never;
 
 export type StripEmptyObjects<T> = T extends { [K in keyof T]: never }
   ? never
   : T extends object
     ? { [K in keyof T as T[K] extends never ? never : K]: T[K] }
-    : T
+    : T;
 export type DeepPartial<T> = T extends (...args: any[]) => any
   ? T
   : T extends object
     ? { [K in keyof T]?: DeepPartial<T[K]> }
-    : T
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never
+    : T;
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;

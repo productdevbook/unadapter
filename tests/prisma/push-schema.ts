@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process'
+import { exec } from "node:child_process";
 
 /**
  * Executes a command line command asynchronously.
@@ -11,26 +11,25 @@ async function executeCommandLine(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
       if (error) {
-        console.error(`Error executing command: ${command}`)
-        console.error(`stderr: ${stderr}`)
-        reject(error)
-        return
+        console.error(`Error executing command: ${command}`);
+        console.error(`stderr: ${stderr}`);
+        reject(error);
+        return;
       }
 
       if (stderr) {
-        console.warn(`Command produced stderr: ${stderr}`)
+        console.warn(`Command produced stderr: ${stderr}`);
       }
 
-      resolve(stdout)
-    })
-  })
+      resolve(stdout);
+    });
+  });
 }
 
-export async function pushPrismaSchema(schema: 'normal' | 'number-id') {
-  if (schema === 'normal') {
-    await executeCommandLine('pnpm prisma:normal:push')
-  }
-  else {
-    await executeCommandLine('pnpm prisma:number-id:push')
+export async function pushPrismaSchema(schema: "normal" | "number-id") {
+  if (schema === "normal") {
+    await executeCommandLine("pnpm prisma:normal:push");
+  } else {
+    await executeCommandLine("pnpm prisma:number-id:push");
   }
 }

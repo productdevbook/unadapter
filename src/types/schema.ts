@@ -1,4 +1,4 @@
-import type { FieldAttribute } from './index.ts'
+import type { FieldAttribute } from "./index.ts";
 
 /**
  * Database schema structure for authentication
@@ -9,23 +9,20 @@ export interface DatabaseSchema {
   /**
    * The name of the table in the database
    */
-  modelName: string
+  modelName: string;
   /**
    * The fields of the table
    */
-  fields: Record<string, FieldAttribute>
+  fields: Record<string, FieldAttribute>;
   /**
    * Whether to disable migrations for this table
    * @default false
    */
-  disableMigrations?: boolean
+  disableMigrations?: boolean;
   /**
    * The order of the table
    */
-  order?: number
+  order?: number;
 }
 
-export type TablesSchema = Record<
-  string,
-  DatabaseSchema
->
+export type TablesSchema = Record<string, DatabaseSchema>;

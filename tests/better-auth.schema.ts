@@ -5,8 +5,8 @@ import type {
   OmitId,
   User,
   Verification,
-} from 'unadapter/types'
-import { createTable } from 'unadapter'
+} from "unadapter/types";
+import { createTable } from "unadapter";
 
 interface SecondaryStorage {
   /**
@@ -14,26 +14,26 @@ interface SecondaryStorage {
    * @param key - Key to get
    * @returns - Value of the key
    */
-  get: (key: string) => Promise<string | null> | string | null
+  get: (key: string) => Promise<string | null> | string | null;
   set: (
-  /**
-   * Key to store
-   */
+    /**
+     * Key to store
+     */
     key: string,
-  /**
-   * Value to store
-   */
+    /**
+     * Value to store
+     */
     value: string,
-  /**
-   * Time to live in seconds
-   */
+    /**
+     * Time to live in seconds
+     */
     ttl?: number,
-  ) => Promise<void | null | string> | void
+  ) => Promise<void | null | string> | void;
   /**
    *
    * @param key - Key to delete
    */
-  delete: (key: string) => Promise<void | null | string> | void
+  delete: (key: string) => Promise<void | null | string> | void;
 }
 
 export interface BetterAuthOptions {
@@ -44,11 +44,11 @@ export interface BetterAuthOptions {
    *
    * @default "Better Auth"
    */
-  appName?: string
+  appName?: string;
 
   plugins?: {
-    schema?: Omit<DatabaseSchema, 'order'>
-  }[]
+    schema?: Omit<DatabaseSchema, "order">;
+  }[];
   /**
    * Base URL for the Better Auth. This is typically the
    * root URL where your application server is hosted.
@@ -59,7 +59,7 @@ export interface BetterAuthOptions {
    *
    * If not set it will throw an error.
    */
-  baseURL?: string
+  baseURL?: string;
   /**
    * Base path for the Better Auth. This is typically
    * the path where the
@@ -67,7 +67,7 @@ export interface BetterAuthOptions {
    *
    * @default "/api/auth"
    */
-  basePath?: string
+  basePath?: string;
   /**
    * The secret to use for encryption,
    * signing and hashing.
@@ -91,19 +91,19 @@ export interface BetterAuthOptions {
    * openssl rand -base64 32
    * ```
    */
-  secret?: string
+  secret?: string;
 
   /**
    * Secondary storage configuration
    *
    * This is used to store session and rate limit data.
    */
-  secondaryStorage?: SecondaryStorage
+  secondaryStorage?: SecondaryStorage;
 
   account?: {
-    modelName?: string
-    fields?: Partial<Record<keyof OmitId<Account>, string>>
-  }
+    modelName?: string;
+    fields?: Partial<Record<keyof OmitId<Account>, string>>;
+  };
 
   /**
    * User configuration
@@ -112,7 +112,7 @@ export interface BetterAuthOptions {
     /**
      * The model name for the user. Defaults to "user".
      */
-    modelName?: string
+    modelName?: string;
     /**
      * Map fields
      *
@@ -123,14 +123,14 @@ export interface BetterAuthOptions {
      * }
      * ```
      */
-    fields?: Partial<Record<keyof OmitId<User>, string>>
+    fields?: Partial<Record<keyof OmitId<User>, string>>;
     /**
      * Additional fields for the session
      */
     additionalFields?: {
-      [key: string]: FieldAttribute
-    }
-  }
+      [key: string]: FieldAttribute;
+    };
+  };
   /**
    * Verification configuration
    */
@@ -138,78 +138,79 @@ export interface BetterAuthOptions {
     /**
      * Change the modelName of the verification table
      */
-    modelName?: string
+    modelName?: string;
     /**
      * Map verification fields
      */
-    fields?: Partial<Record<keyof OmitId<Verification>, string>>
-  }
+    fields?: Partial<Record<keyof OmitId<Verification>, string>>;
+  };
 }
 
 export const getAuthTables = createTable<BetterAuthOptions>((options) => {
   const pluginSchema = options.plugins?.reduce(
     (acc, plugin) => {
-      const schema = plugin.schema
-      if (!schema)
-        return acc
+      const schema = plugin.schema;
+      if (!schema) return acc;
       for (const [key, value] of Object.entries(schema)) {
         acc[key] = {
           fields: {
             ...acc[key]?.fields,
-            ...(typeof value === 'object' && value !== null && 'fields' in value ? value.fields as unknown as Record<string, FieldAttribute> : {}),
+            ...(typeof value === "object" && value !== null && "fields" in value
+              ? (value.fields as unknown as Record<string, FieldAttribute>)
+              : {}),
           },
-          modelName: (typeof value === 'object' && value !== null && 'modelName' in value ? String(value.modelName) : key) || key,
-        }
+          modelName:
+            (typeof value === "object" && value !== null && "modelName" in value
+              ? String(value.modelName)
+              : key) || key,
+        };
       }
-      return acc
+      return acc;
     },
-    {} as Record<
-      string,
-      { fields: Record<string, FieldAttribute>, modelName: string }
-    >,
-  )
+    {} as Record<string, { fields: Record<string, FieldAttribute>; modelName: string }>,
+  );
 
-  const { user, account, ...pluginTables } = pluginSchema || {}
+  const { user, account, ...pluginTables } = pluginSchema || {};
 
   return {
     user: {
-      modelName: options.user?.modelName || 'user',
+      modelName: options.user?.modelName || "user",
       fields: {
         name: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options.user?.fields?.name || 'name',
+          fieldName: options.user?.fields?.name || "name",
           sortable: true,
         },
         email: {
-          type: 'string',
+          type: "string",
           unique: true,
           required: true,
-          fieldName: options.user?.fields?.email || 'email',
+          fieldName: options.user?.fields?.email || "email",
           sortable: true,
         },
         emailVerified: {
-          type: 'boolean',
+          type: "boolean",
           defaultValue: () => false,
           required: true,
-          fieldName: options.user?.fields?.emailVerified || 'emailVerified',
+          fieldName: options.user?.fields?.emailVerified || "emailVerified",
         },
         image: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.user?.fields?.image || 'image',
+          fieldName: options.user?.fields?.image || "image",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options.user?.fields?.createdAt || 'createdAt',
+          fieldName: options.user?.fields?.createdAt || "createdAt",
         },
         updatedAt: {
-          type: 'date',
+          type: "date",
           defaultValue: () => new Date(),
           required: true,
-          fieldName: options.user?.fields?.updatedAt || 'updatedAt',
+          fieldName: options.user?.fields?.updatedAt || "updatedAt",
         },
         ...user?.fields,
         ...options.user?.additionalFields,
@@ -217,112 +218,110 @@ export const getAuthTables = createTable<BetterAuthOptions>((options) => {
       order: 1,
     },
     account: {
-      modelName: options.account?.modelName || 'account',
+      modelName: options.account?.modelName || "account",
       fields: {
         accountId: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options.account?.fields?.accountId || 'accountId',
+          fieldName: options.account?.fields?.accountId || "accountId",
         },
         providerId: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options.account?.fields?.providerId || 'providerId',
+          fieldName: options.account?.fields?.providerId || "providerId",
         },
         userId: {
-          type: 'string',
+          type: "string",
           references: {
-            model: options.user?.modelName || 'user',
-            field: 'id',
-            onDelete: 'cascade',
+            model: options.user?.modelName || "user",
+            field: "id",
+            onDelete: "cascade",
           },
           required: true,
-          fieldName: options.account?.fields?.userId || 'userId',
+          fieldName: options.account?.fields?.userId || "userId",
         },
         accessToken: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.account?.fields?.accessToken || 'accessToken',
+          fieldName: options.account?.fields?.accessToken || "accessToken",
         },
         refreshToken: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.account?.fields?.refreshToken || 'refreshToken',
+          fieldName: options.account?.fields?.refreshToken || "refreshToken",
         },
         idToken: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.account?.fields?.idToken || 'idToken',
+          fieldName: options.account?.fields?.idToken || "idToken",
         },
         accessTokenExpiresAt: {
-          type: 'date',
+          type: "date",
           required: false,
-          fieldName: options.account?.fields?.accessTokenExpiresAt
-            || 'accessTokenExpiresAt',
+          fieldName: options.account?.fields?.accessTokenExpiresAt || "accessTokenExpiresAt",
         },
         refreshTokenExpiresAt: {
-          type: 'date',
+          type: "date",
           required: false,
-          fieldName: options.account?.fields?.accessTokenExpiresAt
-            || 'refreshTokenExpiresAt',
+          fieldName: options.account?.fields?.accessTokenExpiresAt || "refreshTokenExpiresAt",
         },
         scope: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.account?.fields?.scope || 'scope',
+          fieldName: options.account?.fields?.scope || "scope",
         },
         password: {
-          type: 'string',
+          type: "string",
           required: false,
-          fieldName: options.account?.fields?.password || 'password',
+          fieldName: options.account?.fields?.password || "password",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           required: true,
-          fieldName: options.account?.fields?.createdAt || 'createdAt',
+          fieldName: options.account?.fields?.createdAt || "createdAt",
         },
         updatedAt: {
-          type: 'date',
+          type: "date",
           required: true,
-          fieldName: options.account?.fields?.updatedAt || 'updatedAt',
+          fieldName: options.account?.fields?.updatedAt || "updatedAt",
         },
         ...account?.fields,
       },
       order: 3,
     },
     verification: {
-      modelName: options.verification?.modelName || 'verification',
+      modelName: options.verification?.modelName || "verification",
       fields: {
         identifier: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options.verification?.fields?.identifier || 'identifier',
+          fieldName: options.verification?.fields?.identifier || "identifier",
         },
         value: {
-          type: 'string',
+          type: "string",
           required: true,
-          fieldName: options.verification?.fields?.value || 'value',
+          fieldName: options.verification?.fields?.value || "value",
         },
         expiresAt: {
-          type: 'date',
+          type: "date",
           required: true,
-          fieldName: options.verification?.fields?.expiresAt || 'expiresAt',
+          fieldName: options.verification?.fields?.expiresAt || "expiresAt",
         },
         createdAt: {
-          type: 'date',
+          type: "date",
           required: false,
           defaultValue: () => new Date(),
-          fieldName: options.verification?.fields?.createdAt || 'createdAt',
+          fieldName: options.verification?.fields?.createdAt || "createdAt",
         },
         updatedAt: {
-          type: 'date',
+          type: "date",
           required: false,
           defaultValue: () => new Date(),
-          fieldName: options.verification?.fields?.updatedAt || 'updatedAt',
+          fieldName: options.verification?.fields?.updatedAt || "updatedAt",
         },
       },
       order: 4,
     },
     ...pluginTables,
-  }
-})
+  };
+});

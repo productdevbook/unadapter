@@ -1,1 +1,1 @@
-export * from './memory-adapter.ts'
+export * from "./memory-adapter.ts";
