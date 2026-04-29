@@ -187,12 +187,12 @@ export function kyselyAdapter<
 
         findOne: async ({ model, where, select: _select }) => {
           const { and, or } = convertWhereClause(model, where)
-          let query = db.selectFrom(model).selectAll()
+          let query: any = db.selectFrom(model).selectAll()
           if (and) {
-            query = query.where((eb) => eb.and(and.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
           }
           if (or) {
-            query = query.where((eb) => eb.or(or.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
           }
           const res = (await query.executeTakeFirst()) as any
           if (!res) return null
@@ -201,34 +201,31 @@ export function kyselyAdapter<
 
         findMany: async ({ model, where, limit, offset, sortBy }) => {
           const { and, or } = convertWhereClause(model, where)
-          let query = db.selectFrom(model)
+          let query: any = db.selectFrom(model)
           if (and) {
-            query = query.where((eb) => eb.and(and.map((expr) => expr(eb)))) as any
+            query = query.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
           }
           if (or) {
-            query = query.where((eb) => eb.or(or.map((expr) => expr(eb)))) as any
+            query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
           }
           if (config?.type === "mssql") {
             if (!offset) {
-              query = query.top(limit || 100) as any
+              query = query.top(limit || 100)
             }
           } else {
-            query = query.limit(limit || 100) as any
+            query = query.limit(limit || 100)
           }
           if (sortBy) {
-            query = query.orderBy(
-              getFieldName({ model, field: sortBy.field }),
-              sortBy.direction,
-            ) as any
+            query = query.orderBy(getFieldName({ model, field: sortBy.field }), sortBy.direction)
           }
           if (offset) {
             if (config?.type === "mssql") {
               if (!sortBy) {
-                query = query.orderBy(getFieldName({ model, field: "id" })) as any
+                query = query.orderBy(getFieldName({ model, field: "id" }))
               }
-              query = query.offset(offset).fetch(limit || 100) as any
+              query = query.offset(offset).fetch(limit || 100)
             } else {
-              query = query.offset(offset) as any
+              query = query.offset(offset)
             }
           }
 
@@ -240,24 +237,24 @@ export function kyselyAdapter<
         update: async ({ model, where, update: values }) => {
           const { and, or } = convertWhereClause(model, where)
 
-          let query = db.updateTable(model).set(values as any)
+          let query: any = db.updateTable(model).set(values as any)
           if (and) {
-            query = query.where((eb) => eb.and(and.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
           }
           if (or) {
-            query = query.where((eb) => eb.or(or.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
           }
           return await withReturning(values as any, query, model, where)
         },
 
         updateMany: async ({ model, where, update: values }) => {
           const { and, or } = convertWhereClause(model, where)
-          let query = db.updateTable(model).set(values as any)
+          let query: any = db.updateTable(model).set(values as any)
           if (and) {
-            query = query.where((eb) => eb.and(and.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
           }
           if (or) {
-            query = query.where((eb) => eb.or(or.map((expr) => expr(eb))))
+            query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
           }
           const res = await query.execute()
           return res.length

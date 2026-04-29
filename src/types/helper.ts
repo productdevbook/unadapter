@@ -1,4 +1,4 @@
-import type { Primitive } from "zod"
+export type Primitive = string | number | boolean | bigint | symbol | undefined | null
 
 export type LiteralString = "" | (string & Record<never, never>)
 export type LiteralNumber = 0 | (number & Record<never, never>)
