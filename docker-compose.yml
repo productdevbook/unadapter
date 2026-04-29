@@ -41,6 +41,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./tests/docker/mysql-init.sql:/docker-entrypoint-initdb.d/01-grant-better-auth-wildcard.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
       interval: 5s
