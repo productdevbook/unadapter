@@ -120,6 +120,11 @@ You'll also need to install the specific database driver or ORM you plan to use.
     <td>For Knex SQL query builder</td>
     <td>✅ Ready</td>
   </tr>
+  <tr>
+    <td><b><a href="https://github.com/productdevbook/sumak">Sumak Adapter</a></b></td>
+    <td>For Sumak — type-safe, AST-first SQL query builder</td>
+    <td>✅ Ready</td>
+  </tr>
 </table>
 
 ## 🚀 Getting Started
@@ -959,6 +964,96 @@ await (await getMigrations({ database: knexAdapter(db, { type: "postgres" }), ..
 
 </details>
 
+<details>
+<summary><b>Sumak Adapter Example</b></summary>
+
+```typescript
+import type { PluginSchema } from "unadapter/types"
+import { createAdapter, createTable, mergePluginSchemas } from "unadapter"
+import { Pool } from "pg"
+import { pgDialect, sumak } from "sumak"
+import { pgDriver } from "sumak/drivers/pg"
+import { sumakAdapter } from "unadapter/sumak"
+
+// Create a sumak instance with an attached driver. Tables can be
+// defined statically here (sumak's typed builders) or left empty when
+// schema is purely runtime-driven via unadapter's TablesSchema.
+const pool = new Pool({ connectionString: "postgres://user:pass@localhost/app" })
+const db = sumak({
+  dialect: pgDialect(),
+  driver: pgDriver(pool),
+  tables: {},
+})
+
+interface CustomOptions {
+  appName?: string
+  plugins?: { schema?: PluginSchema }[]
+  user?: {
+    fields?: {
+      name?: string
+      email?: string
+    }
+  }
+}
+
+const tables = createTable<CustomOptions>((options) => {
+  const { user, ...pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  return {
+    user: {
+      modelName: "user",
+      fields: {
+        name: {
+          type: "string",
+          required: true,
+          fieldName: options?.user?.fields?.name || "name",
+        },
+        email: {
+          type: "string",
+          required: true,
+          unique: true,
+          fieldName: options?.user?.fields?.email || "email",
+        },
+        createdAt: {
+          type: "date",
+          defaultValue: () => new Date(),
+          fieldName: "created_at",
+        },
+        ...user?.fields,
+        ...options?.user?.fields,
+      },
+    },
+  }
+})
+
+const adapter = createAdapter(tables, {
+  database: sumakAdapter(db, {
+    type: "postgres", // "postgres" | "mysql" | "sqlite" | "mssql"
+  }),
+  plugins: [],
+})
+
+const user = await adapter.create({
+  model: "user",
+  data: {
+    name: "Ada Lovelace",
+    email: "ada@example.com",
+  },
+})
+```
+
+The Sumak adapter ships its own migrator (uses `db.schema` DDL builders
+
+- `introspect()`), so you can drive migrations through `getMigrations`:
+
+```typescript
+import { getMigrations } from "unadapter/db"
+
+await (await getMigrations({ database: sumakAdapter(db, { type: "postgres" }), ... }, tables))
+  .runMigrations()
+```
+
+</details>
+
 ## 🛠️ Migrations
 
 `getMigrations()` is adapter-agnostic. Each adapter contributes its own
@@ -969,6 +1064,7 @@ using its native schema API:
 | ------- | -------- | ------------------------------------------------------------------ |
 | Kysely  | ✅       | Backwards-compatible: also accepts a raw Dialect / pool / DB shape |
 | Knex    | ✅       | Uses `knex.schema` + `information_schema` / SQLite `PRAGMA`        |
+| Sumak   | ✅       | Uses `db.schema` (DDL builders) + sumak's `introspect()`           |
 | Drizzle | ❌       | Use `drizzle-kit` for schema management                            |
 | Prisma  | ❌       | Use Prisma Migrate / `prisma db push`                              |
 | MongoDB | n/a      | Schemaless                                                         |
