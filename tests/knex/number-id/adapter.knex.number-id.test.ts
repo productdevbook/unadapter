@@ -17,7 +17,6 @@ import { runNumberIdAdapterTest } from "../../test.ts"
 const sqliteFile = path.join(__dirname, "test.db")
 const MYSQL_DB = "better_auth_knex_numid"
 const mysqlAdmin = createPool("mysql://user:password@localhost:3306")
-const mysql = createPool(`mysql://user:password@localhost:3306/${MYSQL_DB}`)
 
 const sqliteKnex = knexFactory({
   client: "better-sqlite3",
@@ -62,9 +61,10 @@ describe("knex number id adapter tests", async () => {
     console.log(`Now running Number ID Knex adapter test...`)
     await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
     await mysqlAdmin.query(`CREATE DATABASE ${MYSQL_DB}`)
+    const migrationMysqlPool = createPool(`mysql://user:password@localhost:3306/${MYSQL_DB}`)
     const sqliteDb = new Database(sqliteFile)
     const sqliteKy = new Kysely({ dialect: new SqliteDialect({ database: sqliteDb }) })
-    const mysqlKy = new Kysely({ dialect: new MysqlDialect(mysql) })
+    const mysqlKy = new Kysely({ dialect: new MysqlDialect(migrationMysqlPool) })
 
     const sqliteOptionsBoot = opts({
       database: { db: sqliteKy, type: "sqlite" },
@@ -84,7 +84,6 @@ describe("knex number id adapter tests", async () => {
   afterAll(async () => {
     await sqliteKnex.destroy()
     await mysqlKnex.destroy()
-    await mysql.end()
     await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
     await mysqlAdmin.end()
     await fsPromises.unlink(sqliteFile)
