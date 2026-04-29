@@ -158,16 +158,26 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
       // Knex doesn't ship a uniform introspection API across dialects,
       // so we issue a dialect-specific information_schema / pragma query.
       if (dialect === "sqlite") {
-        const tables = await db.raw<{ name: string }[]>(
+        // Different sqlite drivers shape `db.raw()` differently:
+        //   better-sqlite3 → plain rows array
+        //   sqlite3        → [rowsArray, fieldsArray]
+        //   pg-style       → { rows: [...] }
+        const unwrapSqlite = <R>(res: any): R[] => {
+          if (!res) return []
+          if (Array.isArray(res)) {
+            return Array.isArray(res[0]) ? (res[0] as R[]) : (res as R[])
+          }
+          if (Array.isArray(res.rows)) return res.rows as R[]
+          return []
+        }
+        const tablesRaw = await db.raw(
           "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
         )
-        const rows = Array.isArray(tables) ? tables : []
+        const rows = unwrapSqlite<{ name: string }>(tablesRaw)
         const result: TableInfo[] = []
         for (const t of rows) {
-          const cols = await db.raw<{ name: string; type: string }[]>(
-            `PRAGMA table_info(${t.name})`,
-          )
-          const colRows = Array.isArray(cols) ? cols : []
+          const colsRaw = await db.raw(`PRAGMA table_info(${t.name})`)
+          const colRows = unwrapSqlite<{ name: string; type: string }>(colsRaw)
           result.push({
             name: t.name,
             columns: colRows.map((c) => ({ name: c.name, dataType: c.type })),

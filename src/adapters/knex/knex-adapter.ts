@@ -134,9 +134,22 @@ export function knexAdapter<
         create: async ({ data, model }) => {
           const type = config?.type
           if (type === "mysql") {
-            await db(model).insert(data)
-            // mysql doesn't support returning; fetch the inserted row.
-            // If the data has an id we use it, otherwise fall back to last-inserted.
+            // MySQL doesn't support RETURNING. Knex's insert returns [insertId]
+            // which is the auto-increment id (0 if the caller supplied a
+            // string id). Use that to fetch the row by primary key — this is
+            // safe under concurrent inserts, unlike an `ORDER BY id DESC`
+            // fallback.
+            const result = await db(model).insert(data)
+            const idField = getFieldName({ model, field: "id" })
+            const insertedId =
+              data.id ??
+              (Array.isArray(result) && typeof result[0] === "number" && result[0] > 0
+                ? result[0]
+                : undefined)
+            if (insertedId !== undefined) {
+              const row = await db(model).where(idField, insertedId).first()
+              if (row) return row
+            }
             return await fetchInsertedRow(model, data, [])
           }
           const rows = await db(model).insert(data).returning("*")
