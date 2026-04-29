@@ -9,7 +9,7 @@ import type {
   TableInfo,
 } from "../../types/index.ts"
 import type { SumakDatabaseType } from "./types.ts"
-import { introspect, unsafeRawExpr } from "sumak"
+import { introspect, sql } from "sumak"
 
 const dialectTypeMap: Record<SumakDatabaseType, Record<string, string[]>> = {
   postgres: {
@@ -129,7 +129,9 @@ function applyColumnDef(builder: any, column: ColumnDefinition, isPrimaryKey: bo
     b = b.references(column.references.table, column.references.field)
   }
   if (column.defaultExpr) {
-    b = b.defaultTo(unsafeRawExpr(column.defaultExpr))
+    // DDLPrinter only accepts certain expression node shapes — `sql.unsafe()`
+    // produces a raw fragment that DDL printers can render verbatim.
+    b = b.defaultTo(sql.unsafe(column.defaultExpr))
   }
   if (isPrimaryKey) {
     if (column.autoIncrement) b = b.autoIncrement()
