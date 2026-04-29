@@ -239,7 +239,7 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
       return [...grouped.entries()].map(([name, columns]) => ({ name, columns }))
     },
 
-    async createTable(table, idColumn, fields): Promise<void> {
+    async createTable(table, idColumn, fields, _options): Promise<void> {
       await db.schema.createTable(table, (t) => {
         defineColumn(db, t, "id", idColumn, true)
         for (const [fieldName, column] of Object.entries(fields)) {
@@ -248,7 +248,7 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
       })
     },
 
-    async addColumn(table, name, column): Promise<void> {
+    async addColumn(table, name, column, _options): Promise<void> {
       await db.schema.alterTable(table, (t) => {
         defineColumn(db, t, name, column, false)
       })
@@ -275,7 +275,7 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
       return matchType(columnDataType, fieldType, dialect)
     },
 
-    compileCreateTable(table, idColumn, fields): string {
+    compileCreateTable(table, idColumn, fields, _options): string {
       let sql = ""
       const builder = db.schema.createTable(table, (t) => {
         defineColumn(db, t, "id", idColumn, true)
@@ -287,7 +287,7 @@ export function createKnexMigratorFromKnex(opts: KnexMigratorOptions): AdapterMi
       return sql
     },
 
-    compileAddColumn(table, name, column): string {
+    compileAddColumn(table, name, column, _options): string {
       const builder = db.schema.alterTable(table, (t) => {
         defineColumn(db, t, name, column, false)
       })

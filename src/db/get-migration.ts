@@ -110,9 +110,15 @@ export async function getMigrations<T extends Record<string, any>>(
       const tIndex = toBeCreated.findIndex((t) => t.table === key)
       if (tIndex !== -1) {
         // Same table referenced again (e.g. plugin contributing fields).
-        toBeCreated[tIndex].fields = {
-          ...toBeCreated[tIndex].fields,
-          ...value.fields,
+        // Merge fields, and only push indexes for the newly contributed
+        // fields — the existing entry's indexes were already collected
+        // when it was first seen.
+        const existing = toBeCreated[tIndex].fields
+        toBeCreated[tIndex].fields = { ...existing, ...value.fields }
+        for (const [fieldName, field] of Object.entries(value.fields)) {
+          if (field.index && !(fieldName in existing)) {
+            indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
+          }
         }
       } else {
         const insertIndex = toBeCreated.findIndex((t) => (t.order || Infinity) > tableData.order)
@@ -121,12 +127,11 @@ export async function getMigrations<T extends Record<string, any>>(
         } else {
           toBeCreated.splice(insertIndex, 0, tableData)
         }
-      }
-
-      // Indexes for fields on a brand-new table.
-      for (const [fieldName, field] of Object.entries(value.fields)) {
-        if (field.index) {
-          indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
+        // Collect indexes for the brand-new table's fields.
+        for (const [fieldName, field] of Object.entries(value.fields)) {
+          if (field.index) {
+            indexesToCreate.push({ table: key, field: fieldName, unique: !!field.unique })
+          }
         }
       }
       continue
@@ -165,7 +170,7 @@ export async function getMigrations<T extends Record<string, any>>(
       for (const [fieldName, field] of Object.entries(table.fields)) {
         fields[fieldName] = buildColumnDef(field, fieldName, migrator, migratorOptions)
       }
-      await migrator.createTable(table.table, idColumn, fields)
+      await migrator.createTable(table.table, idColumn, fields, migratorOptions)
     }
     for (const table of toBeAdded) {
       for (const [fieldName, field] of Object.entries(table.fields)) {
@@ -173,6 +178,7 @@ export async function getMigrations<T extends Record<string, any>>(
           table.table,
           fieldName,
           buildColumnDef(field, fieldName, migrator, migratorOptions),
+          migratorOptions,
         )
       }
     }
@@ -202,7 +208,7 @@ export async function getMigrations<T extends Record<string, any>>(
       for (const [fieldName, field] of Object.entries(table.fields)) {
         fields[fieldName] = buildColumnDef(field, fieldName, migrator, migratorOptions)
       }
-      statements.push(migrator.compileCreateTable(table.table, idColumn, fields))
+      statements.push(migrator.compileCreateTable(table.table, idColumn, fields, migratorOptions))
     }
     for (const table of toBeAdded) {
       if (!migrator.compileAddColumn) {
@@ -216,6 +222,7 @@ export async function getMigrations<T extends Record<string, any>>(
             table.table,
             fieldName,
             buildColumnDef(field, fieldName, migrator, migratorOptions),
+            migratorOptions,
           ),
         )
       }

@@ -127,7 +127,12 @@ export function parseInputData<T extends Record<string, any>>(
           )
         }
         if ("issues" in result) {
-          const message = result.issues.map((i) => i.message).join(", ")
+          // Standard Schema's `message` is typed as a string but in practice
+          // some libraries (e.g. Valibot, ArkType) may emit issues without a
+          // populated message — fall back to the path so the error stays useful.
+          const message = result.issues
+            .map((i) => i.message ?? i.path?.join(".") ?? "(no message)")
+            .join(", ")
           throw new Error(`[unadapter] validation failed for "${key}": ${message}`)
         }
         parsedData[key] = result.value

@@ -227,9 +227,6 @@ export interface KyselyMigratorOptions {
 
 export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): AdapterMigrator {
   const { db, dialect } = opts
-  // We capture the strategy on each call rather than at construction time
-  // because the engine passes MigratorOptions per-DDL.
-  let lastStrategy: MigratorOptions["idStrategy"] = "string"
 
   return {
     async introspect(): Promise<TableInfo[]> {
@@ -240,22 +237,35 @@ export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): Ada
       if (dialect === "postgres") {
         filterSchema = await getPostgresSchema(db)
       }
+      // If Kysely's introspection populates `schema` on every row (newer
+      // versions do), use it to filter to the active search_path. If
+      // *no* row carries a schema field, the dialect doesn't expose one
+      // and we keep the legacy "trust everything" behavior.
+      const exposesSchemaField =
+        filterSchema !== null &&
+        tables.some((t) => typeof (t as { schema?: string }).schema === "string")
       return tables
         .filter((t) => {
-          if (!filterSchema) return true
-          const schemaName = (t as unknown as { schema?: string }).schema
-          return !schemaName || schemaName === filterSchema
+          if (!filterSchema || !exposesSchemaField) return true
+          return (t as unknown as { schema?: string }).schema === filterSchema
         })
         .map((t) => ({
           name: t.name,
           columns: t.columns.map((c) => ({ name: c.name, dataType: c.dataType })),
         }))
     },
-    async createTable(table, idColumn, fields): Promise<void> {
-      await buildCreateTableBuilder(db, table, idColumn, fields, dialect, lastStrategy).execute()
+    async createTable(table, idColumn, fields, options): Promise<void> {
+      await buildCreateTableBuilder(
+        db,
+        table,
+        idColumn,
+        fields,
+        dialect,
+        options.idStrategy,
+      ).execute()
     },
-    async addColumn(table, name, column): Promise<void> {
-      await buildAddColumnBuilder(db, table, name, column, dialect, lastStrategy).execute()
+    async addColumn(table, name, column, options): Promise<void> {
+      await buildAddColumnBuilder(db, table, name, column, dialect, options.idStrategy).execute()
     },
     async createIndex(index): Promise<void> {
       let builder = db.schema.createIndex(indexName(index)).on(index.table).column(index.field)
@@ -263,18 +273,24 @@ export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): Ada
       await builder.execute()
     },
     resolveType(field, fieldName, options): string {
-      lastStrategy = options.idStrategy
       return resolveType(field, fieldName, options, dialect)
     },
     matchType(columnDataType, fieldType): boolean {
       return matchType(columnDataType, fieldType, dialect)
     },
-    compileCreateTable(table, idColumn, fields): string {
-      return buildCreateTableBuilder(db, table, idColumn, fields, dialect, lastStrategy).compile()
-        .sql
+    compileCreateTable(table, idColumn, fields, options): string {
+      return buildCreateTableBuilder(
+        db,
+        table,
+        idColumn,
+        fields,
+        dialect,
+        options.idStrategy,
+      ).compile().sql
     },
-    compileAddColumn(table, name, column): string {
-      return buildAddColumnBuilder(db, table, name, column, dialect, lastStrategy).compile().sql
+    compileAddColumn(table, name, column, options): string {
+      return buildAddColumnBuilder(db, table, name, column, dialect, options.idStrategy).compile()
+        .sql
     },
     compileCreateIndex(index): string {
       let builder = db.schema.createIndex(indexName(index)).on(index.table).column(index.field)

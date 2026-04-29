@@ -209,7 +209,7 @@ async function compileWith(
       autoIncrement: idStrategy === "number" || idStrategy === "serial",
       defaultExpr: idStrategy === "uuid" ? "gen_random_uuid()" : undefined,
     }
-    statements.push(migrator.compileCreateTable!(tableName, idColumn, fields))
+    statements.push(migrator.compileCreateTable!(tableName, idColumn, fields, migratorOptions))
     for (const [fieldName, field] of Object.entries(value.fields)) {
       if (field.index) {
         statements.push(

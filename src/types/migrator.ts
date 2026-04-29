@@ -65,8 +65,14 @@ export interface AdapterMigrator {
     table: string,
     idColumn: ColumnDefinition,
     fields: Record<string, ColumnDefinition>,
+    options: MigratorOptions,
   ) => Promise<void>
-  addColumn: (table: string, name: string, column: ColumnDefinition) => Promise<void>
+  addColumn: (
+    table: string,
+    name: string,
+    column: ColumnDefinition,
+    options: MigratorOptions,
+  ) => Promise<void>
   /**
    * Emit `CREATE [UNIQUE] INDEX <table>_<field>_idx ON <table>(<field>)`
    * for fields marked with `index: true`. Migration engine defers all
@@ -79,7 +85,13 @@ export interface AdapterMigrator {
     table: string,
     idColumn: ColumnDefinition,
     fields: Record<string, ColumnDefinition>,
+    options: MigratorOptions,
   ) => string
-  compileAddColumn?: (table: string, name: string, column: ColumnDefinition) => string
+  compileAddColumn?: (
+    table: string,
+    name: string,
+    column: ColumnDefinition,
+    options: MigratorOptions,
+  ) => string
   compileCreateIndex?: (index: IndexDefinition) => string
 }
