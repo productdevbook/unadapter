@@ -1,7 +1,6 @@
 // @ts-nocheck
 import type { AdapterOptions } from "../../../src/types/index.ts"
 import type { BetterAuthOptions } from "../../better-auth.schema.ts"
-import fs from "node:fs"
 import fsPromises from "node:fs/promises"
 import path from "node:path"
 import Database from "better-sqlite3"
@@ -14,10 +13,11 @@ import { knexAdapter } from "../../../src/adapters/knex/index.ts"
 import { getMigrations } from "../../../src/db/get-migration.ts"
 import { getAuthTables } from "../../better-auth.schema.ts"
 import { runNumberIdAdapterTest } from "../../test.ts"
-import { getState, stateFilePath } from "../state.ts"
 
 const sqliteFile = path.join(__dirname, "test.db")
-const mysql = createPool("mysql://user:password@localhost:3306/better_auth")
+const MYSQL_DB = "better_auth_knex_numid"
+const mysqlAdmin = createPool("mysql://user:password@localhost:3306")
+const mysql = createPool(`mysql://user:password@localhost:3306/${MYSQL_DB}`)
 
 const sqliteKnex = knexFactory({
   client: "better-sqlite3",
@@ -26,7 +26,7 @@ const sqliteKnex = knexFactory({
 })
 const mysqlKnex = knexFactory({
   client: "mysql2",
-  connection: "mysql://user:password@localhost:3306/better_auth",
+  connection: `mysql://user:password@localhost:3306/${MYSQL_DB}`,
 })
 
 export function opts({
@@ -59,24 +59,9 @@ export function opts({
 
 describe("knex number id adapter tests", async () => {
   beforeAll(async () => {
-    await new Promise((resolve) => {
-      const checkState = async () => {
-        await new Promise((r) => setTimeout(r, 800))
-        if (getState() === "IDLE") {
-          resolve(true)
-          return
-        }
-        console.log(`Waiting for state to be IDLE...`)
-        fs.watch(stateFilePath, () => {
-          if (getState() === "IDLE") {
-            resolve(true)
-          }
-        })
-      }
-
-      checkState()
-    })
     console.log(`Now running Number ID Knex adapter test...`)
+    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
+    await mysqlAdmin.query(`CREATE DATABASE ${MYSQL_DB}`)
     const sqliteDb = new Database(sqliteFile)
     const sqliteKy = new Kysely({ dialect: new SqliteDialect({ database: sqliteDb }) })
     const mysqlKy = new Kysely({ dialect: new MysqlDialect(mysql) })
@@ -99,9 +84,9 @@ describe("knex number id adapter tests", async () => {
   afterAll(async () => {
     await sqliteKnex.destroy()
     await mysqlKnex.destroy()
-    await mysql.query("DROP DATABASE IF EXISTS better_auth")
-    await mysql.query("CREATE DATABASE better_auth")
     await mysql.end()
+    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
+    await mysqlAdmin.end()
     await fsPromises.unlink(sqliteFile)
   })
 

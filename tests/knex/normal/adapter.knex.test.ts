@@ -13,10 +13,12 @@ import { knexAdapter } from "../../../src/adapters/knex/index.ts"
 import { getMigrations } from "../../../src/db/get-migration.ts"
 import { getAuthTables } from "../../better-auth.schema.ts"
 import { runAdapterTest } from "../../test.ts"
-import { setState } from "../state.ts"
 
 const sqliteFile = path.join(__dirname, "test.db")
-const mysql = createPool("mysql://user:password@localhost:3306/better_auth")
+const MYSQL_DB = "better_auth_knex"
+// Connect to the server (no database) to be able to (re)create our isolated test DB.
+const mysqlAdmin = createPool("mysql://user:password@localhost:3306")
+const mysql = createPool(`mysql://user:password@localhost:3306/${MYSQL_DB}`)
 
 const sqliteKnex = knexFactory({
   client: "better-sqlite3",
@@ -25,7 +27,7 @@ const sqliteKnex = knexFactory({
 })
 const mysqlKnex = knexFactory({
   client: "mysql2",
-  connection: "mysql://user:password@localhost:3306/better_auth",
+  connection: `mysql://user:password@localhost:3306/${MYSQL_DB}`,
 })
 
 export function opts({
@@ -58,8 +60,9 @@ export function opts({
 
 describe("knex adapter test", async () => {
   beforeAll(async () => {
-    setState("RUNNING")
     console.log(`Now running normal Knex adapter test...`)
+    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
+    await mysqlAdmin.query(`CREATE DATABASE ${MYSQL_DB}`)
     // Bootstrap schemas using a temporary Kysely connection (the existing migrator only supports Kysely).
     const sqliteDb = new Database(sqliteFile)
     const sqliteKy = new Kysely({ dialect: new SqliteDialect({ database: sqliteDb }) })
@@ -83,11 +86,10 @@ describe("knex adapter test", async () => {
   afterAll(async () => {
     await sqliteKnex.destroy()
     await mysqlKnex.destroy()
-    await mysql.query("DROP DATABASE IF EXISTS better_auth")
-    await mysql.query("CREATE DATABASE better_auth")
     await mysql.end()
+    await mysqlAdmin.query(`DROP DATABASE IF EXISTS ${MYSQL_DB}`)
+    await mysqlAdmin.end()
     await fsPromises.unlink(sqliteFile)
-    setState("IDLE")
   })
 
   const mysqlOptions = opts({
