@@ -91,38 +91,38 @@
     "prepack": "pnpm build"
   },
   "dependencies": {
-    "defu": "^6.1.4",
+    "defu": "^6.1.7",
     "pathe": "^2.0.3",
-    "zod": "^3.24.4"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^7.8.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^22.15.16",
-    "@types/pg": "^8.15.0",
-    "@typescript/native-preview": "7.0.0-dev.20260316.1",
-    "@vitest/coverage-v8": "^4.1.2",
-    "better-sqlite3": "^11.10.0",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "@typescript/native-preview": "7.0.0-dev.20260429.1",
+    "@vitest/coverage-v8": "^4.1.5",
+    "better-sqlite3": "^12.9.0",
     "bumpp": "^11.0.1",
     "deepmerge": "^4.3.1",
-    "drizzle-orm": "^0.43.1",
-    "kysely": "^0.28.2",
-    "mongodb": "^6.16.0",
-    "mysql2": "^3.14.1",
-    "obuild": "^0.4.32",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0",
-    "pg": "^8.15.6",
-    "prisma": "^6.7.0",
+    "drizzle-orm": "^0.45.2",
+    "kysely": "^0.28.16",
+    "mongodb": "^7.2.0",
+    "mysql2": "^3.22.3",
+    "obuild": "^0.4.33",
+    "oxfmt": "^0.47.0",
+    "oxlint": "^1.62.0",
+    "pg": "^8.20.0",
+    "prisma": "^7.8.0",
     "tarn": "^3.0.2",
-    "tedious": "^18.6.1",
-    "typescript": "^6.0.2",
-    "vitest": "^4.1.2"
+    "tedious": "^19.2.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
   },
   "engines": {
     "node": ">=20.11.1"
   },
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.33.2",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@prisma/client",
