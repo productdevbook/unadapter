@@ -182,11 +182,10 @@ function buildAddColumnBuilder(
 export interface KyselyMigratorOptions {
   db: Kysely<any>
   dialect: KyselyDatabaseType
-  ownsDb?: boolean
 }
 
 export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): AdapterMigrator {
-  const { db, dialect, ownsDb } = opts
+  const { db, dialect } = opts
   return {
     async introspect(): Promise<TableInfo[]> {
       const tables = await db.introspection.getTables()
@@ -213,9 +212,6 @@ export function createKyselyMigratorFromKysely(opts: KyselyMigratorOptions): Ada
     compileAddColumn(table, name, column): string {
       return buildAddColumnBuilder(db, table, name, column, dialect).compile().sql
     },
-    async dispose(): Promise<void> {
-      if (ownsDb) await db.destroy()
-    },
   }
 }
 
@@ -231,12 +227,5 @@ export async function createKyselyMigrator<T extends Record<string, any>>(
   const { kysely, databaseType } = await createKyselyAdapter(config)
   if (!kysely) return null
   const dialect: KyselyDatabaseType = databaseType ?? "sqlite"
-  // We only own the Kysely instance if we constructed it (i.e. the caller
-  // didn't pass a pre-built `{ db, type }`). Detection: if the original
-  // config.database had a `db` property, the caller owns it.
-  const ownsDb =
-    !config.database ||
-    typeof config.database !== "object" ||
-    !("db" in (config.database as object))
-  return createKyselyMigratorFromKysely({ db: kysely, dialect, ownsDb })
+  return createKyselyMigratorFromKysely({ db: kysely, dialect })
 }

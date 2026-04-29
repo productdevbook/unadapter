@@ -46,5 +46,4 @@ export interface AdapterMigrator {
     fields: Record<string, ColumnDefinition>,
   ) => string
   compileAddColumn?: (table: string, name: string, column: ColumnDefinition) => string
-  dispose?: () => Promise<void>
 }

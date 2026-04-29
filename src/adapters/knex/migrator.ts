@@ -133,9 +133,10 @@ function defineColumn(
   isPrimaryKey: boolean,
 ): void {
   if (isPrimaryKey && column.autoIncrement) {
-    // increments() handles autoincrement + primary key + integer type
-    table.increments(name).primary()
-    applyColumn(table.specificType(name, column.type), column, false)
+    // increments() declares the column as integer + autoincrement + primary key.
+    // We deliberately don't call specificType here — that would re-declare the column.
+    const builder = table.increments(name)
+    if (column.notNull) builder.notNullable()
     return
   }
   const builder = table.specificType(name, column.type)

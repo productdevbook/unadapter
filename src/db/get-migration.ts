@@ -135,7 +135,6 @@ export async function getMigrations<T extends Record<string, any>>(
         )
       }
     }
-    await migrator.dispose?.()
   }
 
   async function compileMigrations(): Promise<string> {
@@ -169,7 +168,6 @@ export async function getMigrations<T extends Record<string, any>>(
         )
       }
     }
-    await migrator.dispose?.()
     return `${statements.join(";\n\n")};`
   }
 
