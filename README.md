@@ -2,21 +2,26 @@
   <img src="https://raw.githubusercontent.com/productdevbook/unadapter/main/.github/assets/cover.png" alt="unadapter — One universal adapter, many databases" width="100%">
 </p>
 
-# unadapter
+<h1 align="center">unadapter</h1>
 
-**A universal adapter interface for connecting various databases and ORMs with a standardized API.**
+<p align="center">
+  <strong>A universal adapter interface for connecting various databases and ORMs with a standardized API.</strong>
+</p>
 
-<img src="https://img.shields.io/badge/Status-Work%20In%20Progress-orange" alt="Work In Progress"/>
+<p align="center">
+  <a href="https://www.npmjs.com/package/unadapter"><img src="https://img.shields.io/npm/v/unadapter?color=blue" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/unadapter"><img src="https://img.shields.io/npm/dm/unadapter?color=blue" alt="npm downloads"></a>
+  <a href="https://bundlephobia.com/package/unadapter"><img src="https://img.shields.io/bundlephobia/minzip/unadapter?color=blue" alt="bundle size"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/npm/l/unadapter?color=blue" alt="License"></a>
+  <a href="https://github.com/productdevbook/unadapter/actions/workflows/ci.yml"><img src="https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg" alt="CI Status"></a>
+</p>
 
-[![npm version][npm-version-src]][npm-version-href]
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![bundle][bundle-src]][bundle-href]
-[![License][license-src]][license-href]
-[![CI Status](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml/badge.svg)](https://github.com/productdevbook/unadapter/actions/workflows/ci.yml)
-![Lines](https://img.shields.io/badge/Lines-73.19%25-yellowgreen)
-![Statements](https://img.shields.io/badge/Statements-73.19%25-yellowgreen)
-![Functions](https://img.shields.io/badge/Functions-83.87%25-green)
-![Branches](https://img.shields.io/badge/Branches-76.47%25-yellowgreen)
+<p align="center">
+  <img src="https://img.shields.io/badge/Lines-73.19%25-yellowgreen" alt="Lines">
+  <img src="https://img.shields.io/badge/Statements-73.19%25-yellowgreen" alt="Statements">
+  <img src="https://img.shields.io/badge/Functions-83.87%25-green" alt="Functions">
+  <img src="https://img.shields.io/badge/Branches-76.47%25-yellowgreen" alt="Branches">
+</p>
 
 ## 🚀 Features
 
