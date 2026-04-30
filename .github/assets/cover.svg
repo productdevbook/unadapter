@@ -1,0 +1,388 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 628" width="1200" height="628">
+  <defs>
+    <!-- Deep base gradient: subtle indigo→violet→black diagonal -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#0f1230"/>
+      <stop offset="38%"  stop-color="#0a0d22"/>
+      <stop offset="72%"  stop-color="#08091a"/>
+      <stop offset="100%" stop-color="#03040c"/>
+    </linearGradient>
+
+    <!-- Aurora light — large soft cyan blob top-center -->
+    <radialGradient id="auroraCyan" cx="0.5" cy="0.05" r="0.7">
+      <stop offset="0%"  stop-color="#22d3ee" stop-opacity="0.18"/>
+      <stop offset="45%" stop-color="#22d3ee" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Aurora light — violet blob bottom-right -->
+    <radialGradient id="auroraViolet" cx="1.0" cy="1.0" r="0.85">
+      <stop offset="0%"  stop-color="#7c3aed" stop-opacity="0.22"/>
+      <stop offset="45%" stop-color="#7c3aed" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Aurora light — emerald blob bottom-left -->
+    <radialGradient id="auroraEmerald" cx="0.0" cy="1.0" r="0.75">
+      <stop offset="0%"  stop-color="#10b981" stop-opacity="0.16"/>
+      <stop offset="50%" stop-color="#10b981" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Aurora light — rose blob top-right -->
+    <radialGradient id="auroraRose" cx="1.0" cy="0.0" r="0.6">
+      <stop offset="0%"  stop-color="#fb7185" stop-opacity="0.14"/>
+      <stop offset="50%" stop-color="#fb7185" stop-opacity="0.03"/>
+      <stop offset="100%" stop-color="#fb7185" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Aurora light — amber blob top-left -->
+    <radialGradient id="auroraAmber" cx="0.05" cy="0.0" r="0.55">
+      <stop offset="0%"  stop-color="#f59e0b" stop-opacity="0.10"/>
+      <stop offset="60%" stop-color="#f59e0b" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle film grain to break gradient banding -->
+    <filter id="filmGrain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="3" stitchTiles="stitch"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 0.06 0"/>
+    </filter>
+
+    <!-- Topographic faint contour rings — adds depth without grid feel -->
+    <radialGradient id="contourRing" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%"  stop-color="transparent"/>
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#1e2347" stop-opacity="0.5"/>
+    </radialGradient>
+
+    <radialGradient id="hubFace" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#2a2f4a"/>
+      <stop offset="60%" stop-color="#161a2e"/>
+      <stop offset="100%" stop-color="#0a0c18"/>
+    </radialGradient>
+    <linearGradient id="hubBevel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b4170"/>
+      <stop offset="100%" stop-color="#0c0e1c"/>
+    </linearGradient>
+    <linearGradient id="hubSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a1d33"/>
+      <stop offset="100%" stop-color="#070811"/>
+    </linearGradient>
+
+    <linearGradient id="cabDrizzle" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#10b981"/></linearGradient>
+    <linearGradient id="cabPrisma"  x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#22d3ee"/><stop offset="100%" stop-color="#0891b2"/></linearGradient>
+    <linearGradient id="cabKysely"  x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+    <linearGradient id="cabKnex"    x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></linearGradient>
+    <linearGradient id="cabMongo"   x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#84cc16"/><stop offset="100%" stop-color="#4d7c0f"/></linearGradient>
+    <linearGradient id="cabSumak"   x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#fb7185"/><stop offset="100%" stop-color="#e11d48"/></linearGradient>
+    <linearGradient id="cabMemory"  x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#475569"/></linearGradient>
+
+    <filter id="glowEm" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#34d399" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowCy" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#22d3ee" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowVi" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#a78bfa" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowAm" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#fbbf24" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowLi" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#84cc16" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowRo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#fb7185" flood-opacity="0.55"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="glowSl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6" result="b"/><feFlood flood-color="#94a3b8" flood-opacity="0.45"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+
+    <filter id="hubShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
+      <feOffset dx="0" dy="14"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0 H0 V32" fill="none" stroke="#1c2138" stroke-width="0.7"/>
+    </pattern>
+
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="55%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ═══════════ BACKGROUND — layered aurora + glass mesh ═══════════ -->
+  <!-- 1. base diagonal gradient -->
+  <rect width="1200" height="628" fill="url(#bgGrad)"/>
+
+  <!-- 2. aurora light blobs (soft mesh) -->
+  <rect width="1200" height="628" fill="url(#auroraCyan)"/>
+  <rect width="1200" height="628" fill="url(#auroraViolet)"/>
+  <rect width="1200" height="628" fill="url(#auroraEmerald)"/>
+  <rect width="1200" height="628" fill="url(#auroraRose)"/>
+  <rect width="1200" height="628" fill="url(#auroraAmber)"/>
+
+  <!-- 3. concentric topographic contours behind the hub — adds tech feel -->
+  <g transform="translate(600,286)" fill="none" stroke="#1e2347" stroke-width="1" opacity="0.55">
+    <circle r="60"/>
+    <circle r="120"/>
+    <circle r="180"/>
+    <circle r="240"/>
+    <circle r="310"/>
+    <circle r="390"/>
+    <circle r="480"/>
+  </g>
+
+  <!-- 4. diagonal scan lines — very faint -->
+  <g opacity="0.04" stroke="#a78bfa" stroke-width="1">
+    <line x1="-200" y1="0"   x2="800"  y2="900"/>
+    <line x1="100"  y1="0"   x2="1100" y2="900"/>
+    <line x1="400"  y1="0"   x2="1400" y2="900"/>
+    <line x1="700"  y1="0"   x2="1700" y2="900"/>
+    <line x1="1000" y1="0"   x2="2000" y2="900"/>
+  </g>
+
+  <!-- 5. drifting bokeh particles -->
+  <g>
+    <circle cx="120"  cy="180" r="2"   fill="#22d3ee" opacity="0.6"/>
+    <circle cx="1080" cy="220" r="1.5" fill="#a78bfa" opacity="0.5"/>
+    <circle cx="980"  cy="60"  r="1"   fill="#34d399" opacity="0.7"/>
+    <circle cx="220"  cy="540" r="1.5" fill="#fb7185" opacity="0.55"/>
+    <circle cx="1100" cy="540" r="1"   fill="#fbbf24" opacity="0.7"/>
+    <circle cx="60"   cy="320" r="1"   fill="#84cc16" opacity="0.6"/>
+    <circle cx="350"  cy="40"  r="1.5" fill="#cbd5e1" opacity="0.4"/>
+    <circle cx="850"  cy="600" r="1"   fill="#22d3ee" opacity="0.5"/>
+    <circle cx="160"  cy="100" r="1"   fill="#a78bfa" opacity="0.55"/>
+    <circle cx="1140" cy="380" r="1.5" fill="#34d399" opacity="0.4"/>
+  </g>
+
+  <!-- 6. subtle film grain overlay -->
+  <rect width="1200" height="628" filter="url(#filmGrain)" opacity="0.6"/>
+
+  <!--
+    LAYOUT v3 — text-fitted chips, safe bottom area for npm pill.
+
+    Hub center C=(600, 286). Hub face radius R=110.
+    Chip vertical band 1 (top): y = 60..134
+    Chip vertical band 2 (sides): y = 250..324
+    Chip vertical band 3 (bottom row): y = 438..512
+    NPM pill band (clear): y = 562..596 (centered, away from chips)
+
+    Each chip width chosen by content (mono caption is the longest line):
+      Drizzle  caption "SQL · TYPED"      -> chip 220
+      Prisma   caption "SCHEMA · ORM"     -> chip 220
+      Kysely   caption "QUERY · BUILDER"  -> chip 248
+      Knex     caption "SQL · BUILDER"    -> chip 224
+      MongoDB  caption "DOCUMENT"         -> chip 232 (title MongoDB is long)
+      Sumak    caption "CACHE · KV"       -> chip 220
+      Memory   caption "IN-PROCESS"       -> chip 220
+
+    Chip x positions (right-aligned for right column to canvas edge - 60):
+      Drizzle  x = 60                          (left edge)
+      Prisma   x = 600 - 110 = 490             (centered around 600)
+      Kysely   x = 1200 - 60 - 248 = 892       (right edge)
+      Knex     x = 1200 - 60 - 224 = 916       (right edge)
+      MongoDB  x = 1200 - 60 - 232 = 908       (right edge)
+      Sumak    x = 600 - 110 = 490             (centered around 600)
+      Memory   x = 60                          (left edge)
+  -->
+
+  <!--
+    Chip exit midpoints AND hub port computations:
+
+      Drizzle (x=60..280, y=60..134, h=74)  right-mid = (280, 97)
+      Prisma  (x=490..710, y=60..120, h=60) bottom-mid = (600, 120)
+      Kysely  (x=892..1140, y=60..134)       left-mid = (892, 97)
+      Knex    (x=916..1140, y=250..324)      left-mid = (916, 287)
+      MongoDB (x=908..1140, y=438..512)      left-mid = (908, 475)
+      Sumak   (x=490..710, y=438..498)       top-mid  = (600, 438)
+      Memory  (x=60..280,  y=438..512)       right-mid= (280, 475)
+
+    Hub port angles (SVG angle, 0=right, 90=down):
+      Drizzle  = 205°  → (-99.7, -46.5) + (600, 286) = (500.3, 239.5)
+      Prisma   = 270°  → (   0, -110)               = (600, 176)
+      Kysely   = 335°  → ( 99.7, -46.5)             = (699.7, 239.5)
+      Knex     = 0°    → ( 110,    0)               = (710, 286)
+      MongoDB  = 25°   → ( 99.7,  46.5)             = (699.7, 332.5)
+      Sumak    = 90°   → (   0,  110)               = (600, 396)
+      Memory   = 155°  → (-99.7,  46.5)             = (500.3, 332.5)
+  -->
+
+  <!-- ═══════════ CABLES (start 6px past chip edge nub) ═══════════ -->
+
+  <!-- Drizzle: (286, 97) → (500.3, 239.5) -->
+  <g>
+    <path d="M 286 97 C 360 120, 440 200, 500.3 239.5" stroke="#34d399" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 286 97 C 360 120, 440 200, 500.3 239.5" stroke="url(#cabDrizzle)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowEm)"/>
+    <path d="M 286 97 C 360 120, 440 200, 500.3 239.5" stroke="#d1fae5" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- Prisma: (600, 126) → (600, 176) -->
+  <g>
+    <path d="M 600 126 L 600 176" stroke="#22d3ee" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 600 126 L 600 176" stroke="url(#cabPrisma)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowCy)"/>
+    <path d="M 600 126 L 600 176" stroke="#cffafe" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- Kysely: (886, 97) → (699.7, 239.5) -->
+  <g>
+    <path d="M 886 97 C 820 120, 760 200, 699.7 239.5" stroke="#a78bfa" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 886 97 C 820 120, 760 200, 699.7 239.5" stroke="url(#cabKysely)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowVi)"/>
+    <path d="M 886 97 C 820 120, 760 200, 699.7 239.5" stroke="#ede9fe" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- Knex: (910, 287) → (710, 286) -->
+  <g>
+    <path d="M 910 287 L 710 286" stroke="#fbbf24" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 910 287 L 710 286" stroke="url(#cabKnex)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowAm)"/>
+    <path d="M 910 287 L 710 286" stroke="#fef3c7" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- MongoDB: (902, 475) → (699.7, 332.5) -->
+  <g>
+    <path d="M 902 475 C 820 450, 760 380, 699.7 332.5" stroke="#84cc16" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 902 475 C 820 450, 760 380, 699.7 332.5" stroke="url(#cabMongo)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowLi)"/>
+    <path d="M 902 475 C 820 450, 760 380, 699.7 332.5" stroke="#ecfccb" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- Sumak: (600, 432) → (600, 396) -->
+  <g>
+    <path d="M 600 432 L 600 396" stroke="#fb7185" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 600 432 L 600 396" stroke="url(#cabSumak)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowRo)"/>
+    <path d="M 600 432 L 600 396" stroke="#ffe4e6" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- Memory: (286, 475) → (500.3, 332.5) -->
+  <g>
+    <path d="M 286 475 C 360 450, 440 380, 500.3 332.5" stroke="#94a3b8" stroke-opacity="0.22" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <path d="M 286 475 C 360 450, 440 380, 500.3 332.5" stroke="url(#cabMemory)" stroke-width="6.5" fill="none" stroke-linecap="round" filter="url(#glowSl)"/>
+    <path d="M 286 475 C 360 450, 440 380, 500.3 332.5" stroke="#e2e8f0" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- ═══════════ CONNECTOR NUBS at chip edge midpoints ═══════════ -->
+  <rect x="280" y="91"  width="8"  height="12" rx="2" fill="#34d399" filter="url(#glowEm)"/>  <!-- Drizzle right -->
+  <rect x="594" y="120" width="12" height="8"  rx="2" fill="#22d3ee" filter="url(#glowCy)"/>  <!-- Prisma bottom -->
+  <rect x="884" y="91"  width="8"  height="12" rx="2" fill="#a78bfa" filter="url(#glowVi)"/>  <!-- Kysely left -->
+  <rect x="908" y="281" width="8"  height="12" rx="2" fill="#fbbf24" filter="url(#glowAm)"/>  <!-- Knex left -->
+  <rect x="900" y="469" width="8"  height="12" rx="2" fill="#84cc16" filter="url(#glowLi)"/>  <!-- MongoDB left -->
+  <rect x="594" y="430" width="12" height="8"  rx="2" fill="#fb7185" filter="url(#glowRo)"/>  <!-- Sumak top -->
+  <rect x="280" y="469" width="8"  height="12" rx="2" fill="#94a3b8" filter="url(#glowSl)"/>  <!-- Memory right -->
+
+  <!-- ═══════════ CHIP CARDS (sized to text) ═══════════ -->
+
+  <!-- Drizzle  (60, 60, 220, 74) -->
+  <g transform="translate(60,60)">
+    <rect width="220" height="74" rx="14" fill="#0e1424" stroke="#34d399" stroke-width="1.5"/>
+    <rect width="220" height="74" rx="14" fill="#34d399" opacity="0.06"/>
+    <g transform="translate(20,22)" fill="#34d399">
+      <path d="M10,0 Q18,16 10,28 Q2,16 10,0 Z"/>
+      <path d="M28,4 Q36,20 28,32 Q20,20 28,4 Z" opacity="0.75"/>
+    </g>
+    <text x="86" y="35" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Drizzle</text>
+    <text x="86" y="56" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#34d399" letter-spacing="2" font-weight="600">SQL · TYPED</text>
+  </g>
+
+  <!-- Prisma  (490, 60, 220, 60) -->
+  <g transform="translate(490,60)">
+    <rect width="220" height="60" rx="14" fill="#0e1424" stroke="#22d3ee" stroke-width="1.5"/>
+    <rect width="220" height="60" rx="14" fill="#22d3ee" opacity="0.06"/>
+    <g transform="translate(24,12)" fill="#22d3ee">
+      <polygon points="20,0 38,38 2,38" opacity="0.95"/>
+      <polygon points="20,0 20,26 2,38" fill="#0e7490" opacity="0.9"/>
+    </g>
+    <text x="84" y="28" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Prisma</text>
+    <text x="84" y="46" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#22d3ee" letter-spacing="2" font-weight="600">SCHEMA · ORM</text>
+  </g>
+
+  <!-- Kysely  (892, 60, 248, 74) -->
+  <g transform="translate(892,60)">
+    <rect width="248" height="74" rx="14" fill="#0e1424" stroke="#a78bfa" stroke-width="1.5"/>
+    <rect width="248" height="74" rx="14" fill="#a78bfa" opacity="0.06"/>
+    <g transform="translate(20,20)" fill="#a78bfa" font-family="'JetBrains Mono','SF Mono',monospace" font-size="22" font-weight="800">
+      <text x="0" y="22">{ }</text>
+    </g>
+    <text x="86" y="35" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Kysely</text>
+    <text x="86" y="56" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#a78bfa" letter-spacing="2" font-weight="600">QUERY · BUILDER</text>
+  </g>
+
+  <!-- Knex  (916, 250, 224, 74) -->
+  <g transform="translate(916,250)">
+    <rect width="224" height="74" rx="14" fill="#0e1424" stroke="#fbbf24" stroke-width="1.5"/>
+    <rect width="224" height="74" rx="14" fill="#fbbf24" opacity="0.07"/>
+    <g transform="translate(22,24)" stroke="#fbbf24" stroke-width="3" fill="none" stroke-linecap="round">
+      <path d="M0,12 Q8,-2 16,12 Q24,26 32,12"/>
+    </g>
+    <text x="74" y="35" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Knex</text>
+    <text x="74" y="56" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#fbbf24" letter-spacing="2" font-weight="600">SQL · BUILDER</text>
+  </g>
+
+  <!-- MongoDB  (908, 438, 232, 74) -->
+  <g transform="translate(908,438)">
+    <rect width="232" height="74" rx="14" fill="#0e1424" stroke="#84cc16" stroke-width="1.5"/>
+    <rect width="232" height="74" rx="14" fill="#84cc16" opacity="0.06"/>
+    <g transform="translate(20,18)" fill="#84cc16">
+      <path d="M20,0 C7,14 5,32 16,40 C20,42 26,42 30,40 C41,32 33,14 20,0 Z"/>
+      <line x1="20" y1="4" x2="20" y2="40" stroke="#3f6212" stroke-width="2"/>
+    </g>
+    <text x="80" y="35" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">MongoDB</text>
+    <text x="80" y="56" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#84cc16" letter-spacing="2" font-weight="600">DOCUMENT</text>
+  </g>
+
+  <!-- Sumak  (490, 438, 220, 60) -->
+  <g transform="translate(490,438)">
+    <rect width="220" height="60" rx="14" fill="#0e1424" stroke="#fb7185" stroke-width="1.5"/>
+    <rect width="220" height="60" rx="14" fill="#fb7185" opacity="0.06"/>
+    <g transform="translate(24,16)" fill="#fb7185">
+      <circle cx="6" cy="14" r="6"/>
+      <circle cx="22" cy="6" r="5" opacity="0.85"/>
+      <circle cx="22" cy="22" r="5" opacity="0.85"/>
+      <circle cx="38" cy="14" r="4" opacity="0.7"/>
+    </g>
+    <text x="84" y="28" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Sumak</text>
+    <text x="84" y="46" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#fb7185" letter-spacing="2" font-weight="600">CACHE · KV</text>
+  </g>
+
+  <!-- Memory  (60, 438, 220, 74) -->
+  <g transform="translate(60,438)">
+    <rect width="220" height="74" rx="14" fill="#0e1424" stroke="#94a3b8" stroke-width="1.5"/>
+    <rect width="220" height="74" rx="14" fill="#94a3b8" opacity="0.06"/>
+    <g transform="translate(20,20)" stroke="#94a3b8" stroke-width="2.5" fill="none">
+      <rect x="6" y="6" width="30" height="30" rx="3"/>
+      <rect x="13" y="13" width="16" height="16" rx="2"/>
+      <line x1="0" y1="12" x2="6" y2="12"/>
+      <line x1="0" y1="21" x2="6" y2="21"/>
+      <line x1="0" y1="30" x2="6" y2="30"/>
+      <line x1="36" y1="12" x2="42" y2="12"/>
+      <line x1="36" y1="21" x2="42" y2="21"/>
+      <line x1="36" y1="30" x2="42" y2="30"/>
+    </g>
+    <text x="80" y="35" font-family="'Inter','Helvetica Neue',sans-serif" font-size="20" font-weight="800" fill="#f1f5f9" letter-spacing="-0.3">Memory</text>
+    <text x="80" y="56" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#94a3b8" letter-spacing="2" font-weight="600">IN-PROCESS</text>
+  </g>
+
+  <!-- ═══════════ CENTRAL HUB (C=600,286, R=110) ═══════════ -->
+  <g transform="translate(600,286)" filter="url(#hubShadow)">
+    <circle r="148" fill="none" stroke="#3b4170" stroke-width="1" opacity="0.4"/>
+    <circle r="130" fill="none" stroke="#3b4170" stroke-width="1" opacity="0.55" stroke-dasharray="2 6"/>
+
+    <ellipse cx="0" cy="6" rx="110" ry="110" fill="url(#hubSide)"/>
+    <circle r="110" fill="url(#hubFace)" stroke="url(#hubBevel)" stroke-width="1.5"/>
+    <circle r="92" fill="none" stroke="#2a2f4a" stroke-width="1"/>
+    <circle r="92" fill="none" stroke="#5b8cff" stroke-opacity="0.22" stroke-width="1"/>
+
+    <g text-anchor="middle">
+      <text y="-2" font-family="'Inter','Helvetica Neue',sans-serif" font-size="32" font-weight="900" fill="#f8fafc" letter-spacing="-1">unadapter</text>
+      <line x1="-46" y1="12" x2="46" y2="12" stroke="#3b4170" stroke-width="1"/>
+      <text y="34" font-family="'JetBrains Mono','SF Mono',monospace" font-size="11" fill="#94a3b8" letter-spacing="3" font-weight="600">UNIVERSAL · TYPED</text>
+      <circle cy="60" r="3" fill="#22d3ee" filter="url(#glowCy)"/>
+    </g>
+  </g>
+
+  <!-- ═══════════ HUB PORT GLOW DOTS (drawn last so on top of cables) ═══════════ -->
+  <circle cx="500.3" cy="239.5" r="5" fill="#34d399" filter="url(#glowEm)"/>
+  <circle cx="600"   cy="176"   r="5" fill="#22d3ee" filter="url(#glowCy)"/>
+  <circle cx="699.7" cy="239.5" r="5" fill="#a78bfa" filter="url(#glowVi)"/>
+  <circle cx="710"   cy="286"   r="5" fill="#fbbf24" filter="url(#glowAm)"/>
+  <circle cx="699.7" cy="332.5" r="5" fill="#84cc16" filter="url(#glowLi)"/>
+  <circle cx="600"   cy="396"   r="5" fill="#fb7185" filter="url(#glowRo)"/>
+  <circle cx="500.3" cy="332.5" r="5" fill="#94a3b8" filter="url(#glowSl)"/>
+
+  <!-- ═══════════ NPM PILL — compact, centered ═══════════ -->
+  <!-- Pill width 250, centered on canvas (x = 600 - 125 = 475). Height 40. -->
+  <g transform="translate(475,560)">
+    <rect width="250" height="40" rx="20" fill="#0e1424" stroke="#1c2138" stroke-width="1"/>
+    <text x="22" y="26" font-family="'JetBrains Mono','SF Mono',monospace" font-size="14" fill="#475569" font-weight="600">$</text>
+    <text x="38" y="26" font-family="'JetBrains Mono','SF Mono',monospace" font-size="14" fill="#cbd5e1" font-weight="600">pnpm add</text>
+    <text x="129" y="26" font-family="'JetBrains Mono','SF Mono',monospace" font-size="14" fill="#f8fafc" font-weight="800">unadapter</text>
+  </g>
+
+  <rect width="1200" height="628" fill="url(#vignette)"/>
+</svg>

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/productdevbook/unadapter/main/.github/assets/cover.png" alt="unadapter — One universal adapter, many databases" width="100%">
+</p>
+
 # unadapter
 
 **A universal adapter interface for connecting various databases and ORMs with a standardized API.**
