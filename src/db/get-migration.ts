@@ -69,6 +69,15 @@ function buildIdColumnDef(options: MigratorOptions, migrator: AdapterMigrator): 
   }
 }
 
+export interface GetMigrationsConfig {
+  /**
+   * Skip live introspection and treat the database as empty, so every
+   * table/field is emitted as a fresh CREATE. Used by `unadapter/generate`
+   * to compile a full schema offline (no DB connection / driver).
+   */
+  skipIntrospect?: boolean
+}
+
 /**
  * Adapter-agnostic migration engine. The adapter supplies introspection
  * and DDL via {@link AdapterMigrator}; this engine only does diffing,
@@ -83,6 +92,7 @@ function buildIdColumnDef(options: MigratorOptions, migrator: AdapterMigrator): 
 export async function getMigrations<T extends Record<string, any>>(
   config: AdapterOptions<T>,
   getTables: (options: AdapterOptions<T>) => TablesSchema,
+  migrationsConfig: GetMigrationsConfig = {},
 ): Promise<GetMigrationsResult> {
   const schema = getSchema(config, getTables)
   const logger = createLogger(config.logger)
@@ -92,7 +102,7 @@ export async function getMigrations<T extends Record<string, any>>(
 
   const migrator = await resolveMigrator(config, getTables, logger)
 
-  const tableMetadata = await migrator.introspect()
+  const tableMetadata = migrationsConfig.skipIntrospect ? [] : await migrator.introspect()
 
   const toBeCreated: GetMigrationsResult["toBeCreated"] = []
   const toBeAdded: GetMigrationsResult["toBeAdded"] = []

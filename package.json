@@ -89,6 +89,10 @@
     "./utils": {
       "types": "./dist/utils/index.d.mts",
       "import": "./dist/utils/index.mjs"
+    },
+    "./generate": {
+      "types": "./dist/generate/index.d.mts",
+      "import": "./dist/generate/index.mjs"
     }
   },
   "scripts": {
