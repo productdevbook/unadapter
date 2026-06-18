@@ -1,49 +1,37 @@
-import type { Dialect } from "kysely"
 import type { AdapterOptions, TablesSchema } from "../types/index.ts"
 import { getMigrations } from "../db/get-migration.ts"
 
-export type SQLDialect = "postgresql" | "mysql" | "sqlite"
-
 export interface GenerateOptions {
   format?: "sql"
-  dialect?: SQLDialect
 }
 
 /**
- * Build a driverless Kysely dialect for the target SQL flavour. The pool /
- * database handles are intentionally empty — `compileMigrations()` only
- * compiles SQL strings and never reaches the driver (same trick the
- * migration tests use), so generation needs no live connection.
- */
-async function stubDialect(dialect: SQLDialect): Promise<Dialect> {
-  const { PostgresDialect, MysqlDialect, SqliteDialect } = await import("kysely")
-  switch (dialect) {
-    case "mysql":
-      return new MysqlDialect({ pool: {} as any })
-    case "sqlite":
-      return new SqliteDialect({ database: {} as any })
-    default:
-      return new PostgresDialect({ pool: {} as any })
-  }
-}
-
-/**
- * Generate a database schema as a string, without a live database
- * connection. Intended for library authors exposing a `generate` command
- * in their own CLI.
+ * Compile the schema to a SQL DDL string without connecting to a database.
  *
- * Reuses the same migration compile path as `getMigrations().compileMigrations()`
- * (id strategy is resolved from `options.advanced.database`), so generated
- * output matches what `runMigrations()` would actually create.
+ * `options.database` must be an adapter instance (e.g. `kyselyAdapter(db)`,
+ * `knexAdapter(db)`); the dialect is taken from it. The id strategy is read
+ * from `options.advanced.database`.
+ *
+ * @example
+ * const sql = await generate(getTables, {
+ *   database: kyselyAdapter(db, { type: "postgres" }),
+ * })
+ *
+ * @throws if `options.database` is not an adapter instance.
  */
 export async function generate<T extends Record<string, any>>(
   getTables: (options: AdapterOptions<T>) => TablesSchema,
   options: AdapterOptions<T>,
-  generateOptions: GenerateOptions = {},
+  _generateOptions: GenerateOptions = {},
 ): Promise<string> {
-  const { dialect = "postgresql" } = generateOptions
-  const database = (await stubDialect(dialect)) as AdapterOptions<T>["database"]
-  const { compileMigrations } = await getMigrations({ ...options, database }, getTables, {
+  if (typeof options.database !== "function") {
+    throw new Error(
+      "[unadapter] generate() requires an adapter instance as options.database " +
+        "(e.g. kyselyAdapter(db), knexAdapter(db)). The adapter supplies the target " +
+        "dialect and offline SQL compilation via its createMigrator().",
+    )
+  }
+  const { compileMigrations } = await getMigrations(options, getTables, {
     skipIntrospect: true,
   })
   return compileMigrations()
