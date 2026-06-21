@@ -107,8 +107,8 @@
     "test:coverage": "vitest run --coverage.enabled true",
     "test:coverage:badges": "vitest run --coverage.enabled true && node scripts/update-badges.mjs",
     "update:badges": "node scripts/update-badges.mjs",
-    "prisma:normal:push": "prisma db push --schema tests/prisma/normal-tests/schema.prisma --accept-data-loss",
-    "prisma:number-id:push": "prisma db push --schema tests/prisma/number-id-tests/schema.prisma --accept-data-loss",
+    "prisma:normal:push": "prisma db push --config tests/prisma/normal-tests/prisma.config.ts --accept-data-loss",
+    "prisma:number-id:push": "prisma db push --config tests/prisma/number-id-tests/prisma.config.ts --accept-data-loss",
     "bumpp": "bumpp package.json",
     "release": "pnpm build && bumpp --commit --tag --push --all",
     "prepack": "pnpm build"
@@ -116,45 +116,37 @@
   "dependencies": {
     "defu": "^6.1.7",
     "pathe": "^2.0.3",
-    "zod": "^4.3.6"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/adapter-better-sqlite3": "7.8.0",
+    "@prisma/client": "^7.8.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.0.0",
     "@types/pg": "^8.20.0",
     "@typescript/native-preview": "7.0.0-dev.20260429.1",
-    "@vitest/coverage-v8": "^4.1.5",
-    "better-sqlite3": "^12.9.0",
-    "bumpp": "^11.0.1",
+    "@vitest/coverage-v8": "^4.1.9",
+    "better-sqlite3": "^12.11.1",
+    "bumpp": "^11.1.0",
     "deepmerge": "^4.3.1",
     "drizzle-orm": "^0.45.2",
-    "knex": "^3.2.9",
-    "kysely": "^0.28.16",
-    "mongodb": "^7.2.0",
-    "mysql2": "^3.22.3",
-    "obuild": "^0.4.33",
-    "oxfmt": "^0.47.0",
-    "oxlint": "^1.62.0",
-    "pg": "^8.20.0",
-    "prisma": "^6.7.0",
-    "sumak": "^0.0.14",
+    "knex": "^3.2.10",
+    "kysely": "^0.29.2",
+    "mongodb": "^7.3.0",
+    "mysql2": "^3.22.5",
+    "obuild": "^0.4.37",
+    "oxfmt": "^0.55.0",
+    "oxlint": "^1.70.0",
+    "pg": "^8.22.0",
+    "prisma": "^7.8.0",
+    "sumak": "^0.0.16",
     "tarn": "^3.0.2",
     "tedious": "^19.2.1",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.9"
   },
   "engines": {
     "node": ">=20.11.1"
   },
-  "packageManager": "pnpm@10.33.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "better-sqlite3",
-      "esbuild",
-      "prisma"
-    ]
-  }
+  "packageManager": "pnpm@11.8.0"
 }

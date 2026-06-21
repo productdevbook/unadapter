@@ -1,11 +1,11 @@
 generator client {
-    provider        = "prisma-client-js"
+    provider        = "prisma-client"
+    output          = "./generated/client"
     previewFeatures = ["strictUndefinedChecks"]
 }
 
 datasource db {
     provider = "sqlite"
-    url      = "file:.db/dev.db"
 }
 
 model User {

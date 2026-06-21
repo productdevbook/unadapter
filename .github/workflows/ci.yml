@@ -37,8 +37,8 @@ jobs:
 
       - name: 🧬 Generate Prisma Client
         run: |
-          pnpm prisma generate --schema tests/prisma/normal-tests/schema.prisma
-          pnpm prisma generate --schema tests/prisma/number-id-tests/schema.prisma
+          pnpm prisma generate --config tests/prisma/normal-tests/prisma.config.ts
+          pnpm prisma generate --config tests/prisma/number-id-tests/prisma.config.ts
 
       - name: 👀 Lint
         run: pnpm lint

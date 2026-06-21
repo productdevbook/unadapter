@@ -1,2 +1,14 @@
 packages:
   - playground
+onlyBuiltDependencies:
+  - "@prisma/client"
+  - "@prisma/engines"
+  - better-sqlite3
+  - esbuild
+  - prisma
+minimumReleaseAgeExclude:
+  - obuild@0.4.37
+allowBuilds:
+  "@prisma/engines": true
+  better-sqlite3: true
+  prisma: true
