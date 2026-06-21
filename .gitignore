@@ -17,6 +17,9 @@ playground/.vite
 .env.test.local
 .env.production.local
 
+# prisma generated clients
+tests/prisma/**/generated
+
 # databases
 .db/
 *.sqlite

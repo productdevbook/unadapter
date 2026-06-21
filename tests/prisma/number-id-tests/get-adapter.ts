@@ -1,8 +1,13 @@
-import { PrismaClient } from "@prisma/client"
+import { fileURLToPath } from "node:url"
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3"
 import { prismaAdapter } from "../../../src/adapters/prisma/index.ts"
+import { PrismaClient } from "./generated/client/client.ts"
 
 export function getAdapter() {
-  const db = new PrismaClient()
+  const sqliteAdapter = new PrismaBetterSqlite3({
+    url: fileURLToPath(new URL(".db/dev.db", import.meta.url)),
+  })
+  const db = new PrismaClient({ adapter: sqliteAdapter })
 
   async function clearDb() {
     await db.user.deleteMany()
