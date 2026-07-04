@@ -23,22 +23,16 @@ import type { TablesSchema } from "./schema.ts"
  * bucket. If you need a different mix, build it as two consecutive calls
  * or use the adapter's native query builder.
  */
-export interface Where {
-  operator?:
-    | "eq"
-    | "ne"
-    | "lt"
-    | "lte"
-    | "gt"
-    | "gte"
-    | "in"
-    | "contains"
-    | "starts_with"
-    | "ends_with" // eq by default
-  value: string | number | boolean | string[] | number[] | Date | null
+interface WhereBase {
   field: string
   connector?: "AND" | "OR" // AND by default — see interface doc
 }
+
+export type Where =
+  | (WhereBase & { operator?: "eq" | "ne"; value: string | number | boolean | Date | null }) // eq by default
+  | (WhereBase & { operator: "lt" | "lte" | "gt" | "gte"; value: string | number | Date })
+  | (WhereBase & { operator: "in"; value: string[] | number[] })
+  | (WhereBase & { operator: "contains" | "starts_with" | "ends_with"; value: string })
 
 /**
  * Adapter Interface

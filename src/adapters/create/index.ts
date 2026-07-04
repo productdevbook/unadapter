@@ -460,17 +460,15 @@ export function createAdapterFactory<
       model: string
     }): W extends undefined ? undefined : CleanedWhere[] => {
       if (!where) return undefined as any
-      return where.map((w) => {
-        const { field: unsafe_field, value, operator = "eq", connector = "AND" } = w
-        if (operator === "in") {
-          if (!Array.isArray(value)) {
-            throw new TypeError("Value must be an array")
-          }
+      return where.map((w): CleanedWhere => {
+        const connector = w.connector ?? "AND"
+        if (w.operator === "in" && !Array.isArray(w.value)) {
+          throw new TypeError("Value must be an array")
         }
 
         const defaultModelName = getDefaultModelName(model)
         const defaultFieldName = getDefaultFieldName({
-          field: unsafe_field,
+          field: w.field,
           model,
         })
 
@@ -485,29 +483,52 @@ export function createAdapterFactory<
 
         if (defaultFieldName === "id" || fieldAttr.references?.field === "id") {
           if (options.advanced?.database?.useNumberId) {
-            if (Array.isArray(value)) {
+            if (w.operator === "in") {
               return {
-                operator,
+                operator: w.operator,
                 connector,
                 field: fieldName,
-                value: value.map(Number),
-              } satisfies CleanedWhere
+                value: w.value.map((v: string | number) => Number(v)),
+              }
+            }
+            if (
+              w.operator === "contains" ||
+              w.operator === "starts_with" ||
+              w.operator === "ends_with"
+            ) {
+              return { operator: w.operator, connector, field: fieldName, value: w.value }
             }
             return {
-              operator,
+              operator: w.operator ?? "eq",
               connector,
               field: fieldName,
-              value: Number(value),
-            } satisfies CleanedWhere
+              value: Number(w.value),
+            }
           }
         }
 
-        return {
-          operator,
-          connector,
-          field: fieldName,
-          value,
-        } satisfies CleanedWhere
+        switch (w.operator) {
+          case undefined:
+          case "eq":
+          case "ne":
+            return {
+              operator: w.operator ?? "eq",
+              connector,
+              field: fieldName,
+              value: w.value,
+            }
+          case "in":
+            return { operator: w.operator, connector, field: fieldName, value: w.value }
+          case "contains":
+          case "starts_with":
+          case "ends_with":
+            return { operator: w.operator, connector, field: fieldName, value: w.value }
+          case "lt":
+          case "lte":
+          case "gt":
+          case "gte":
+            return { operator: w.operator, connector, field: fieldName, value: w.value }
+        }
       }) as any
     }
 

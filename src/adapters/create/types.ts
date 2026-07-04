@@ -4,7 +4,6 @@ import type {
   AdapterSchemaCreation,
   FieldAttribute,
   InferModelTypes,
-  Prettify,
   TablesSchema,
   Where,
 } from "../../types/index.ts"
@@ -394,7 +393,9 @@ export interface CustomAdapter<
   options?: Record<string, any> | undefined
 }
 
-export type CleanedWhere = Prettify<Required<Where>>
+// Required (unlike Prettify/Omit) distributes over the Where union, keeping
+// `operator` usable as a discriminant to narrow `value`.
+export type CleanedWhere = Required<Where>
 
 export interface AdapterTestDebugLogs {
   resetDebugLogs: () => void
