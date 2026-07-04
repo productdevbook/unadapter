@@ -52,6 +52,14 @@ export function memoryAdapter<
               return record[field].startsWith(value)
             } else if (operator === "ends_with") {
               return record[field].endsWith(value)
+            } else if (operator === "gt") {
+              return record[field] > value
+            } else if (operator === "gte") {
+              return record[field] >= value
+            } else if (operator === "lt") {
+              return record[field] < value
+            } else if (operator === "lte") {
+              return record[field] <= value
             } else {
               return record[field] === value
             }
