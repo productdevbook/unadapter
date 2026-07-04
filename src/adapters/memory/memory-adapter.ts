@@ -52,14 +52,26 @@ export function memoryAdapter<
               return record[field].startsWith(value)
             } else if (operator === "ends_with") {
               return record[field].endsWith(value)
-            } else if (operator === "gt") {
-              return record[field] > value
-            } else if (operator === "gte") {
-              return record[field] >= value
-            } else if (operator === "lt") {
-              return record[field] < value
-            } else if (operator === "lte") {
-              return record[field] <= value
+            } else if (
+              operator === "gt" ||
+              operator === "gte" ||
+              operator === "lt" ||
+              operator === "lte"
+            ) {
+              // Range comparisons against null never match (SQL NULL semantics)
+              if (value === null) {
+                return false
+              }
+              switch (operator) {
+                case "gt":
+                  return record[field] > value
+                case "gte":
+                  return record[field] >= value
+                case "lt":
+                  return record[field] < value
+                case "lte":
+                  return record[field] <= value
+              }
             } else {
               return record[field] === value
             }
