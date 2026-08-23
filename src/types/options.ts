@@ -48,6 +48,8 @@ export type AdapterOptions<
           | false
           | "uuid"
           | "serial"
+          | "cuid"
+          | "nanoid"
       }
     }
 
