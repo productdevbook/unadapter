@@ -1079,7 +1079,7 @@ Current scope:
 | ------- | ------ | -------------------------------------------------------------- |
 | SQL     | ✅     | Emits SQL DDL through adapters that implement `createMigrator` |
 | Prisma  | ❌     | Use Prisma Migrate / `prisma db push` for now                  |
-| Drizzle | ❌     | Use Drizzle Kit for now                                        |
+| Drizzle | ✅     | Emits Drizzle schema source for PostgreSQL, MySQL, and SQLite  |
 
 ```typescript
 import { generate } from "unadapter/generate"
@@ -1109,6 +1109,20 @@ The target SQL dialect is taken from the adapter configuration, for example
 adapter instance whose adapter implements `createMigrator()`; Kysely, Knex, and
 Sumak support this path. The adapter can be backed by a driverless object if the
 underlying query builder can compile SQL without executing it.
+
+Drizzle generation is source-based and does not require a database adapter:
+
+```typescript
+import { generate } from "unadapter/generate"
+
+const source = await generate(getTables, {}, { format: "drizzle", dialect: "postgres" })
+```
+
+The generated source can be saved as a Drizzle schema file and then used with
+Drizzle Kit for migrations.
+
+The SQL generator is covered by
+[`tests/generate/generate.test.ts`](./tests/generate/generate.test.ts).
 
 Adapters without migrators, such as Prisma, Drizzle, MongoDB, and Memory, return
 an explicit unsupported error for SQL generation. Their native schema tools

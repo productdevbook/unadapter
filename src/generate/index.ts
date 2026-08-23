@@ -1,16 +1,20 @@
 import type { AdapterOptions, TablesSchema } from "../types/index.ts"
 import { getMigrations } from "../db/get-migration.ts"
+import { generateDrizzle, type DrizzleGenerateOptions } from "./drizzle.ts"
 
-export interface GenerateOptions {
-  format?: "sql"
-}
+export type { DrizzleDialect, DrizzleGenerateOptions } from "./drizzle.ts"
+
+export type GenerateOptions = { format?: "sql" } | DrizzleGenerateOptions
 
 /**
- * Compile the schema to a SQL DDL string without connecting to a database.
+ * Compile the schema to SQL DDL or Drizzle schema source without connecting to
+ * a database.
  *
- * `options.database` must be an adapter instance (e.g. `kyselyAdapter(db)`,
- * `knexAdapter(db)`); the dialect is taken from it. The id strategy is read
- * from `options.advanced.database`.
+ * For SQL, `options.database` must be an adapter instance (e.g.
+ * `kyselyAdapter(db)`, `knexAdapter(db)`); the dialect is taken from it. For
+ * Drizzle source generation, pass `{ format: "drizzle", dialect }` and no
+ * database adapter is required. The id strategy is read from
+ * `options.advanced.database`.
  *
  * @example
  * const sql = await generate(getTables, {
@@ -24,10 +28,14 @@ export async function generate<T extends Record<string, any>>(
   options: AdapterOptions<T>,
   generateOptions: GenerateOptions = {},
 ): Promise<string> {
+  if (generateOptions.format === "drizzle") {
+    return generateDrizzle(getTables, options, generateOptions)
+  }
+
   const format = (generateOptions as { format?: string }).format
   if (format && format !== "sql") {
     throw new Error(
-      `[unadapter] unsupported generate format "${format}". Only "sql" is currently supported.`,
+      `[unadapter] unsupported generate format "${format}". Only "sql" and "drizzle" are currently supported.`,
     )
   }
   if (typeof options.database !== "function") {
