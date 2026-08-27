@@ -141,7 +141,7 @@ describe("generate() — offline SQL schema", () => {
 
   test("throws an actionable error for unsupported formats", async () => {
     await expect(
-      generate(getTables, opts("postgres"), { format: "prisma" as any }),
-    ).rejects.toThrow(/unsupported generate format "prisma"/)
+      generate(getTables, opts("postgres"), { format: "unknown_format" as any }),
+    ).rejects.toThrow(/unsupported generate format "unknown_format"/)
   })
 })

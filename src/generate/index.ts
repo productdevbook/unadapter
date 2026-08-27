@@ -1,19 +1,22 @@
 import type { AdapterOptions, TablesSchema } from "../types/index.ts"
 import { getMigrations } from "../db/get-migration.ts"
 import { generateDrizzle, type DrizzleGenerateOptions } from "./drizzle.ts"
+import { generatePrisma, type PrismaGenerateOptions } from "./prisma.ts"
 
 export type { DrizzleDialect, DrizzleGenerateOptions } from "./drizzle.ts"
+export type { PrismaGenerateOptions, PrismaProvider } from "./prisma.ts"
 
-export type GenerateOptions = { format?: "sql" } | DrizzleGenerateOptions
+export type GenerateOptions = { format?: "sql" } | DrizzleGenerateOptions | PrismaGenerateOptions
 
 /**
- * Compile the schema to SQL DDL or Drizzle schema source without connecting to
- * a database.
+ * Compile the schema to SQL DDL, Drizzle schema, or Prisma schema source without
+ * connecting to a database.
  *
  * For SQL, `options.database` must be an adapter instance (e.g.
  * `kyselyAdapter(db)`, `knexAdapter(db)`); the dialect is taken from it. For
- * Drizzle source generation, pass `{ format: "drizzle", dialect }` and no
- * database adapter is required. The id strategy is read from
+ * Drizzle source generation, pass `{ format: "drizzle", dialect }`. For Prisma
+ * schema generation, pass `{ format: "prisma", provider? }`. No database adapter
+ * is required for source generators. The id strategy is read from
  * `options.advanced.database`.
  *
  * @example
@@ -21,7 +24,9 @@ export type GenerateOptions = { format?: "sql" } | DrizzleGenerateOptions
  *   database: kyselyAdapter(db, { type: "postgres" }),
  * })
  *
- * @throws if `options.database` is not an adapter instance.
+ * const prisma = await generate(getTables, {}, { format: "prisma" })
+ *
+ * @throws if `options.database` is not an adapter instance for format "sql".
  */
 export async function generate<T extends Record<string, any>>(
   getTables: (options: AdapterOptions<T>) => TablesSchema,
@@ -32,10 +37,14 @@ export async function generate<T extends Record<string, any>>(
     return generateDrizzle(getTables, options, generateOptions)
   }
 
+  if (generateOptions.format === "prisma") {
+    return generatePrisma(getTables, options, generateOptions)
+  }
+
   const format = (generateOptions as { format?: string }).format
   if (format && format !== "sql") {
     throw new Error(
-      `[unadapter] unsupported generate format "${format}". Only "sql" and "drizzle" are currently supported.`,
+      `[unadapter] unsupported generate format "${format}". Only "sql", "drizzle", and "prisma" are currently supported.`,
     )
   }
   if (typeof options.database !== "function") {
