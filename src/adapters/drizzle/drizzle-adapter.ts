@@ -1,7 +1,22 @@
 import type { SQL } from "drizzle-orm"
 import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
-import { and, asc, count, desc, eq, inArray, like, lt, lte, or, sql } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  gte,
+  inArray,
+  like,
+  lt,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm"
 import { BetterAuthError } from "../../error/index.ts"
 import { createAdapter } from "../create/index.ts"
 
@@ -125,74 +140,63 @@ export function drizzleAdapter<
           return res[0]
         }
       }
-      function convertWhereClause(where: Where[], model: string) {
+      function buildCondition(w: Where, model: string) {
         const schemaModel = getSchema(model)
-        if (!where) return []
+        const field = getFieldName({ model, field: w.field })
+        if (!schemaModel[field]) {
+          throw new BetterAuthError(
+            `The field "${w.field}" does not exist in the schema for the model "${model}". Please update your schema.`,
+          )
+        }
+        if (w.operator === "in") {
+          if (!Array.isArray(w.value)) {
+            throw new BetterAuthError(
+              `The value for the field "${w.field}" must be an array when using the "in" operator.`,
+            )
+          }
+          return inArray(schemaModel[field], w.value)
+        }
+        if (w.operator === "contains") {
+          return like(schemaModel[field], `%${w.value}%`)
+        }
+        if (w.operator === "starts_with") {
+          return like(schemaModel[field], `${w.value}%`)
+        }
+        if (w.operator === "ends_with") {
+          return like(schemaModel[field], `%${w.value}`)
+        }
+        if (w.operator === "lt") {
+          return lt(schemaModel[field], w.value)
+        }
+        if (w.operator === "lte") {
+          return lte(schemaModel[field], w.value)
+        }
+        if (w.operator === "gt") {
+          return gt(schemaModel[field], w.value)
+        }
+        if (w.operator === "gte") {
+          return gte(schemaModel[field], w.value)
+        }
+        if (w.operator === "ne") {
+          return ne(schemaModel[field], w.value)
+        }
+        return eq(schemaModel[field], w.value)
+      }
+
+      function convertWhereClause(where: Where[], model: string) {
+        if (!where || where.length === 0) return []
         if (where.length === 1) {
           const w = where[0]
           if (!w) {
             return []
           }
-          const field = getFieldName({ model, field: w.field })
-          if (!schemaModel[field]) {
-            throw new BetterAuthError(
-              `The field "${w.field}" does not exist in the schema for the model "${model}". Please update your schema.`,
-            )
-          }
-          if (w.operator === "in") {
-            if (!Array.isArray(w.value)) {
-              throw new BetterAuthError(
-                `The value for the field "${w.field}" must be an array when using the "in" operator.`,
-              )
-            }
-            return [inArray(schemaModel[field], w.value)]
-          }
-
-          if (w.operator === "contains") {
-            return [like(schemaModel[field], `%${w.value}%`)]
-          }
-
-          if (w.operator === "starts_with") {
-            return [like(schemaModel[field], `${w.value}%`)]
-          }
-
-          if (w.operator === "ends_with") {
-            return [like(schemaModel[field], `%${w.value}`)]
-          }
-
-          if (w.operator === "lt") {
-            return [lt(schemaModel[field], w.value)]
-          }
-
-          if (w.operator === "lte") {
-            return [lte(schemaModel[field], w.value)]
-          }
-
-          return [eq(schemaModel[field], w.value)]
+          return [buildCondition(w, model)]
         }
-        const andGroup = where.filter((w) => w.connector === "AND" || !w.connector)
+        const andGroup = where.filter((w) => (w.connector ?? "AND") !== "OR")
         const orGroup = where.filter((w) => w.connector === "OR")
 
-        const andClause = and(
-          ...andGroup.map((w) => {
-            const field = getFieldName({ model, field: w.field })
-            if (w.operator === "in") {
-              if (!Array.isArray(w.value)) {
-                throw new BetterAuthError(
-                  `The value for the field "${w.field}" must be an array when using the "in" operator.`,
-                )
-              }
-              return inArray(schemaModel[field], w.value)
-            }
-            return eq(schemaModel[field], w.value)
-          }),
-        )
-        const orClause = or(
-          ...orGroup.map((w) => {
-            const field = getFieldName({ model, field: w.field })
-            return eq(schemaModel[field], w.value)
-          }),
-        )
+        const andClause = and(...andGroup.map((w) => buildCondition(w, model)))
+        const orClause = or(...orGroup.map((w) => buildCondition(w, model)))
 
         const clause: SQL<unknown>[] = []
 
@@ -276,7 +280,8 @@ export function drizzleAdapter<
             .update(schemaModel)
             .set(values)
             .where(...clause)
-          return await builder
+          const result = await builder
+          return getAffectedRows(result)
         },
         async delete({ model, where }) {
           const schemaModel = getSchema(model)
@@ -287,10 +292,25 @@ export function drizzleAdapter<
           const schemaModel = getSchema(model)
           const clause = convertWhereClause(where, model)
           const result = await db.delete(schemaModel).where(...clause)
-          return result.length || 0
+          return getAffectedRows(result)
         },
         options: config,
       }
     },
   })
+}
+
+function getAffectedRows(result: any): number {
+  if (typeof result === "number") return result
+  if (!result) return 0
+  if (typeof result.rowCount === "number") return result.rowCount
+  if (typeof result.changes === "number") return result.changes
+  if (Array.isArray(result)) {
+    if (result[0] && typeof result[0].affectedRows === "number") {
+      return result[0].affectedRows
+    }
+    return result.length
+  }
+  if (typeof result.affectedRows === "number") return result.affectedRows
+  return 0
 }

@@ -169,7 +169,7 @@ function createTransform<
             condition = { [field]: { $lte: value } }
             break
           case "ne":
-            condition = { [field]: { $ne: value } }
+            condition = { [field]: { $ne: serializeID(_field, value, model) } }
             break
 
           case "contains":

@@ -37,6 +37,12 @@ const adapterTests = {
   SHOULD_FIND_MANY_WITH_CONTAINS_OPERATOR: "should find many with contains operator",
   SHOULD_SEARCH_USERS_WITH_STARTS_WITH: "should search users with startsWith",
   SHOULD_SEARCH_USERS_WITH_ENDS_WITH: "should search users with endsWith",
+  SHOULD_FIND_MANY_WITH_NE_OPERATOR: "should find many with ne operator",
+  SHOULD_FIND_MANY_WITH_RANGE_OPERATORS: "should find many with range operators",
+  SHOULD_COUNT_WITH_WHERE: "should count with where",
+  SHOULD_RETURN_AFFECTED_COUNT_ON_UPDATE_MANY: "should return affected count on updateMany",
+  SHOULD_RETURN_AFFECTED_COUNT_ON_DELETE_MANY: "should return affected count on deleteMany",
+  SHOULD_FIND_MANY_WITH_COMPOUND_AND_OR_WHERE: "should find many with compound and or where",
   SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: "should prefer generateId if provided",
 } as const
 
@@ -695,6 +701,334 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
         ],
       })
       expect(res.length).toBe(1)
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_NE_OPERATOR)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_NE_OPERATOR}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: "ne-test-1",
+          email: "ne1@test.com",
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: "ne-test-2",
+          email: "ne2@test.com",
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      const res = await (
+        await adapter()
+      ).findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            operator: "ne",
+            value: "ne-test-1",
+          },
+          {
+            field: "email",
+            operator: "in",
+            value: ["ne1@test.com", "ne2@test.com"],
+          },
+        ],
+      })
+      expect(res.length).toBe(1)
+      expect(res[0].email).toBe("ne2@test.com")
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_RANGE_OPERATORS)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_RANGE_OPERATORS}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      const pastDate = new Date("2020-01-01T00:00:00.000Z")
+      const middleDate = new Date("2022-01-01T00:00:00.000Z")
+      const futureDate = new Date("2025-01-01T00:00:00.000Z")
+
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: "range-user-1",
+          email: "range1@test.com",
+          emailVerified: true,
+          createdAt: pastDate,
+          updatedAt: pastDate,
+        },
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: "range-user-2",
+          email: "range2@test.com",
+          emailVerified: true,
+          createdAt: futureDate,
+          updatedAt: futureDate,
+        },
+      })
+
+      const gtRes = await (
+        await adapter()
+      ).findMany({
+        model: "user",
+        where: [
+          {
+            field: "createdAt",
+            operator: "gt",
+            value: middleDate,
+          },
+          {
+            field: "email",
+            operator: "in",
+            value: ["range1@test.com", "range2@test.com"],
+          },
+        ],
+      })
+      expect(gtRes.length).toBe(1)
+      expect(gtRes[0].email).toBe("range2@test.com")
+
+      const ltRes = await (
+        await adapter()
+      ).findMany({
+        model: "user",
+        where: [
+          {
+            field: "createdAt",
+            operator: "lt",
+            value: middleDate,
+          },
+          {
+            field: "email",
+            operator: "in",
+            value: ["range1@test.com", "range2@test.com"],
+          },
+        ],
+      })
+      expect(ltRes.length).toBe(1)
+      expect(ltRes[0].email).toBe("range1@test.com")
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_COUNT_WITH_WHERE)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_COUNT_WITH_WHERE}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      const countTag = `count-${Date.now()}`
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: countTag,
+          email: `${countTag}-1@test.com`,
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: countTag,
+          email: `${countTag}-2@test.com`,
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      const counted = await (
+        await adapter()
+      ).count({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            value: countTag,
+          },
+        ],
+      })
+      expect(counted).toBe(2)
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_RETURN_AFFECTED_COUNT_ON_UPDATE_MANY)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_RETURN_AFFECTED_COUNT_ON_UPDATE_MANY}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      const updateTag = `updatetag-${Date.now()}`
+      for (let i = 0; i < 3; i++) {
+        await (
+          await adapter()
+        ).create({
+          model: "user",
+          data: {
+            name: updateTag,
+            email: `${updateTag}-${i}@test.com`,
+            emailVerified: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        })
+      }
+      const affected = await (
+        await adapter()
+      ).updateMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            value: updateTag,
+          },
+        ],
+        update: {
+          emailVerified: true,
+        },
+      })
+      expect(affected).toBe(3)
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_RETURN_AFFECTED_COUNT_ON_DELETE_MANY)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_RETURN_AFFECTED_COUNT_ON_DELETE_MANY}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      const deleteTag = `deletetag-${Date.now()}`
+      for (let i = 0; i < 3; i++) {
+        await (
+          await adapter()
+        ).create({
+          model: "user",
+          data: {
+            name: deleteTag,
+            email: `${deleteTag}-${i}@test.com`,
+            emailVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        })
+      }
+      const affected = await (
+        await adapter()
+      ).deleteMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            value: deleteTag,
+          },
+        ],
+      })
+      expect(affected).toBe(3)
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_FIND_MANY_WITH_COMPOUND_AND_OR_WHERE)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_FIND_MANY_WITH_COMPOUND_AND_OR_WHERE}`,
+    async ({ onTestFailed }) => {
+      resetDebugLogs()
+      onTestFailed(() => {
+        printDebugLogs()
+      })
+      const compoundTag = `compound-${Date.now()}`
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: compoundTag,
+          email: `${compoundTag}-alice@test.com`,
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: compoundTag,
+          email: `${compoundTag}-bob@test.com`,
+          emailVerified: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      await (
+        await adapter()
+      ).create({
+        model: "user",
+        data: {
+          name: "other-group",
+          email: `${compoundTag}-charlie@test.com`,
+          emailVerified: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+
+      const res = await (
+        await adapter()
+      ).findMany({
+        model: "user",
+        where: [
+          {
+            field: "name",
+            value: compoundTag,
+            connector: "AND",
+          },
+          {
+            field: "email",
+            operator: "ends_with",
+            value: "alice@test.com",
+            connector: "OR",
+          },
+          {
+            field: "email",
+            operator: "ends_with",
+            value: "bob@test.com",
+            connector: "OR",
+          },
+        ],
+      })
+      expect(res.length).toBe(2)
     },
   )
 

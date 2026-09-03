@@ -63,51 +63,45 @@ export function prismaAdapter<
           }
         }, {})
       }
-      function operatorToPrismaOperator(operator: string) {
-        switch (operator) {
-          case "starts_with":
-            return "startsWith"
-          case "ends_with":
-            return "endsWith"
-          default:
-            return operator
+      function buildCondition(model: string, w: Where) {
+        const fieldName = getFieldName({ model, field: w.field })
+        if (!w.operator || w.operator === "eq") {
+          return { [fieldName]: w.value }
+        }
+        if (w.operator === "ne") {
+          return { [fieldName]: { not: w.value } }
+        }
+        const operatorMap: Record<string, string> = {
+          starts_with: "startsWith",
+          ends_with: "endsWith",
+          contains: "contains",
+          in: "in",
+          gt: "gt",
+          gte: "gte",
+          lt: "lt",
+          lte: "lte",
+        }
+        const prismaOp = operatorMap[w.operator] || w.operator
+        return {
+          [fieldName]: {
+            [prismaOp]: w.value,
+          },
         }
       }
+
       const convertWhereClause = (model: string, where?: Where[]) => {
-        if (!where) return {}
+        if (!where || where.length === 0) return {}
         if (where.length === 1) {
           const w = where[0]
           if (!w) {
-            return
+            return {}
           }
-          return {
-            [getFieldName({ model, field: w.field })]:
-              w.operator === "eq" || !w.operator
-                ? w.value
-                : {
-                    [operatorToPrismaOperator(w.operator)]: w.value,
-                  },
-          }
+          return buildCondition(model, w)
         }
-        const and = where.filter((w) => w.connector === "AND" || !w.connector)
+        const and = where.filter((w) => (w.connector ?? "AND") !== "OR")
         const or = where.filter((w) => w.connector === "OR")
-        const andClause = and.map((w) => {
-          return {
-            [getFieldName({ model, field: w.field })]:
-              w.operator === "eq" || !w.operator
-                ? w.value
-                : {
-                    [operatorToPrismaOperator(w.operator)]: w.value,
-                  },
-          }
-        })
-        const orClause = or.map((w) => {
-          return {
-            [getFieldName({ model, field: w.field })]: {
-              [w.operator || "eq"]: w.value,
-            },
-          }
-        })
+        const andClause = and.map((w) => buildCondition(model, w))
+        const orClause = or.map((w) => buildCondition(model, w))
 
         return {
           ...(andClause.length ? { AND: andClause } : {}),

@@ -35,47 +35,56 @@ export function memoryAdapter<
       },
     },
     adapter: ({ getFieldName, options }) => {
-      function convertWhereClause(where: CleanedWhere[], table: any[]) {
-        return table.filter((record) => {
-          return where.every((clause) => {
-            const { field, value, operator } = clause
+      function matchClause(record: any, clause: CleanedWhere) {
+        const { field, value, operator } = clause
 
-            if (operator === "in") {
-              if (!Array.isArray(value)) {
-                throw new TypeError("Value must be an array")
-              }
-              // @ts-expect-error - Record may have any structure
-              return value.includes(record[field])
-            } else if (operator === "contains") {
-              return record[field].includes(value)
-            } else if (operator === "starts_with") {
-              return record[field].startsWith(value)
-            } else if (operator === "ends_with") {
-              return record[field].endsWith(value)
-            } else if (
-              operator === "gt" ||
-              operator === "gte" ||
-              operator === "lt" ||
-              operator === "lte"
-            ) {
-              // Range comparisons against null never match (SQL NULL semantics)
-              if (value === null) {
-                return false
-              }
-              switch (operator) {
-                case "gt":
-                  return record[field] > value
-                case "gte":
-                  return record[field] >= value
-                case "lt":
-                  return record[field] < value
-                case "lte":
-                  return record[field] <= value
-              }
-            } else {
-              return record[field] === value
-            }
-          })
+        if (operator === "in") {
+          if (!Array.isArray(value)) {
+            throw new TypeError("Value must be an array")
+          }
+          // @ts-expect-error - Record may have any structure
+          return value.includes(record[field])
+        }
+        if (operator === "contains") {
+          return typeof record[field] === "string" && record[field].includes(value)
+        }
+        if (operator === "starts_with") {
+          return typeof record[field] === "string" && record[field].startsWith(value)
+        }
+        if (operator === "ends_with") {
+          return typeof record[field] === "string" && record[field].endsWith(value)
+        }
+        if (operator === "ne") {
+          return record[field] !== value
+        }
+        if (operator === "gt" || operator === "gte" || operator === "lt" || operator === "lte") {
+          // Range comparisons against null never match (SQL NULL semantics)
+          if (value === null || record[field] === null || record[field] === undefined) {
+            return false
+          }
+          switch (operator) {
+            case "gt":
+              return record[field] > value
+            case "gte":
+              return record[field] >= value
+            case "lt":
+              return record[field] < value
+            case "lte":
+              return record[field] <= value
+          }
+        }
+        return record[field] === value
+      }
+
+      function convertWhereClause(where: CleanedWhere[], table: any[]) {
+        if (!where || where.length === 0) return table
+        const ands = where.filter((c) => (c.connector ?? "AND") !== "OR")
+        const ors = where.filter((c) => c.connector === "OR")
+
+        return table.filter((record) => {
+          const andMatches = ands.every((c) => matchClause(record, c))
+          const orMatches = ors.length === 0 || ors.some((c) => matchClause(record, c))
+          return andMatches && orMatches
         })
       }
       return {
@@ -115,8 +124,12 @@ export function memoryAdapter<
           }
           return table
         },
-        count: async ({ model }) => {
-          return db[model].length
+        count: async ({ model, where }) => {
+          const table = db[model]
+          if (where && where.length > 0) {
+            return convertWhereClause(where, table).length
+          }
+          return table.length
         },
         update: async ({ model, where, update }) => {
           const table = db[model]
@@ -144,13 +157,13 @@ export function memoryAdapter<
           })
           return count
         },
-        updateMany({ model, where, update }) {
+        updateMany: async ({ model, where, update }) => {
           const table = db[model]
           const res = convertWhereClause(where, table)
           res.forEach((record) => {
             Object.assign(record, update)
           })
-          return res[0] || null
+          return res.length
         },
       }
     },
