@@ -1,6 +1,6 @@
 {
   "name": "unadapter",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": false,
   "description": "Universal, type-safe database adapter layer with a unified API for Drizzle, Prisma, Kysely, Knex, MongoDB, Sumak and in-memory backends",
   "keywords": [
