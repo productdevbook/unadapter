@@ -2,7 +2,7 @@ import type { Sumak } from "sumak"
 import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import type { SumakDatabaseType } from "./types.ts"
-import { and, or } from "sumak"
+import { and, count, or } from "sumak"
 import { createAdapterFactory } from "../create/index.ts"
 import { createSumakMigratorFromSumak } from "./migrator.ts"
 
@@ -221,7 +221,7 @@ export function sumakAdapter<
         },
 
         count: async ({ model, where }) => {
-          let q: any = (db as any).selectCount(model)
+          let q: any = (db as any).selectFrom(model).select({ count: count() })
           const cb = buildWhereExpr(model, where)
           if (cb) q = q.where(cb)
           const rows = await q.many()

@@ -261,7 +261,7 @@ export function kyselyAdapter<
             query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
           }
           const res = await query.execute()
-          return res.length
+          return res.reduce((acc: number, r: any) => acc + Number(r.numUpdatedRows ?? 0), 0)
         },
 
         count: async ({ model, where }) => {
@@ -313,7 +313,8 @@ export function kyselyAdapter<
           if (or) {
             query = query.where((eb) => eb.or(or.map((expr) => expr(eb))))
           }
-          return (await query.execute()).length
+          const res = await query.execute()
+          return res.reduce((acc: number, r: any) => acc + Number(r.numDeletedRows ?? 0), 0)
         },
         createMigrator: () =>
           createKyselyMigratorFromKysely({

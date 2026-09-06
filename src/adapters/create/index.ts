@@ -839,7 +839,7 @@ export function createAdapterFactory<
       }) as Adapter<T, Schema>["transaction"],
       options: {
         adapterConfig: config,
-        ...(adapterInstance.options ?? {}),
+        ...adapterInstance.options,
       },
       id: config.adapterId,
 
