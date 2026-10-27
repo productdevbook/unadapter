@@ -1,22 +1,7 @@
 import type { SQL } from "drizzle-orm"
 import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  gte,
-  inArray,
-  like,
-  lt,
-  lte,
-  ne,
-  or,
-  sql,
-} from "drizzle-orm"
+import { and, asc, count, desc, eq, gt, gte, inArray, like, lt, lte, ne, or } from "drizzle-orm"
 import { BetterAuthError } from "../../error/index.ts"
 import { createAdapter } from "../create/index.ts"
 
@@ -77,68 +62,22 @@ export function drizzleAdapter<
         }
         return schemaModel
       }
-      const withReturning = async (
-        model: string,
-        builder: any,
-        data: Record<string, any>,
-        where?: Where[],
-      ) => {
-        if (config.provider !== "mysql") {
-          const c = await builder.returning()
-          return c[0]
-        }
-        await builder.execute()
+      const findById = async (model: string, id: unknown) => {
         const schemaModel = getSchema(model)
-        const builderVal = builder.config?.values
-        if (where?.length) {
-          const clause = convertWhereClause(where, model)
-          const res = await db
-            .select()
-            .from(schemaModel)
-            .where(...clause)
-          return res[0]
-        } else if (builderVal && builderVal[0]?.id?.value) {
-          let tId = builderVal[0]?.id?.value
-          if (!tId) {
-            // get last inserted id
-            const lastInsertId = await db
-              .select({ id: sql`LAST_INSERT_ID()` })
-              .from(schemaModel)
-              .orderBy(desc(schemaModel.id))
-              .limit(1)
-            tId = lastInsertId[0].id
-          }
-          const res = await db
-            .select()
-            .from(schemaModel)
-            .where(eq(schemaModel.id, tId))
-            .limit(1)
-            .execute()
-          return res[0]
-        } else if (data.id) {
-          const res = await db
-            .select()
-            .from(schemaModel)
-            .where(eq(schemaModel.id, data.id))
-            .limit(1)
-            .execute()
-          return res[0]
-        } else {
-          // If the user doesn't have `id` as a field, then this will fail.
-          // We expect that they defined `id` in all of their models.
-          if (!("id" in schemaModel)) {
-            throw new BetterAuthError(
-              `The model "${model}" does not have an "id" field. Please use the "id" field as your primary key.`,
-            )
-          }
-          const res = await db
-            .select()
-            .from(schemaModel)
-            .orderBy(desc(schemaModel.id))
-            .limit(1)
-            .execute()
-          return res[0]
+        // If the user doesn't have `id` as a field, then this will fail.
+        // We expect that they defined `id` in all of their models.
+        if (!("id" in schemaModel)) {
+          throw new BetterAuthError(
+            `The model "${model}" does not have an "id" field. Please use the "id" field as your primary key.`,
+          )
         }
+        const res = await db
+          .select()
+          .from(schemaModel)
+          .where(eq(schemaModel.id, id))
+          .limit(1)
+          .execute()
+        return res[0] ?? null
       }
       function buildCondition(w: Where, model: string) {
         const schemaModel = getSchema(model)
@@ -227,8 +166,28 @@ export function drizzleAdapter<
           const schemaModel = getSchema(model)
           checkMissingFields(schemaModel, model, values)
           const builder = db.insert(schemaModel).values(values)
-          const returned = await withReturning(model, builder, values)
-          return returned
+          if (config.provider !== "mysql") {
+            const rows = await builder.returning()
+            return rows[0]
+          }
+          // MySQL has no RETURNING. Look the row up by the id we sent (or the
+          // schema's $defaultFn produced), or by the auto-increment id the
+          // insert reports. Never fall back to "latest row": under concurrent
+          // inserts that is someone else's row.
+          const result = await builder
+          const header = Array.isArray(result) ? result[0] : result
+          const insertedId =
+            values.id ??
+            builder.config?.values?.[0]?.id?.value ??
+            (typeof header?.insertId === "number" && header.insertId > 0
+              ? header.insertId
+              : undefined)
+          if (insertedId === undefined || insertedId === null) {
+            throw new BetterAuthError(
+              `Could not determine the id of the row inserted into "${model}".`,
+            )
+          }
+          return await findById(model, insertedId)
         },
         async findOne({ model, where }) {
           const schemaModel = getSchema(model)
@@ -271,7 +230,21 @@ export function drizzleAdapter<
             .update(schemaModel)
             .set(values)
             .where(...clause)
-          return await withReturning(model, builder, values as any, where)
+          if (config.provider !== "mysql") {
+            const rows = await builder.returning()
+            return rows[0] ?? null
+          }
+          // MySQL has no RETURNING. Resolve the target row's id before the
+          // update (which may change the fields `where` matches on), then
+          // read the row back by that id.
+          const target = await db
+            .select({ id: schemaModel.id })
+            .from(schemaModel)
+            .where(...clause)
+            .limit(1)
+          if (!target.length) return null
+          await builder
+          return await findById(model, target[0].id)
         },
         async updateMany({ model, where, update: values }) {
           const schemaModel = getSchema(model)

@@ -71,15 +71,13 @@ export function sumakAdapter<
       supportsDates: !(config?.type === "sqlite" || config?.type === "mssql" || !config?.type),
       supportsJSON: false,
     },
-    adapter: ({ getFieldName, schema }) => {
+    adapter: ({ getFieldName, getFieldAttributes, schema }) => {
       function transformValueToDB(value: any, model: string, field: string): any {
         if (field === "id") return value
         const { type = "sqlite" } = config || {}
-        let f = schema[model]?.fields[field]
-        if (!f) {
-          // @ts-expect-error - model name might be a sanitized custom name
-          f = Object.values(schema).find((f) => f.modelName === model)!
-        }
+        // `model` is the table name (maybe plural or custom) and `field` the
+        // column name, so resolve them back to the schema entry.
+        const f = getFieldAttributes({ model, field })
         if (
           f.type === "boolean" &&
           (type === "sqlite" || type === "mssql") &&
@@ -137,19 +135,31 @@ export function sumakAdapter<
         create: async ({ data, model }) => {
           const idField = getFieldName({ model, field: "id" })
           if (!supportsReturning) {
-            const result = await (db as any).insertInto(model).values(data).exec()
             const supplied = (data as { id?: unknown }).id
-            const insertedId =
-              typeof supplied === "string" || typeof supplied === "number"
-                ? supplied
-                : (result?.insertId ?? result?.lastInsertId)
-            if (insertedId !== undefined) {
-              const row = await fetchByPrimaryKey(model, idField, insertedId)
-              if (row) return row
+            if (typeof supplied === "string" || typeof supplied === "number") {
+              await (db as any).insertInto(model).values(data).exec()
+              return (await fetchByPrimaryKey(model, idField, supplied)) ?? null
             }
-            // Last resort fallback — race-prone but mirrors what Kysely
-            // does on MySQL when no insertId is available either.
-            return await (db as any).selectFrom(model).selectAll().orderBy(idField, "DESC").first()
+            // Sumak's execute result drops the driver's insertId, so read
+            // LAST_INSERT_ID() on the same connection inside a transaction.
+            // Never fall back to "latest row": under concurrent inserts that
+            // is someone else's row.
+            return await (db as any).transaction(async (tx: any) => {
+              await tx.insertInto(model).values(data).exec()
+              const [row] = await tx.driver().query("SELECT LAST_INSERT_ID() AS id", [])
+              const insertedId = Number(row?.id)
+              if (!insertedId) {
+                throw new Error(
+                  `[Sumak Adapter] Could not determine the id of the row inserted into "${model}".`,
+                )
+              }
+              const inserted = await tx
+                .selectFrom(model)
+                .selectAll()
+                .where((eb: any) => eb[idField].eq(insertedId))
+                .first()
+              return inserted ?? null
+            })
           }
           const rows = await (db as any).insertInto(model).values(data).returningAll().many()
           return Array.isArray(rows) ? rows[0] : rows
@@ -185,23 +195,18 @@ export function sumakAdapter<
         update: async ({ model, where, update: values }) => {
           const cb = buildWhereExpr(model, where)
           if (!supportsReturning) {
+            // No RETURNING. Resolve the target row's id before the update
+            // (which may change the fields `where` matches on), then read
+            // the row back by that id.
+            const idField = getFieldName({ model, field: "id" })
+            let target: any = (db as any).selectFrom(model).select(idField)
+            if (cb) target = target.where(cb)
+            const targetRow = await target.first()
+            if (!targetRow) return null
             let q: any = (db as any).update(model).set(values)
             if (cb) q = q.where(cb)
             await q.exec()
-            // Fetch the updated row by the first where clause, mirroring
-            // the Knex/Kysely MySQL adapter strategy.
-            if (where && where.length > 0) {
-              const w = where[0]
-              const fieldName = getFieldName({ model, field: w.field })
-              const value = transformValueToDB(w.value, model, w.field)
-              const row = await (db as any)
-                .selectFrom(model)
-                .selectAll()
-                .where((eb: any) => eb[fieldName].eq(value))
-                .first()
-              return row
-            }
-            return null
+            return (await fetchByPrimaryKey(model, idField, targetRow[idField])) ?? null
           }
           // Sumak's UpdateBuilder requires `.where(...)` before `.returningAll()` —
           // returningAll() narrows to a returning-builder that doesn't expose where.
