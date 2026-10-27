@@ -24,7 +24,11 @@ interface CustomOptions {
 }
 
 const tables = createTable<CustomOptions>((options) => {
-  const { user, account, ..._pluginTables } = mergePluginSchemas<CustomOptions>(options) || {}
+  const {
+    user,
+    account: _account,
+    ..._pluginTables
+  } = mergePluginSchemas<CustomOptions>(options) || {}
 
   return {
     user: {

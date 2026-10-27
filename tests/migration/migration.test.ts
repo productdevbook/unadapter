@@ -3,7 +3,6 @@ import type { TablesSchema } from "../../src/types/index.ts"
 import { Kysely, MysqlDialect, PostgresDialect, SqliteDialect } from "kysely"
 import { describe, expect, test } from "vitest"
 import { createKyselyMigratorFromKysely } from "../../src/adapters/kysely/migrator.ts"
-import { getMigrations } from "../../src/db/get-migration.ts"
 import { toZodSchema } from "../../src/db/to-zod.ts"
 
 // Build a Kysely instance with no real driver — we never .execute(),
