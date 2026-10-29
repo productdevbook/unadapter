@@ -1,4 +1,4 @@
-import type { InsertQueryBuilder, Kysely, UpdateQueryBuilder } from "kysely"
+import type { Kysely } from "kysely"
 import type { Adapter, TablesSchema, Where } from "../../types/index.ts"
 import type { AdapterDebugLogs } from "../create/index.ts"
 import type { KyselyDatabaseType } from "./types.ts"
@@ -41,61 +41,24 @@ export function kyselyAdapter<
       supportsDates: !(config?.type === "sqlite" || config?.type === "mssql" || !config?.type),
       supportsJSON: false,
     },
-    adapter: ({ getFieldName, schema }) => {
-      const withReturning = async (
-        values: Record<string, any>,
-        builder: InsertQueryBuilder<any, any, any> | UpdateQueryBuilder<any, string, string, any>,
-        model: string,
-        where: Where[],
-      ) => {
-        let res: any
-        if (config?.type === "mysql") {
-          // This isn't good, but kysely doesn't support returning in mysql and it doesn't return the inserted id.
-          // Change this if there is a better way.
-          await builder.execute()
-          const field = values.id
-            ? "id"
-            : where.length > 0 && where[0].field
-              ? where[0].field
-              : "id"
-
-          if (!values.id && where.length === 0) {
-            res = await db
-              .selectFrom(model)
-              .selectAll()
-              .orderBy(getFieldName({ model, field }), "desc")
-              .limit(1)
-              .executeTakeFirst()
-            return res
-          }
-
-          const value = values[field] || where[0].value
-          res = await db
-            .selectFrom(model)
-            .selectAll()
-            .orderBy(getFieldName({ model, field }), "desc")
-            .where(getFieldName({ model, field }), "=", value)
-            .limit(1)
-            .executeTakeFirst()
-          return res
-        }
-        if (config?.type === "mssql") {
-          res = await builder.outputAll("inserted").executeTakeFirst()
-          return res
-        }
-        res = await builder.returningAll().executeTakeFirst()
-        return res
+    adapter: ({ getFieldName, getFieldAttributes }) => {
+      const findById = async (model: string, id: unknown) => {
+        const idField = getFieldName({ model, field: "id" })
+        const res = await db
+          .selectFrom(model)
+          .selectAll()
+          .where(idField, "=", id)
+          .executeTakeFirst()
+        return res ?? null
       }
       function transformValueToDB(value: any, model: string, field: string) {
         if (field === "id") {
           return value
         }
         const { type = "sqlite" } = config || {}
-        let f = schema[model]?.fields[field]
-        if (!f) {
-          // @ts-expect-error - The model name can be a sanitized, thus using the custom model name, not one of the default ones.
-          f = Object.values(schema).find((f) => f.modelName === model)!
-        }
+        // `model` is the table name (maybe plural or custom) and `field` the
+        // column name, so resolve them back to the schema entry.
+        const f = getFieldAttributes({ model, field })
         if (
           f.type === "boolean" &&
           (type === "sqlite" || type === "mssql") &&
@@ -108,6 +71,22 @@ export function kyselyAdapter<
           return type === "sqlite" ? value.toISOString() : value
         }
         return value
+      }
+
+      function applyWhere<Q extends { where: (...args: any[]) => any }>(
+        query: Q,
+        model: string,
+        w?: Where[],
+      ): Q {
+        const { and, or } = convertWhereClause(model, w)
+        let q: any = query
+        if (and) {
+          q = q.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
+        }
+        if (or) {
+          q = q.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
+        }
+        return q
       }
 
       function convertWhereClause(model: string, w?: Where[]) {
@@ -186,7 +165,29 @@ export function kyselyAdapter<
       return {
         create: async ({ data, model }) => {
           const builder = db.insertInto(model).values(data)
-          return await withReturning(data, builder, model, [])
+          if (config?.type === "mysql") {
+            // MySQL has no RETURNING. Look the row up by the id we sent, or by
+            // the auto-increment id the insert reports. Never fall back to
+            // "latest row": under concurrent inserts that is someone else's row.
+            const result = await builder.executeTakeFirst()
+            const suppliedId = (data as { id?: unknown }).id
+            const insertedId =
+              suppliedId !== undefined && suppliedId !== null
+                ? suppliedId
+                : result.insertId !== undefined && result.insertId > 0n
+                  ? Number(result.insertId)
+                  : undefined
+            if (insertedId === undefined) {
+              throw new Error(
+                `[Kysely Adapter] Could not determine the id of the row inserted into "${model}".`,
+              )
+            }
+            return await findById(model, insertedId)
+          }
+          if (config?.type === "mssql") {
+            return await builder.outputAll("inserted").executeTakeFirst()
+          }
+          return await builder.returningAll().executeTakeFirst()
         },
 
         findOne: async ({ model, where, select: _select }) => {
@@ -239,16 +240,27 @@ export function kyselyAdapter<
         },
 
         update: async ({ model, where, update: values }) => {
-          const { and, or } = convertWhereClause(model, where)
-
-          let query: any = db.updateTable(model).set(values as any)
-          if (and) {
-            query = query.where((eb: any) => eb.and(and.map((expr) => expr(eb))))
+          const query = applyWhere(db.updateTable(model).set(values as any), model, where)
+          if (config?.type === "mysql") {
+            // MySQL has no RETURNING. Resolve the target row's id before the
+            // update (which may change the fields `where` matches on), then
+            // read the row back by that id.
+            const idField = getFieldName({ model, field: "id" })
+            const target = await applyWhere(
+              (db as any).selectFrom(model).select(idField),
+              model,
+              where,
+            )
+              .limit(1)
+              .executeTakeFirst()
+            if (!target) return null
+            await query.execute()
+            return await findById(model, (target as any)[idField])
           }
-          if (or) {
-            query = query.where((eb: any) => eb.or(or.map((expr) => expr(eb))))
+          if (config?.type === "mssql") {
+            return (await query.outputAll("inserted").executeTakeFirst()) ?? null
           }
-          return await withReturning(values as any, query, model, where)
+          return (await query.returningAll().executeTakeFirst()) ?? null
         },
 
         updateMany: async ({ model, where, update: values }) => {

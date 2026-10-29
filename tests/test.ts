@@ -44,6 +44,12 @@ const adapterTests = {
   SHOULD_RETURN_AFFECTED_COUNT_ON_DELETE_MANY: "should return affected count on deleteMany",
   SHOULD_FIND_MANY_WITH_COMPOUND_AND_OR_WHERE: "should find many with compound and or where",
   SHOULD_PREFER_GENERATE_ID_IF_PROVIDED: "should prefer generateId if provided",
+  SHOULD_REJECT_OPERATOR_OBJECTS_IN_WHERE_VALUES: "should reject operator objects in where values",
+  SHOULD_TREAT_SEARCH_VALUES_LITERALLY_AND_ANCHORED:
+    "should treat search values literally and anchored",
+  SHOULD_REQUIRE_WHERE_FOR_UPDATE_AND_DELETE: "should require where for update and delete",
+  SHOULD_RETURN_UPDATED_ROW_FOR_NON_EQ_WHERE: "should return updated row for non-eq where",
+  SHOULD_RETURN_OWN_ROW_ON_CONCURRENT_CREATE: "should return own row on concurrent create",
 } as const
 
 const { ...numberIdAdapterTestsCopy } = adapterTests
@@ -1064,6 +1070,138 @@ async function adapterTest<T extends Record<string, any> = Record<string, any>>(
       })
 
       expect(res.id).toBe("mocked-id")
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_REJECT_OPERATOR_OBJECTS_IN_WHERE_VALUES)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_REJECT_OPERATOR_OBJECTS_IN_WHERE_VALUES}`,
+    async () => {
+      const db = await adapter()
+      // MongoDB and Prisma would read these as operators and match any row.
+      for (const value of [{ $ne: "" }, { not: "" }, [{ $ne: "" }]]) {
+        await expect(
+          db.findOne({ model: "user", where: [{ field: "email", value }] }),
+        ).rejects.toThrow()
+      }
+      await expect(
+        db.findMany({
+          model: "user",
+          where: [{ field: "email", operator: "in", value: [{ $ne: "" }] }],
+        }),
+      ).rejects.toThrow()
+      await expect(
+        db.findMany({
+          model: "user",
+          where: [{ field: "email", operator: "contains", value: { $ne: "" } }],
+        }),
+      ).rejects.toThrow()
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_TREAT_SEARCH_VALUES_LITERALLY_AND_ANCHORED)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_TREAT_SEARCH_VALUES_LITERALLY_AND_ANCHORED}`,
+    async () => {
+      const db = await adapter()
+      const created = await db.create({
+        model: "user",
+        data: {
+          name: "anchor-check-xyz",
+          email: "anchor-check-xyz@email.com",
+          emailVerified: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      const search = (operator: string, value: string) =>
+        db.findMany({ model: "user", where: [{ field: "name", operator, value }] })
+      try {
+        // Regex metacharacters must not act as wildcards.
+        expect(await search("contains", ".*")).toHaveLength(0)
+        expect(await search("starts_with", ".*")).toHaveLength(0)
+        expect(await search("ends_with", ".*")).toHaveLength(0)
+        // starts_with / ends_with must be anchored.
+        expect(await search("starts_with", "check-xyz")).toHaveLength(0)
+        expect(await search("ends_with", "anchor-check")).toHaveLength(0)
+        expect((await search("starts_with", "anchor-check")).map((u) => u.id)).toContain(created.id)
+        expect((await search("ends_with", "check-xyz")).map((u) => u.id)).toContain(created.id)
+      } finally {
+        await db.delete({ model: "user", where: [{ field: "id", value: created.id }] })
+      }
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_REQUIRE_WHERE_FOR_UPDATE_AND_DELETE)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_REQUIRE_WHERE_FOR_UPDATE_AND_DELETE}`,
+    async () => {
+      const db = await adapter()
+      const before = await db.count({ model: "user" })
+      expect(before).toBeGreaterThan(0)
+      await expect(db.delete({ model: "user", where: [] })).rejects.toThrow(/non-empty where/)
+      await expect(
+        db.update({ model: "user", where: [], update: { name: "clobbered" } }),
+      ).rejects.toThrow(/non-empty where/)
+      expect(await db.count({ model: "user" })).toBe(before)
+      expect(
+        await db.count({ model: "user", where: [{ field: "name", value: "clobbered" }] }),
+      ).toBe(0)
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_RETURN_UPDATED_ROW_FOR_NON_EQ_WHERE)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_RETURN_UPDATED_ROW_FOR_NON_EQ_WHERE}`,
+    async () => {
+      const db = await adapter()
+      const created = await db.create({
+        model: "user",
+        data: {
+          name: "non-eq-update",
+          email: "non-eq-update-unique@email.com",
+          emailVerified: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      })
+      try {
+        // The MySQL paths used to re-read with `= where[0].value`, which
+        // returns nothing for a starts_with filter.
+        const res = await db.update({
+          model: "user",
+          where: [{ field: "email", operator: "starts_with", value: "non-eq-update-unique" }],
+          update: { name: "non-eq-updated" },
+        })
+        expect(res?.id).toBe(created.id)
+        expect(res?.name).toBe("non-eq-updated")
+      } finally {
+        await db.delete({ model: "user", where: [{ field: "id", value: created.id }] })
+      }
+    },
+  )
+
+  test.skipIf(disabledTests?.SHOULD_RETURN_OWN_ROW_ON_CONCURRENT_CREATE)(
+    `${testPrefix ? `${testPrefix} - ` : ""}${adapterTests.SHOULD_RETURN_OWN_ROW_ON_CONCURRENT_CREATE}`,
+    async () => {
+      const db = await adapter()
+      const emails = Array.from({ length: 10 }, (_, i) => `concurrent-${i}@email.com`)
+      const created = await Promise.all(
+        emails.map((email) =>
+          db.create({
+            model: "user",
+            data: {
+              name: "concurrent",
+              email,
+              emailVerified: false,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          }),
+        ),
+      )
+      try {
+        expect(created.map((u) => u.email)).toEqual(emails)
+        expect(new Set(created.map((u) => u.id)).size).toBe(emails.length)
+      } finally {
+        await db.deleteMany({ model: "user", where: [{ field: "name", value: "concurrent" }] })
+      }
     },
   )
 }

@@ -1,7 +1,11 @@
 import type { Db } from "mongodb"
 import type { Adapter, AdapterOptions, TablesSchema, Where } from "../../types/index.ts"
 import { ObjectId } from "mongodb"
-import { withApplyDefault } from "../utils.ts"
+import { assertNonEmptyWhere, assertSafeWhereValue, withApplyDefault } from "../utils.ts"
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
 
 function createTransform<
   T extends Record<string, any> = Record<string, any>,
@@ -140,6 +144,7 @@ function createTransform<
       const conditions = where.map((w) => {
         const { field: _field, value, operator = "eq", connector = "AND" } = w
         let condition: any
+        assertSafeWhereValue(w)
         const field = getField(_field, model)
         switch (operator.toLowerCase()) {
           case "eq":
@@ -173,13 +178,13 @@ function createTransform<
             break
 
           case "contains":
-            condition = { [field]: { $regex: `.*${value}.*` } }
+            condition = { [field]: { $regex: escapeRegex(String(value)) } }
             break
           case "starts_with":
-            condition = { [field]: { $regex: `${value}.*` } }
+            condition = { [field]: { $regex: `^${escapeRegex(String(value))}` } }
             break
           case "ends_with":
-            condition = { [field]: { $regex: `.*${value}` } }
+            condition = { [field]: { $regex: `${escapeRegex(String(value))}$` } }
             break
           default:
             throw new Error(`Unsupported operator: ${operator}`)
@@ -257,6 +262,7 @@ export function mongodbAdapter<
         return res
       },
       async update({ model, where, update: values }) {
+        assertNonEmptyWhere("update", model, where)
         const clause = transform.convertWhereClause(where, model)
 
         const transformedData = transform.transformInput(values, model, "update")
@@ -280,6 +286,7 @@ export function mongodbAdapter<
         return res.modifiedCount
       },
       async delete({ model, where }) {
+        assertNonEmptyWhere("delete", model, where)
         const clause = transform.convertWhereClause(where, model)
         await db.collection(transform.getModelName(model)).findOneAndDelete(clause)
       },

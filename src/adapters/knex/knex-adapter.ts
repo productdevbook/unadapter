@@ -41,17 +41,15 @@ export function knexAdapter<
       supportsDates: !(config?.type === "sqlite" || config?.type === "mssql" || !config?.type),
       supportsJSON: false,
     },
-    adapter: ({ getFieldName, schema }) => {
+    adapter: ({ getFieldName, getFieldAttributes }) => {
       function transformValueToDB(value: any, model: string, field: string) {
         if (field === "id") {
           return value
         }
         const { type = "sqlite" } = config || {}
-        let f = schema[model]?.fields[field]
-        if (!f) {
-          // @ts-expect-error - The model name can be sanitized.
-          f = Object.values(schema).find((f) => f.modelName === model)!
-        }
+        // `model` is the table name (maybe plural or custom) and `field` the
+        // column name, so resolve them back to the schema entry.
+        const f = getFieldAttributes({ model, field })
         if (
           f.type === "boolean" &&
           (type === "sqlite" || type === "mssql") &&
@@ -114,20 +112,11 @@ export function knexAdapter<
         return query
       }
 
-      async function fetchInsertedRow(model: string, values: Record<string, any>, where: Where[]) {
-        const field = values.id ? "id" : where.length > 0 && where[0].field ? where[0].field : "id"
-
-        if (!values.id && where.length === 0) {
-          const row = await db(model).orderBy(getFieldName({ model, field }), "desc").first()
-          return row
-        }
-
-        const value = values[field] || where[0].value
+      async function findById(model: string, id: any) {
         const row = await db(model)
-          .where(getFieldName({ model, field }), value)
-          .orderBy(getFieldName({ model, field }), "desc")
+          .where(getFieldName({ model, field: "id" }), id)
           .first()
-        return row
+        return row ?? null
       }
 
       return {
@@ -140,7 +129,6 @@ export function knexAdapter<
             // safe under concurrent inserts, unlike an `ORDER BY id DESC`
             // fallback.
             const result = await db(model).insert(data)
-            const idField = getFieldName({ model, field: "id" })
             const dataId = (data as { id?: unknown }).id
             const insertedId: string | number | undefined =
               typeof dataId === "string" || typeof dataId === "number"
@@ -148,11 +136,14 @@ export function knexAdapter<
                 : Array.isArray(result) && typeof result[0] === "number" && result[0] > 0
                   ? result[0]
                   : undefined
-            if (insertedId !== undefined) {
-              const row = await db(model).where(idField, insertedId).first()
-              if (row) return row
+            if (insertedId === undefined) {
+              // Never fall back to "latest row": under concurrent inserts
+              // that is someone else's row.
+              throw new Error(
+                `[Knex Adapter] Could not determine the id of the row inserted into "${model}".`,
+              )
             }
-            return await fetchInsertedRow(model, data, [])
+            return await findById(model, insertedId)
           }
           const rows = await db(model).insert(data).returning("*")
           return Array.isArray(rows) ? rows[0] : rows
@@ -186,10 +177,16 @@ export function knexAdapter<
         update: async ({ model, where, update: values }) => {
           const type = config?.type
           if (type === "mysql") {
+            // MySQL has no RETURNING. Resolve the target row's id before the
+            // update (which may change the fields `where` matches on), then
+            // read the row back by that id.
+            const idField = getFieldName({ model, field: "id" })
+            const target = await applyWhere(db(model).select(idField), model, where).first()
+            if (!target) return null
             let query = db(model).update(values as any)
             query = applyWhere(query, model, where)
             await query
-            return await fetchInsertedRow(model, values as any, where)
+            return await findById(model, target[idField])
           }
           let query = db(model)
             .update(values as any)

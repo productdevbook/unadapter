@@ -51,5 +51,10 @@ describe("number Id Adapter Test", async () => {
         database,
       })
     },
+    disableTests: {
+      // Prisma's `update` only accepts a unique where (e.g. `id`), so a
+      // starts_with filter is rejected by Prisma itself.
+      SHOULD_RETURN_UPDATED_ROW_FOR_NON_EQ_WHERE: true,
+    },
   })
 })

@@ -13,7 +13,7 @@ import type {
 } from "./types.ts"
 import { generateId as defaultGenerateId, logger } from "../../utils/index.ts"
 import { safeJSONParse } from "../../utils/json.ts"
-import { withApplyDefault } from "../utils.ts"
+import { assertNonEmptyWhere, assertSafeWhereValue, withApplyDefault } from "../utils.ts"
 
 export * from "./types.ts"
 
@@ -204,17 +204,19 @@ export function createAdapterFactory<
       }
       const model = getDefaultModelName(unsafe_model) // Just to make sure the model name is correct.
 
-      let f = schema[model]?.fields[field]
-      if (!f) {
-        // @ts-expect-error - Field name might be a custom property not in the type definition
-        f = Object.values(schema[model]?.fields).find((f) => f.fieldName === field)
-      }
-      if (!f) {
+      // Resolve to the schema key, whether `field` is the key itself or the
+      // custom `fieldName` it maps to. `hasOwn` keeps prototype keys such as
+      // `constructor` from passing as valid fields.
+      const fields = schema[model]?.fields ?? {}
+      const key = Object.hasOwn(fields, field)
+        ? field
+        : Object.keys(fields).find((k) => fields[k].fieldName === field)
+      if (!key) {
         debugLog(`Field ${field} not found in model ${model}`)
         debugLog(`Schema:`, schema)
         throw new Error(`Field ${field} not found in model ${model}`)
       }
-      return field
+      return key
     }
 
     /**
@@ -465,6 +467,7 @@ export function createAdapterFactory<
         if (w.operator === "in" && !Array.isArray(w.value)) {
           throw new TypeError("Value must be an array")
         }
+        assertSafeWhereValue(w)
 
         const defaultModelName = getDefaultModelName(model)
         const defaultFieldName = getDefaultFieldName({
@@ -572,6 +575,7 @@ export function createAdapterFactory<
         return transformed
       },
       update: async ({ model: unsafeModel, where: unsafeWhere, update: unsafeData }) => {
+        assertNonEmptyWhere("update", unsafeModel, unsafeWhere)
         transactionId++
         const thisTransactionId = transactionId
         const model = getModelName(unsafeModel)
@@ -734,6 +738,7 @@ export function createAdapterFactory<
         return transformed
       },
       delete: async ({ model: unsafeModel, where: unsafeWhere }) => {
+        assertNonEmptyWhere("delete", unsafeModel, unsafeWhere)
         transactionId++
         const thisTransactionId = transactionId
         const model = getModelName(unsafeModel)
